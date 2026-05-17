@@ -475,9 +475,27 @@ export class NativeToolCallParser {
 
 			case "ask_followup_question":
 				if (partialArgs.question !== undefined || partialArgs.follow_up !== undefined) {
+					let coercedPartialFollowUp = partialArgs.follow_up
+					if (!Array.isArray(coercedPartialFollowUp) && typeof coercedPartialFollowUp === "string") {
+						try {
+							const parsed = JSON.parse(coercedPartialFollowUp)
+							coercedPartialFollowUp = Array.isArray(parsed)
+								? parsed.map((s: any) => ({ text: s.text, mode: s.mode ?? null }))
+								: undefined
+						} catch {
+							coercedPartialFollowUp = undefined
+						}
+					} else if (Array.isArray(coercedPartialFollowUp)) {
+						coercedPartialFollowUp = coercedPartialFollowUp.map((s: any) => ({
+							text: s.text,
+							mode: s.mode ?? null,
+						}))
+					} else {
+						coercedPartialFollowUp = undefined
+					}
 					nativeArgs = {
 						question: partialArgs.question,
-						follow_up: Array.isArray(partialArgs.follow_up) ? partialArgs.follow_up : undefined,
+						follow_up: coercedPartialFollowUp,
 					}
 				}
 				break
@@ -820,9 +838,28 @@ export class NativeToolCallParser {
 
 				case "ask_followup_question":
 					if (args.question !== undefined && args.follow_up !== undefined) {
+						let coercedFinalFollowUp = args.follow_up
+						if (!Array.isArray(coercedFinalFollowUp) && typeof coercedFinalFollowUp === "string") {
+							const trimmed = (coercedFinalFollowUp as string).trim()
+							if (trimmed.length > 0) {
+								try {
+									const parsed = JSON.parse(trimmed)
+									coercedFinalFollowUp = Array.isArray(parsed)
+										? parsed.map((s: any) => ({ text: s.text, mode: s.mode ?? null }))
+										: [{ text: trimmed, mode: null }]
+								} catch {
+									coercedFinalFollowUp = [{ text: trimmed, mode: null }]
+								}
+							}
+						} else if (Array.isArray(coercedFinalFollowUp)) {
+							coercedFinalFollowUp = coercedFinalFollowUp.map((s: any) => ({
+								text: s.text,
+								mode: s.mode ?? null,
+							}))
+						}
 						nativeArgs = {
 							question: args.question,
-							follow_up: args.follow_up,
+							follow_up: coercedFinalFollowUp,
 						} as NativeArgsFor<TName>
 					}
 					break

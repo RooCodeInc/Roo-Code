@@ -6,7 +6,7 @@ import { BaseTool, ToolCallbacks } from "./BaseTool"
 
 interface Suggestion {
 	text: string
-	mode?: string
+	mode?: string | null
 }
 
 interface AskFollowupQuestionParams {
@@ -14,11 +14,58 @@ interface AskFollowupQuestionParams {
 	follow_up: Suggestion[]
 }
 
+/**
+ * Coerce a follow_up value from various formats into the expected Suggestion array.
+ * Some models (e.g. smaller Qwen models) output follow_up as a string instead of an array.
+ * This helper normalizes the value so the tool works regardless of the model's output format.
+ *
+ * Supported coercions:
+ * - Already an array: returned as-is
+ * - A JSON string that parses to an array: parsed and returned
+ * - A plain string: wrapped as a single suggestion `[{ text: value }]`
+ * - Anything else (null, undefined, number, etc.): returns undefined so callers can error
+ */
+export function coerceFollowUp(value: unknown): Suggestion[] | undefined {
+	if (Array.isArray(value)) {
+		return normalizeSuggestions(value)
+	}
+
+	if (typeof value === "string" && value.trim().length > 0) {
+		// Try parsing as JSON first (model may have serialized the array as a string)
+		try {
+			const parsed = JSON.parse(value)
+			if (Array.isArray(parsed)) {
+				return normalizeSuggestions(parsed)
+			}
+		} catch {
+			// Not valid JSON -- fall through to plain-string wrapping
+		}
+
+		// Wrap plain string as a single suggestion
+		return [{ text: value, mode: null }]
+	}
+
+	return undefined
+}
+
+/**
+ * Ensure every suggestion has an explicit `mode` field (defaulting to `null`).
+ * The tool schema requires `mode` on each item (`required: ["text", "mode"]`),
+ * and some model Jinja templates fail if a required field is absent.
+ */
+function normalizeSuggestions(items: Suggestion[]): Suggestion[] {
+	return items.map((s) => ({
+		text: s.text,
+		mode: s.mode ?? null,
+	}))
+}
+
 export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
 	readonly name = "ask_followup_question" as const
 
 	async execute(params: AskFollowupQuestionParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { question, follow_up } = params
+		const { question } = params
+		const follow_up = coerceFollowUp(params.follow_up)
 		const { handleError, pushToolResult } = callbacks
 
 		const recordMissingParamError = async (paramName: string): Promise<void> => {
