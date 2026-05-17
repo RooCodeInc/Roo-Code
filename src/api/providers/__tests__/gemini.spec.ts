@@ -154,13 +154,33 @@ describe("GeminiHandler", () => {
 			expect(modelInfo.info).toBeDefined()
 		})
 
-		it("should return default model if invalid model specified", () => {
+		it("should preserve unknown model ID instead of silently falling back to default", () => {
 			const invalidHandler = new GeminiHandler({
 				apiModelId: "invalid-model",
 				geminiApiKey: "test-key",
 			})
 			const modelInfo = invalidHandler.getModel()
-			expect(modelInfo.id).toBe(geminiDefaultModelId) // Default model
+			expect(modelInfo.id).toBe("invalid-model") // Preserves user-provided ID
+			expect(modelInfo.info).toBeDefined() // Falls back to default model info
+		})
+
+		it("should use default model when no model ID is provided", () => {
+			const noModelHandler = new GeminiHandler({
+				geminiApiKey: "test-key",
+			})
+			const modelInfo = noModelHandler.getModel()
+			expect(modelInfo.id).toBe(geminiDefaultModelId)
+		})
+
+		it("should recognize Gemma 4 models natively", () => {
+			const gemmaHandler = new GeminiHandler({
+				apiModelId: "gemma-4-31b-it",
+				geminiApiKey: "test-key",
+			})
+			const modelInfo = gemmaHandler.getModel()
+			expect(modelInfo.id).toBe("gemma-4-31b-it")
+			expect(modelInfo.info.contextWindow).toBe(131_072)
+			expect(modelInfo.info.supportsImages).toBe(true)
 		})
 
 		it("should exclude apply_diff and include edit in tool preferences", () => {

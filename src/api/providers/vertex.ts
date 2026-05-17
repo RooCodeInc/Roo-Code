@@ -14,8 +14,8 @@ export class VertexHandler extends GeminiHandler implements SingleCompletionHand
 
 	override getModel() {
 		const modelId = this.options.apiModelId
-		let id = modelId && modelId in vertexModels ? (modelId as VertexModelId) : vertexDefaultModelId
-		let info: ModelInfo = vertexModels[id]
+		const id: string = modelId ?? vertexDefaultModelId
+		let info: ModelInfo = vertexModels[id as VertexModelId] ?? vertexModels[vertexDefaultModelId]
 		const params = getModelParams({
 			format: "gemini",
 			modelId: id,

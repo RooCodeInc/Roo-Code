@@ -283,4 +283,46 @@ export const geminiModels = {
 		supportsReasoningBudget: true,
 		maxThinkingTokens: 24_576,
 	},
+	// Gemma 4 models
+	// https://ai.google.dev/gemma/docs/core
+	"gemma-4-31b-it": {
+		maxTokens: 8_192,
+		contextWindow: 131_072,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+	},
+	"gemma-4-12b-it": {
+		maxTokens: 8_192,
+		contextWindow: 131_072,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+	},
+	"gemma-4-6b-it": {
+		maxTokens: 8_192,
+		contextWindow: 32_768,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+	},
+	"gemma-4-4b-it": {
+		maxTokens: 8_192,
+		contextWindow: 32_768,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+	},
+	"gemma-4-1b-it": {
+		maxTokens: 8_192,
+		contextWindow: 32_768,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+	},
 } as const satisfies Record<string, ModelInfo>
