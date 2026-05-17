@@ -1,6 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import {
 	validateAndFixToolResultIds,
+	validateMessageHistoryBeforeSend,
 	ToolResultIdMismatchError,
 	MissingToolResultError,
 } from "../validateToolResultIds"
@@ -790,5 +791,227 @@ describe("validateAndFixToolResultIds", () => {
 			expect(error.missingToolUseIds).toEqual(["tool-1", "tool-2"])
 			expect(error.existingToolResultIds).toEqual(["existing-result-1"])
 		})
+	})
+})
+
+describe("validateMessageHistoryBeforeSend", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it("should return the same array reference when all tool_use blocks have matching tool_results", () => {
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [{ type: "text", text: "Hello" }],
+			},
+			{
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "tool_1", name: "read_file", input: { path: "foo.ts" } },
+					{ type: "tool_use", id: "tool_2", name: "read_file", input: { path: "bar.ts" } },
+				],
+			},
+			{
+				role: "user",
+				content: [
+					{ type: "tool_result", tool_use_id: "tool_1", content: "file contents 1" },
+					{ type: "tool_result", tool_use_id: "tool_2", content: "file contents 2" },
+				],
+			},
+		]
+
+		const result = validateMessageHistoryBeforeSend(messages)
+		expect(result).toBe(messages) // Same reference = no modification
+		expect(TelemetryService.instance.captureException).not.toHaveBeenCalled()
+	})
+
+	it("should inject placeholder tool_results for missing tool_use IDs", () => {
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [{ type: "text", text: "Hello" }],
+			},
+			{
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "tool_1", name: "read_file", input: { path: "foo.ts" } },
+					{ type: "tool_use", id: "tool_2", name: "read_file", input: { path: "bar.ts" } },
+					{ type: "tool_use", id: "tool_3", name: "read_file", input: { path: "baz.ts" } },
+					{ type: "tool_use", id: "tool_4", name: "read_file", input: { path: "qux.ts" } },
+				],
+			},
+			{
+				role: "user",
+				content: [
+					{ type: "tool_result", tool_use_id: "tool_1", content: "result 1" },
+					// tool_2, tool_3, tool_4 are missing
+				],
+			},
+		]
+
+		const result = validateMessageHistoryBeforeSend(messages)
+
+		// Should have the same number of messages
+		expect(result.length).toBe(3)
+
+		// The patched user message should contain placeholders for tool_2, tool_3, tool_4
+		const patchedUser = result[2]
+		expect(patchedUser.role).toBe("user")
+		const content = patchedUser.content as Anthropic.Messages.ContentBlockParam[]
+
+		// 3 placeholders + 1 existing tool_result = 4
+		expect(content.length).toBe(4)
+
+		const toolResults = content.filter((b): b is Anthropic.ToolResultBlockParam => b.type === "tool_result")
+		expect(toolResults.length).toBe(4)
+
+		const toolResultIds = toolResults.map((r) => r.tool_use_id)
+		expect(toolResultIds).toContain("tool_1")
+		expect(toolResultIds).toContain("tool_2")
+		expect(toolResultIds).toContain("tool_3")
+		expect(toolResultIds).toContain("tool_4")
+
+		// Should report to telemetry
+		expect(TelemetryService.instance.captureException).toHaveBeenCalledTimes(1)
+		const capturedError = (TelemetryService.instance.captureException as ReturnType<typeof vi.fn>).mock.calls[0][0]
+		expect(capturedError).toBeInstanceOf(MissingToolResultError)
+		expect(capturedError.missingToolUseIds).toEqual(["tool_2", "tool_3", "tool_4"])
+	})
+
+	it("should insert a synthetic user message when no following user message exists", () => {
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [{ type: "text", text: "Hello" }],
+			},
+			{
+				role: "assistant",
+				content: [{ type: "tool_use", id: "tool_1", name: "read_file", input: { path: "foo.ts" } }],
+			},
+			// No following user message
+		]
+
+		const result = validateMessageHistoryBeforeSend(messages)
+
+		// Should now have 3 messages (synthetic user message added)
+		expect(result.length).toBe(3)
+		expect(result[2].role).toBe("user")
+
+		const content = result[2].content as Anthropic.ToolResultBlockParam[]
+		expect(content.length).toBe(1)
+		expect(content[0].type).toBe("tool_result")
+		expect(content[0].tool_use_id).toBe("tool_1")
+		expect(content[0].content).toBe("Tool execution was interrupted before completion.")
+	})
+
+	it("should handle multiple assistant messages with tool_use blocks", () => {
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [{ type: "text", text: "Hello" }],
+			},
+			{
+				role: "assistant",
+				content: [{ type: "tool_use", id: "tool_1", name: "read_file", input: { path: "foo.ts" } }],
+			},
+			{
+				role: "user",
+				content: [{ type: "tool_result", tool_use_id: "tool_1", content: "result 1" }],
+			},
+			{
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "tool_2", name: "read_file", input: { path: "bar.ts" } },
+					{ type: "tool_use", id: "tool_3", name: "read_file", input: { path: "baz.ts" } },
+				],
+			},
+			{
+				role: "user",
+				content: [
+					// Only tool_2 has a result, tool_3 is missing
+					{ type: "tool_result", tool_use_id: "tool_2", content: "result 2" },
+				],
+			},
+		]
+
+		const result = validateMessageHistoryBeforeSend(messages)
+
+		expect(result.length).toBe(5)
+
+		// First pair should be untouched
+		const firstUserContent = result[2].content as Anthropic.Messages.ContentBlockParam[]
+		expect(firstUserContent.length).toBe(1)
+
+		// Second pair should have placeholder for tool_3
+		const secondUserContent = result[4].content as Anthropic.Messages.ContentBlockParam[]
+		const toolResults = secondUserContent.filter(
+			(b): b is Anthropic.ToolResultBlockParam => b.type === "tool_result",
+		)
+		expect(toolResults.length).toBe(2)
+		expect(toolResults.map((r) => r.tool_use_id).sort()).toEqual(["tool_2", "tool_3"])
+	})
+
+	it("should not modify messages without tool_use blocks", () => {
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [{ type: "text", text: "Hello" }],
+			},
+			{
+				role: "assistant",
+				content: [{ type: "text", text: "Hi there!" }],
+			},
+			{
+				role: "user",
+				content: [{ type: "text", text: "Thanks" }],
+			},
+		]
+
+		const result = validateMessageHistoryBeforeSend(messages)
+		expect(result).toBe(messages) // Same reference
+	})
+
+	it("should handle assistant messages with string content", () => {
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: "Hello",
+			},
+			{
+				role: "assistant",
+				content: "Hi there!",
+			},
+		]
+
+		const result = validateMessageHistoryBeforeSend(messages)
+		expect(result).toBe(messages)
+	})
+
+	it("should handle the next message being an assistant (not user)", () => {
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [{ type: "text", text: "Hello" }],
+			},
+			{
+				role: "assistant",
+				content: [{ type: "tool_use", id: "tool_1", name: "read_file", input: { path: "foo.ts" } }],
+			},
+			{
+				role: "assistant",
+				content: [{ type: "text", text: "Continuing..." }],
+			},
+		]
+
+		const result = validateMessageHistoryBeforeSend(messages)
+
+		// Should insert a synthetic user message between the two assistant messages
+		expect(result.length).toBe(4)
+		expect(result[2].role).toBe("user")
+		const syntheticContent = result[2].content as Anthropic.ToolResultBlockParam[]
+		expect(syntheticContent[0].tool_use_id).toBe("tool_1")
+		// The original second assistant message should still be there
+		expect(result[3].role).toBe("assistant")
 	})
 })

@@ -126,7 +126,7 @@ import { getMessagesSinceLastSummary, summarizeConversation, getEffectiveApiHist
 import { MessageQueueService } from "../message-queue/MessageQueueService"
 import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
 import { MessageManager } from "../message-manager"
-import { validateAndFixToolResultIds } from "./validateToolResultIds"
+import { validateAndFixToolResultIds, validateMessageHistoryBeforeSend } from "./validateToolResultIds"
 import { mergeConsecutiveApiMessages } from "./mergeConsecutiveApiMessages"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
@@ -4163,10 +4163,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Reset the flag after using it
 		this.skipPrevResponseIdOnce = false
 
+		// Final safety-net: ensure every tool_use has a matching tool_result before sending.
+		// This catches mismatches introduced by post-processing (condensing, merging, cleaning).
+		const validatedHistory = validateMessageHistoryBeforeSend(
+			cleanConversationHistory as unknown as Anthropic.Messages.MessageParam[],
+		)
+
 		// The provider accepts reasoning items alongside standard messages; cast to the expected parameter type.
 		const stream = this.api.createMessage(
 			systemPrompt,
-			cleanConversationHistory as unknown as Anthropic.Messages.MessageParam[],
+			validatedHistory as unknown as Anthropic.Messages.MessageParam[],
 			metadata,
 		)
 		const iterator = stream[Symbol.asyncIterator]()

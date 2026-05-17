@@ -197,3 +197,118 @@ export function validateAndFixToolResultIds(
 		content: finalContent,
 	}
 }
+
+/**
+ * Pre-send validation that ensures every tool_use block in the final message
+ * array has a corresponding tool_result block in the immediately following
+ * user message. This acts as a last-resort safety net right before the API
+ * call, catching any mismatches introduced by post-processing steps like
+ * getEffectiveApiHistory(), mergeConsecutiveApiMessages(), or
+ * buildCleanConversationHistory().
+ *
+ * For any missing tool_result, a placeholder is injected so the API request
+ * remains valid. Mismatches are reported to telemetry.
+ *
+ * @param messages - The final message array about to be sent to the API
+ * @returns A new array with any missing tool_result placeholders injected
+ */
+export function validateMessageHistoryBeforeSend(
+	messages: Anthropic.Messages.MessageParam[],
+): Anthropic.Messages.MessageParam[] {
+	// Work on a shallow copy so we don't mutate the caller's array.
+	const result: Anthropic.Messages.MessageParam[] = []
+	let modified = false
+
+	for (let i = 0; i < messages.length; i++) {
+		const current = messages[i]
+
+		// We only care about assistant messages that contain tool_use blocks.
+		if (current.role !== "assistant" || !Array.isArray(current.content)) {
+			result.push(current)
+			continue
+		}
+
+		const toolUseBlocks = (current.content as Anthropic.Messages.ContentBlockParam[]).filter(
+			(block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
+		)
+
+		if (toolUseBlocks.length === 0) {
+			result.push(current)
+			continue
+		}
+
+		result.push(current)
+
+		// Collect tool_use IDs that need matching tool_results.
+		const toolUseIds = new Set(toolUseBlocks.map((b) => b.id))
+
+		// Look at the next message - it should be a user message with tool_results.
+		const next = messages[i + 1]
+
+		// Gather existing tool_result IDs from the next message (if it's a user message).
+		const existingToolResultIds = new Set<string>()
+		let nextContent: Anthropic.Messages.ContentBlockParam[] = []
+
+		if (next && next.role === "user" && Array.isArray(next.content)) {
+			nextContent = next.content as Anthropic.Messages.ContentBlockParam[]
+			for (const block of nextContent) {
+				if (block.type === "tool_result") {
+					existingToolResultIds.add((block as Anthropic.ToolResultBlockParam).tool_use_id)
+				}
+			}
+		}
+
+		// Determine which tool_use IDs are missing a tool_result.
+		const missingIds = [...toolUseIds].filter((id) => !existingToolResultIds.has(id))
+
+		if (missingIds.length === 0) {
+			continue // All good for this pair.
+		}
+
+		// Report to telemetry.
+		if (TelemetryService.hasInstance()) {
+			TelemetryService.instance.captureException(
+				new MissingToolResultError(
+					`Pre-send validation: missing tool_result blocks for tool_use IDs: [${missingIds.join(", ")}]`,
+					missingIds,
+					[...existingToolResultIds],
+				),
+				{
+					missingToolUseIds: missingIds,
+					existingToolResultIds: [...existingToolResultIds],
+					toolUseCount: toolUseBlocks.length,
+					existingToolResultCount: existingToolResultIds.size,
+					messageIndex: i,
+				},
+			)
+		}
+
+		modified = true
+
+		// Build placeholder tool_result blocks for the missing IDs.
+		const placeholders: Anthropic.ToolResultBlockParam[] = missingIds.map((id) => ({
+			type: "tool_result" as const,
+			tool_use_id: id,
+			content: "Tool execution was interrupted before completion.",
+		}))
+
+		if (next && next.role === "user") {
+			// Inject placeholders into the existing user message.
+			const patchedNext: Anthropic.Messages.MessageParam = {
+				...next,
+				content: [...placeholders, ...nextContent],
+			}
+			result.push(patchedNext)
+			i++ // Skip the next message since we already pushed the patched version.
+		} else {
+			// No following user message at all - insert a synthetic one.
+			result.push({
+				role: "user" as const,
+				content: placeholders,
+			})
+			// Don't skip - the next message (if any) still needs to be processed.
+		}
+	}
+
+	return modified ? result : messages
+}
