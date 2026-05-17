@@ -216,6 +216,27 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 					if (marker.startsWith(SEARCH_PREFIX)) return reportMergeConflictError(marker, SEARCH)
 					if (marker === REPLACE) return reportInvalidDiffError(REPLACE, SEP)
 					if (marker.startsWith(REPLACE_PREFIX)) return reportMergeConflictError(marker, SEARCH)
+					// Detect malformed separator: `-------` with content on the same line (missing newline)
+					if (/^-------.+/.test(marker)) {
+						const trailingContent = marker.slice(7)
+						return {
+							success: false,
+							error:
+								`ERROR: The separator line '-------' at line ${state.line} must be on its own line followed by a newline. ` +
+								`Found content '${trailingContent.length > 40 ? trailingContent.slice(0, 40) + "..." : trailingContent}' on the same line.\n` +
+								"\n" +
+								"CORRECT FORMAT:\n\n" +
+								"<<<<<<< SEARCH\n" +
+								":start_line:5\n" +
+								"-------\n" +
+								"search content here\n" +
+								"=======\n" +
+								"replacement content\n" +
+								">>>>>>> REPLACE\n" +
+								"\n" +
+								"The '-------' separator must be on its own line, with the search content starting on the next line.",
+						}
+					}
 					if (marker === SEP) state.current = State.AFTER_SEPARATOR
 					break
 
