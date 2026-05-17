@@ -372,6 +372,7 @@ export const AutoApproveSettings = ({
 								<Button
 									key={index}
 									variant="secondary"
+									className="bg-red-500/20 text-red-500 hover:bg-red-500/30"
 									data-testid={`remove-denied-command-${index}`}
 									onClick={() => {
 										const newCommands = (deniedCommands ?? []).filter((_, i) => i !== index)
@@ -384,7 +385,7 @@ export const AutoApproveSettings = ({
 									}}>
 									<div className="flex flex-row items-center gap-1">
 										<div>{cmd}</div>
-										<X className="text-foreground scale-75" />
+										<X className="text-red-500 scale-75" />
 									</div>
 								</Button>
 							))}

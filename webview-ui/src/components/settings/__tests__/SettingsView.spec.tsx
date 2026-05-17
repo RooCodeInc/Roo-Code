@@ -714,3 +714,65 @@ describe("SettingsView - Duplicate Commands", () => {
 		)
 	})
 })
+
+describe("SettingsView - Denied Commands", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it("renders denied commands with red styling", () => {
+		const { activateTab, getSettingsContent } = renderSettingsView()
+
+		// Activate the autoApprove tab
+		activateTab("autoApprove")
+
+		const content = getSettingsContent()
+		// Enable always allow execute to show command sections
+		const executeCheckbox = within(content).getByTestId("always-allow-execute-toggle")
+		fireEvent.click(executeCheckbox)
+
+		// Add a denied command
+		const deniedInput = within(content).getByTestId("denied-command-input")
+		fireEvent.change(deniedInput, { target: { value: "rm -rf" } })
+		const addDeniedButton = within(content).getByTestId("add-denied-command-button")
+		fireEvent.click(addDeniedButton)
+
+		// Verify the denied command button has red styling classes
+		const deniedButton = within(content).getByTestId("remove-denied-command-0")
+		expect(deniedButton).toHaveClass("bg-red-500/20", "text-red-500")
+	})
+
+	it("adds and removes denied commands", () => {
+		const { activateTab, getSettingsContent } = renderSettingsView()
+
+		activateTab("autoApprove")
+
+		const content = getSettingsContent()
+		const executeCheckbox = within(content).getByTestId("always-allow-execute-toggle")
+		fireEvent.click(executeCheckbox)
+
+		// Add a denied command
+		const deniedInput = within(content).getByTestId("denied-command-input")
+		fireEvent.change(deniedInput, { target: { value: "rm" } })
+		const addDeniedButton = within(content).getByTestId("add-denied-command-button")
+		fireEvent.click(addDeniedButton)
+
+		// Verify command was added
+		expect(within(content).getByText("rm")).toBeInTheDocument()
+
+		// Verify VSCode message was sent
+		expect(vscode.postMessage).toHaveBeenCalledWith({
+			type: "updateSettings",
+			updatedSettings: {
+				deniedCommands: ["rm"],
+			},
+		})
+
+		// Remove the denied command
+		const removeButton = within(content).getByTestId("remove-denied-command-0")
+		fireEvent.click(removeButton)
+
+		// Verify command was removed
+		expect(within(content).queryByTestId("remove-denied-command-0")).not.toBeInTheDocument()
+	})
+})
