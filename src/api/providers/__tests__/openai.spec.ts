@@ -499,6 +499,87 @@ describe("OpenAiHandler", () => {
 		})
 	})
 
+	describe("temperature handling", () => {
+		const systemPrompt = "You are a helpful assistant."
+		const testMessages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello!" }]
+
+		it("should use defaultTemperature from custom model info when no user temperature is set", async () => {
+			const handlerWithModelDefault = new OpenAiHandler({
+				...mockOptions,
+				openAiCustomModelInfo: {
+					...openAiModelInfoSaneDefaults,
+					defaultTemperature: 0.6,
+				},
+			})
+			const stream = handlerWithModelDefault.createMessage(systemPrompt, testMessages)
+			for await (const _chunk of stream) {
+			}
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.temperature).toBe(0.6)
+		})
+
+		it("should prefer user-set modelTemperature over defaultTemperature from model info", async () => {
+			const handlerWithUserTemp = new OpenAiHandler({
+				...mockOptions,
+				modelTemperature: 0.3,
+				openAiCustomModelInfo: {
+					...openAiModelInfoSaneDefaults,
+					defaultTemperature: 0.6,
+				},
+			})
+			const stream = handlerWithUserTemp.createMessage(systemPrompt, testMessages)
+			for await (const _chunk of stream) {
+			}
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.temperature).toBe(0.3)
+		})
+
+		it("should default to 0 when no user temperature and no model defaultTemperature", async () => {
+			const handlerNoTemp = new OpenAiHandler({
+				...mockOptions,
+			})
+			const stream = handlerNoTemp.createMessage(systemPrompt, testMessages)
+			for await (const _chunk of stream) {
+			}
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.temperature).toBe(0)
+		})
+
+		it("should use defaultTemperature in non-streaming path", async () => {
+			const handlerNonStreaming = new OpenAiHandler({
+				...mockOptions,
+				openAiStreamingEnabled: false,
+				openAiCustomModelInfo: {
+					...openAiModelInfoSaneDefaults,
+					defaultTemperature: 0.6,
+				},
+			})
+			const stream = handlerNonStreaming.createMessage(systemPrompt, testMessages)
+			for await (const _chunk of stream) {
+			}
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.temperature).toBe(0.6)
+		})
+
+		it("should use defaultTemperature in completePrompt", async () => {
+			const handlerWithModelDefault = new OpenAiHandler({
+				...mockOptions,
+				openAiCustomModelInfo: {
+					...openAiModelInfoSaneDefaults,
+					defaultTemperature: 0.6,
+				},
+			})
+			await handlerWithModelDefault.completePrompt("Hello")
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.temperature).toBe(0.6)
+		})
+	})
+
 	describe("error handling", () => {
 		const testMessages: Anthropic.Messages.MessageParam[] = [
 			{
@@ -547,6 +628,7 @@ describe("OpenAiHandler", () => {
 			expect(mockCreate).toHaveBeenCalledWith(
 				{
 					model: mockOptions.openAiModelId,
+					temperature: 0,
 					messages: [{ role: "user", content: "Test prompt" }],
 				},
 				{},
@@ -678,6 +760,7 @@ describe("OpenAiHandler", () => {
 			expect(mockCreate).toHaveBeenCalledWith(
 				{
 					model: azureOptions.openAiModelId,
+					temperature: 0,
 					messages: [
 						{ role: "system", content: systemPrompt },
 						{ role: "user", content: "Hello!" },
@@ -701,6 +784,7 @@ describe("OpenAiHandler", () => {
 			expect(mockCreate).toHaveBeenCalledWith(
 				{
 					model: azureOptions.openAiModelId,
+					temperature: 0,
 					messages: [{ role: "user", content: "Test prompt" }],
 				},
 				{ path: "/models/chat/completions" },
