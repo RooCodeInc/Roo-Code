@@ -88,6 +88,9 @@ export class TaskHistoryStore {
 			// 2. Reconcile cache against actual task directories on disk
 			await this.reconcile()
 
+			// 2b. Mark interrupted background tasks (were active when VS Code closed)
+			this.markInterruptedBackgroundTasks()
+
 			// 3. Start fs.watch for cross-instance reactivity
 			this.startWatcher()
 
@@ -231,6 +234,24 @@ export class TaskHistoryStore {
 				await this.onWrite(this.getAll())
 			}
 		})
+	}
+
+	// ────────────────────────────── Background Task Recovery ──────────────────────────────
+
+	/**
+	 * Mark background tasks that were still active when VS Code closed as "interrupted".
+	 * This runs after cache is loaded and reconciled during initialization.
+	 */
+	private markInterruptedBackgroundTasks(): void {
+		for (const [id, item] of this.cache) {
+			if (item.background && item.status === "active") {
+				this.cache.set(id, { ...item, status: "interrupted" })
+				// Best-effort write of updated status to disk (fire-and-forget during init)
+				this.writeTaskFile({ ...item, status: "interrupted" }).catch((err) => {
+					console.error(`[TaskHistoryStore] Failed to mark background task ${id} as interrupted:`, err)
+				})
+			}
+		}
 	}
 
 	// ────────────────────────────── Reconciliation ──────────────────────────────

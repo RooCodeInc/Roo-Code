@@ -310,7 +310,16 @@
 		"resultContent": "Hasil Subtugas",
 		"defaultResult": "Silakan lanjutkan ke tugas berikutnya.",
 		"completionInstructions": "Subtugas selesai! Kamu bisa meninjau hasilnya dan menyarankan koreksi atau langkah selanjutnya. Jika semuanya terlihat baik, konfirmasi untuk mengembalikan hasil ke tugas induk.",
-		"goToSubtask": "Lihat tugas"
+		"goToSubtask": "Lihat tugas",
+		"filesModified": "File yang Diubah",
+		"filesRead": "File yang Dibaca",
+		"commandsExecuted": "Perintah yang Dijalankan",
+		"todoStats": "Tugas: {{completed}}/{{total}} selesai",
+		"permissionBoundaries": "Batasan Izin",
+		"permissionFilePatterns": "File yang diizinkan: {{patterns}}",
+		"permissionCommandPatterns": "Perintah yang diizinkan: {{patterns}}",
+		"permissionAllowedTools": "Alat yang diizinkan: {{tools}}",
+		"permissionDeniedTools": "Alat yang ditolak: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo punya pertanyaan"
@@ -493,5 +502,13 @@
 		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
 		"openSettings": "Buka Pengaturan",
 		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+	},
+	"contextHandoff": {
+		"title": "Ringkasan Serah Terima Konteks",
+		"mode": "Mode",
+		"filesModified": "File Dimodifikasi",
+		"filesRead": "File Dibaca",
+		"commandsExecuted": "Perintah Dieksekusi",
+		"apiRequests": "Permintaan API"
 	}
 }

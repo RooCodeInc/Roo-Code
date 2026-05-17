@@ -284,4 +284,65 @@ describe("useTaskSearch", () => {
 		// When not searching, it should fall back to newest
 		expect(result.current.sortOption).toBe("mostRelevant")
 	})
+
+	it("shows background tasks by default", () => {
+		const taskHistoryWithBackground: HistoryItem[] = [
+			...mockTaskHistory,
+			{
+				id: "task-bg",
+				number: 4,
+				task: "Background task",
+				ts: new Date("2022-02-18T12:00:00").getTime(),
+				tokensIn: 50,
+				tokensOut: 25,
+				totalCost: 0.005,
+				workspace: "/workspace/project1",
+				background: true,
+			},
+		]
+
+		mockUseExtensionState.mockReturnValue({
+			taskHistory: taskHistoryWithBackground,
+			cwd: "/workspace/project1",
+		} as any)
+
+		const { result } = renderHook(() => useTaskSearch())
+
+		// Background tasks should be included by default
+		expect(result.current.showBackgroundTasks).toBe(true)
+		expect(result.current.tasks.some((task) => task.id === "task-bg")).toBe(true)
+	})
+
+	it("hides background tasks when showBackgroundTasks is false", () => {
+		const taskHistoryWithBackground: HistoryItem[] = [
+			...mockTaskHistory,
+			{
+				id: "task-bg",
+				number: 4,
+				task: "Background task",
+				ts: new Date("2022-02-18T12:00:00").getTime(),
+				tokensIn: 50,
+				tokensOut: 25,
+				totalCost: 0.005,
+				workspace: "/workspace/project1",
+				background: true,
+			},
+		]
+
+		mockUseExtensionState.mockReturnValue({
+			taskHistory: taskHistoryWithBackground,
+			cwd: "/workspace/project1",
+		} as any)
+
+		const { result } = renderHook(() => useTaskSearch())
+
+		act(() => {
+			result.current.setShowBackgroundTasks(false)
+		})
+
+		// Background tasks should be hidden
+		expect(result.current.tasks.some((task) => task.id === "task-bg")).toBe(false)
+		// Non-background tasks should still be visible
+		expect(result.current.tasks.some((task) => task.id === "task-1")).toBe(true)
+	})
 })

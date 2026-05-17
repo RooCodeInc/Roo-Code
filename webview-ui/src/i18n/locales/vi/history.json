@@ -47,5 +47,15 @@
 	"subtaskTag": "Tác vụ con",
 	"deleteWithSubtasks": "Điều này cũng sẽ xóa {{count}} tác vụ con. Bạn có chắc không?",
 	"expandSubtasks": "Mở rộng tác vụ con",
-	"collapseSubtasks": "Thu gọn tác vụ con"
+	"collapseSubtasks": "Thu gọn tác vụ con",
+	"backgroundTag": "Nền",
+	"interruptedTag": "Bị gián đoạn",
+	"showBackgroundTasks": "Hiển thị tác vụ nền",
+	"hideBackgroundTasks": "Ẩn tác vụ nền",
+	"filter": {
+		"prefix": "Bộ lọc:",
+		"all": "Tất cả tác vụ",
+		"foregroundOnly": "Chỉ tiền cảnh"
+	},
+	"interruptedTooltip": "This background task was interrupted because VS Code was closed while it was still running."
 }

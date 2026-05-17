@@ -47,5 +47,15 @@
 	"subtaskTag": "부분작업",
 	"deleteWithSubtasks": "이는 {{count}} 부분작업도 삭제합니다. 확실하십니까?",
 	"expandSubtasks": "부분작업 확장",
-	"collapseSubtasks": "부분작업 축소"
+	"collapseSubtasks": "부분작업 축소",
+	"backgroundTag": "백그라운드",
+	"interruptedTag": "중단됨",
+	"showBackgroundTasks": "백그라운드 작업 표시",
+	"hideBackgroundTasks": "백그라운드 작업 숨기기",
+	"filter": {
+		"prefix": "필터:",
+		"all": "모든 작업",
+		"foregroundOnly": "포그라운드만"
+	},
+	"interruptedTooltip": "This background task was interrupted because VS Code was closed while it was still running."
 }

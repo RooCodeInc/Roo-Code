@@ -54,5 +54,15 @@
 	"subtaskTag": "Sous-tâche",
 	"deleteWithSubtasks": "Cela supprimera aussi {{count}} sous-tâche(s). Êtes-vous sûr ?",
 	"expandSubtasks": "Développer les sous-tâches",
-	"collapseSubtasks": "Réduire les sous-tâches"
+	"collapseSubtasks": "Réduire les sous-tâches",
+	"backgroundTag": "Arrière-plan",
+	"interruptedTag": "Interrompue",
+	"showBackgroundTasks": "Afficher les tâches en arrière-plan",
+	"hideBackgroundTasks": "Masquer les tâches en arrière-plan",
+	"filter": {
+		"prefix": "Filtre :",
+		"all": "Toutes les tâches",
+		"foregroundOnly": "Premier plan uniquement"
+	},
+	"interruptedTooltip": "This background task was interrupted because VS Code was closed while it was still running."
 }

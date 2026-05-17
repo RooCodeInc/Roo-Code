@@ -47,5 +47,15 @@
 	"subtaskTag": "Подзадача",
 	"deleteWithSubtasks": "Это также удалит {{count}} подзадачу(и). Вы уверены?",
 	"expandSubtasks": "Развернуть подзадачи",
-	"collapseSubtasks": "Свернуть подзадачи"
+	"collapseSubtasks": "Свернуть подзадачи",
+	"backgroundTag": "Фоновая",
+	"interruptedTag": "Прервана",
+	"showBackgroundTasks": "Показать фоновые задачи",
+	"hideBackgroundTasks": "Скрыть фоновые задачи",
+	"filter": {
+		"prefix": "Фильтр:",
+		"all": "Все задачи",
+		"foregroundOnly": "Только активные"
+	},
+	"interruptedTooltip": "This background task was interrupted because VS Code was closed while it was still running."
 }

@@ -259,7 +259,16 @@
 		"resultContent": "サブタスク結果",
 		"defaultResult": "次のタスクに進んでください。",
 		"completionInstructions": "サブタスク完了！結果を確認し、修正や次のステップを提案できます。問題なければ、親タスクに結果を返すために確認してください。",
-		"goToSubtask": "タスクを表示"
+		"goToSubtask": "タスクを表示",
+		"filesModified": "変更されたファイル",
+		"filesRead": "読み取ったファイル",
+		"commandsExecuted": "実行されたコマンド",
+		"todoStats": "タスク: {{completed}}/{{total}} 完了",
+		"permissionBoundaries": "権限の境界",
+		"permissionFilePatterns": "許可されたファイル: {{patterns}}",
+		"permissionCommandPatterns": "許可されたコマンド: {{patterns}}",
+		"permissionAllowedTools": "許可されたツール: {{tools}}",
+		"permissionDeniedTools": "拒否されたツール: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Rooは質問があります"
@@ -487,5 +496,13 @@
 		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
 		"openSettings": "設定を開く",
 		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+	},
+	"contextHandoff": {
+		"title": "コンテキスト引き継ぎサマリー",
+		"mode": "モード",
+		"filesModified": "変更されたファイル",
+		"filesRead": "読み取られたファイル",
+		"commandsExecuted": "実行されたコマンド",
+		"apiRequests": "APIリクエスト"
 	}
 }

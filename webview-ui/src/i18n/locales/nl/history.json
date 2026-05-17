@@ -47,5 +47,15 @@
 	"subtaskTag": "Subtaak",
 	"deleteWithSubtasks": "Dit zal ook {{count}} subtaak(en) verwijderen. Weet je het zeker?",
 	"expandSubtasks": "Subtaken uitvouwen",
-	"collapseSubtasks": "Subtaken samenvouwen"
+	"collapseSubtasks": "Subtaken samenvouwen",
+	"backgroundTag": "Achtergrond",
+	"interruptedTag": "Onderbroken",
+	"showBackgroundTasks": "Achtergrondtaken weergeven",
+	"hideBackgroundTasks": "Achtergrondtaken verbergen",
+	"filter": {
+		"prefix": "Filter:",
+		"all": "Alle taken",
+		"foregroundOnly": "Alleen voorgrond"
+	},
+	"interruptedTooltip": "This background task was interrupted because VS Code was closed while it was still running."
 }

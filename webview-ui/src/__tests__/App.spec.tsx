@@ -40,6 +40,24 @@ vi.mock("@src/components/history/HistoryView", () => ({
 	},
 }))
 
+vi.mock("@src/components/chat/BackgroundTaskView", () => ({
+	__esModule: true,
+	default: function BackgroundTaskView({ onClose }: { onClose: () => void }) {
+		return (
+			<div data-testid="background-task-view" onClick={onClose}>
+				Background Task View
+			</div>
+		)
+	},
+}))
+
+vi.mock("@src/components/chat/BackgroundTaskReplayView", () => ({
+	__esModule: true,
+	default: function BackgroundTaskReplayView() {
+		return <div data-testid="background-task-replay-view">Background Task Replay View</div>
+	},
+}))
+
 vi.mock("@src/components/mcp/McpView", () => ({
 	__esModule: true,
 	default: function McpView() {
@@ -204,6 +222,38 @@ describe("App", () => {
 		const chatView = screen.getByTestId("chat-view")
 		expect(chatView.getAttribute("data-hidden")).toBe("false")
 		expect(screen.queryByTestId("settings-view")).not.toBeInTheDocument()
+	})
+
+	it("switches to background tasks view when receiving backgroundTasksButtonClicked action", async () => {
+		render(<AppWithProviders />)
+
+		act(() => {
+			triggerMessage("backgroundTasksButtonClicked")
+		})
+
+		const bgTaskView = await screen.findByTestId("background-task-view")
+		expect(bgTaskView).toBeInTheDocument()
+
+		const chatView = screen.getByTestId("chat-view")
+		expect(chatView.getAttribute("data-hidden")).toBe("true")
+	})
+
+	it("returns to chat view when clicking done in background tasks view", async () => {
+		render(<AppWithProviders />)
+
+		act(() => {
+			triggerMessage("backgroundTasksButtonClicked")
+		})
+
+		const bgTaskView = await screen.findByTestId("background-task-view")
+
+		act(() => {
+			bgTaskView.click()
+		})
+
+		const chatView = screen.getByTestId("chat-view")
+		expect(chatView.getAttribute("data-hidden")).toBe("false")
+		expect(screen.queryByTestId("background-task-view")).not.toBeInTheDocument()
 	})
 
 	it.each(["history"])("returns to chat view when clicking done in %s view", async (view) => {

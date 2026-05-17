@@ -22,7 +22,7 @@ import {
 import { customToolRegistry } from "@roo-code/core"
 
 import { type ApiMessage } from "../task-persistence/apiMessages"
-import { saveTaskMessages } from "../task-persistence"
+import { saveTaskMessages, readTaskMessages } from "../task-persistence"
 
 import { ClineProvider } from "./ClineProvider"
 import { handleCheckpointRestoreOperation } from "./checkpointRestoreHandler"
@@ -767,6 +767,28 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 		case "showTaskWithId":
 			provider.showTaskWithId(message.text!)
 			break
+		case "requestBackgroundTaskMessages": {
+			const taskId = message.text
+			if (taskId) {
+				const globalStoragePath = provider.contextProxy.globalStorageUri.fsPath
+				const messages = await readTaskMessages({ taskId, globalStoragePath })
+				await provider.postMessageToWebview({
+					type: "backgroundTaskMessages",
+					backgroundTaskId: taskId,
+					backgroundTaskMessages: messages,
+				})
+			}
+			break
+		}
+		case "subscribeToBackgroundTask": {
+			const taskId = message.text
+			provider.viewedBackgroundTaskId = taskId ?? null
+			break
+		}
+		case "unsubscribeFromBackgroundTask": {
+			provider.viewedBackgroundTaskId = null
+			break
+		}
 		case "condenseTaskContextRequest":
 			provider.condenseTaskContext(message.text!)
 			break

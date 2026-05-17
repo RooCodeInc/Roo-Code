@@ -1,7 +1,7 @@
 import NodeCache from "node-cache"
 import getFolderSize from "get-folder-size"
 
-import type { ClineMessage, HistoryItem } from "@roo-code/types"
+import type { ClineMessage, HistoryItem, TaskPermissionsInput } from "@roo-code/types"
 
 import { combineApiRequests } from "../../shared/combineApiRequests"
 import { combineCommandSequences } from "../../shared/combineCommandSequences"
@@ -24,7 +24,11 @@ export type TaskMetadataOptions = {
 	/** Provider profile name for the task (sticky profile feature) */
 	apiConfigName?: string
 	/** Initial status for the task (e.g., "active" for child tasks) */
-	initialStatus?: "active" | "delegated" | "completed"
+	initialStatus?: "active" | "delegated" | "completed" | "interrupted"
+	/** Permission boundaries for the task, set by the parent via new_task tool */
+	taskPermissions?: TaskPermissionsInput
+	/** Whether this is a background task */
+	background?: boolean
 }
 
 export async function taskMetadata({
@@ -38,6 +42,8 @@ export async function taskMetadata({
 	mode,
 	apiConfigName,
 	initialStatus,
+	taskPermissions,
+	background,
 }: TaskMetadataOptions) {
 	const taskDir = await getTaskDirectoryPath(globalStoragePath, id)
 
@@ -112,6 +118,8 @@ export async function taskMetadata({
 		mode,
 		...(typeof apiConfigName === "string" && apiConfigName.length > 0 ? { apiConfigName } : {}),
 		...(initialStatus && { status: initialStatus }),
+		...(taskPermissions && { taskPermissions }),
+		...(background && { background: true }),
 	}
 
 	return { historyItem, tokenUsage }

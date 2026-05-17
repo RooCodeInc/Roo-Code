@@ -47,5 +47,15 @@
 	"subtaskTag": "उप-कार्य",
 	"deleteWithSubtasks": "यह {{count}} उप-कार्य(कों) को भी हटा देगा। क्या आप निश्चित हैं?",
 	"expandSubtasks": "उप-कार्य विस्तारित करें",
-	"collapseSubtasks": "उप-कार्य संपीड़ित करें"
+	"collapseSubtasks": "उप-कार्य संपीड़ित करें",
+	"backgroundTag": "बैकग्राउंड",
+	"interruptedTag": "बाधित",
+	"showBackgroundTasks": "बैकग्राउंड टास्क दिखाएं",
+	"hideBackgroundTasks": "बैकग्राउंड टास्क छुपाएं",
+	"filter": {
+		"prefix": "फ़िल्टर:",
+		"all": "सभी टास्क",
+		"foregroundOnly": "केवल फ़ोरग्राउंड"
+	},
+	"interruptedTooltip": "This background task was interrupted because VS Code was closed while it was still running."
 }

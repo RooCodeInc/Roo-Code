@@ -80,15 +80,25 @@ import { ContextProxy } from "../config/ContextProxy"
 import { ProviderSettingsManager } from "../config/ProviderSettingsManager"
 import { CustomModesManager } from "../config/CustomModesManager"
 import { Task } from "../task/Task"
+import { buildTaskContext } from "../task/TaskContextBuilder"
+import { BackgroundTaskRunner, BACKGROUND_TASK_ALLOWED_TOOLS } from "../task/BackgroundTaskRunner"
+import {
+	BackgroundTaskRunner,
+	BACKGROUND_TASK_ALLOWED_TOOLS,
+	BackgroundTaskRunnerCallbacks,
+} from "../task/BackgroundTaskRunner"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
-import type { ClineMessage, TodoItem } from "@roo-code/types"
+import type { ClineMessage, TodoItem, SubtaskQueueItem, TaskPermissions, ContextHandoffSummary } from "@roo-code/types"
+import { collectContextSummary, formatContextSummaryForParent } from "../context-handoff/collectContextSummary"
 import { readApiMessages, saveApiMessages, saveTaskMessages, TaskHistoryStore } from "../task-persistence"
 import { readTaskMessages } from "../task-persistence/taskMessages"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
 import { REQUESTY_BASE_URL } from "../../shared/utils/requesty"
 import { validateAndFixToolResultIds } from "../task/validateToolResultIds"
+import { formatSubtaskSummaryForApi } from "../task/buildSubtaskSummary"
+import type { SubtaskSummary } from "@roo-code/types"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -149,7 +159,13 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
+<<<<<<< HEAD
+	/** The background task ID the webview is currently viewing (for Phase 6c progress streaming). */
+	public viewedBackgroundTaskId: string | null = null
+	public readonly latestAnnouncementId = "apr-2026-v3.53.0-community-handoff-gpt55-opus47" // v3.53.0 Community handoff, GPT-5.5, Claude Opus 4.7, checkpoint navigation
+=======
 	public readonly latestAnnouncementId = "may-2026-final-roo-code-release" // Final Roo Code release announcement.
+>>>>>>> origin/main
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 
@@ -2785,8 +2801,11 @@ export class ClineProvider
 		message: string
 		initialTodos: TodoItem[]
 		mode: string
+		subtaskQueue?: SubtaskQueueItem[]
+		/** Optional permission boundaries for the child task (Phase 3a) */
+		permissions?: TaskPermissions
 	}): Promise<Task> {
-		const { parentTaskId, message, initialTodos, mode } = params
+		const { parentTaskId, message, initialTodos, mode, subtaskQueue, permissions } = params
 
 		// Metadata-driven delegation is always enabled
 
@@ -2862,24 +2881,36 @@ export class ClineProvider
 			)
 		}
 
-		// 4) Create child as sole active (parent reference preserved for lineage)
+		// 4) Build an isolated TaskContext for the child (Phase 3a).
+		//    This snapshots mode, API config, and permission boundaries so the child
+		//    task carries its own context instead of reading shared provider state.
+		const childTaskContext = await buildTaskContext(this, {
+			mode,
+			permissions,
+			parentTaskId,
+			rootTaskId: parent.rootTaskId ?? parent.taskId,
+		})
+
+		// 5) Create child as sole active (parent reference preserved for lineage)
 		// Pass initialStatus: "active" to ensure the child task's historyItem is created
 		// with status from the start, avoiding race conditions where the task might
 		// call attempt_completion before status is persisted separately.
 		//
 		// Pass startTask: false to prevent the child from beginning its task loop
 		// (and writing to globalState via saveClineMessages → updateTaskHistory)
-		// before we persist the parent's delegation metadata in step 5.
-		// Without this, the child's fire-and-forget startTask() races with step 5,
+		// before we persist the parent's delegation metadata in step 6.
+		// Without this, the child's fire-and-forget startTask() races with step 6,
 		// and the last writer to globalState overwrites the other's changes—
 		// causing the parent's delegation fields to be lost.
 		const child = await this.createTask(message, undefined, parent as any, {
 			initialTodos,
 			initialStatus: "active",
+			taskPermissions: permissions,
 			startTask: false,
+			taskContext: childTaskContext,
 		})
 
-		// 5) Persist parent delegation metadata BEFORE the child starts writing.
+		// 6) Persist parent delegation metadata BEFORE the child starts writing.
 		try {
 			const { historyItem } = await this.getTaskWithId(parentTaskId)
 			const childIds = Array.from(new Set([...(historyItem.childIds ?? []), child.taskId]))
@@ -2889,6 +2920,9 @@ export class ClineProvider
 				delegatedToId: child.taskId,
 				awaitingChildId: child.taskId,
 				childIds,
+				...(subtaskQueue && subtaskQueue.length > 0
+					? { subtaskQueue, subtaskQueueIndex: 0, subtaskResults: [] }
+					: {}),
 			}
 			await this.updateTaskHistory(updatedHistory)
 		} catch (err) {
@@ -2899,10 +2933,10 @@ export class ClineProvider
 			)
 		}
 
-		// 6) Start the child task now that parent metadata is safely persisted.
+		// 7) Start the child task now that parent metadata is safely persisted.
 		child.start()
 
-		// 7) Emit TaskDelegated (provider-level)
+		// 8) Emit TaskDelegated (provider-level)
 		try {
 			this.emit(RooCodeEventName.TaskDelegated, parentTaskId, child.taskId)
 		} catch {
@@ -2920,11 +2954,27 @@ export class ClineProvider
 		childTaskId: string
 		completionResultSummary: string
 	}): Promise<void> {
-		const { parentTaskId, childTaskId, completionResultSummary } = params
+		const { parentTaskId, childTaskId } = params
+		let effectiveSummary = params.completionResultSummary
 		const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
 
 		// 1) Load parent from history and current persisted messages
 		const { historyItem } = await this.getTaskWithId(parentTaskId)
+
+		// PHASE 2: Sequential fan-out — check if parent has queued subtasks
+		if (historyItem.subtaskQueue && historyItem.subtaskQueue.length > 0) {
+			const queueAdvanceResult = await this.advanceSubtaskQueue({
+				parentTaskId,
+				childTaskId,
+				completionResultSummary: effectiveSummary,
+				historyItem,
+			})
+			if (queueAdvanceResult.handled) {
+				return // Queue advanced to next subtask; do NOT reopen parent
+			}
+			// Queue exhausted — use aggregated summary and continue with normal reopen
+			effectiveSummary = queueAdvanceResult.aggregatedSummary
+		}
 
 		let parentClineMessages: ClineMessage[] = []
 		try {
@@ -2946,6 +2996,42 @@ export class ClineProvider
 			parentApiMessages = []
 		}
 
+		// 1b) Collect structured context from the child's clineMessages
+		let contextSummary: ContextHandoffSummary | undefined
+		let formattedSummary = completionResultSummary
+		try {
+			let childClineMessages: ClineMessage[] = []
+			// Prefer in-memory messages from the current task if it's still the active child
+			const currentTask = this.getCurrentTask()
+			if (currentTask?.taskId === childTaskId && currentTask.clineMessages.length > 0) {
+				childClineMessages = currentTask.clineMessages
+			} else {
+				childClineMessages = await readTaskMessages({
+					taskId: childTaskId,
+					globalStoragePath,
+				})
+			}
+
+			// Get child's mode from history
+			let childMode: string | undefined
+			try {
+				const { historyItem: childHistory } = await this.getTaskWithId(childTaskId)
+				childMode = childHistory.mode
+			} catch {
+				// non-fatal
+			}
+
+			contextSummary = collectContextSummary(childClineMessages, childMode, completionResultSummary)
+			formattedSummary = formatContextSummaryForParent(contextSummary)
+		} catch (err) {
+			this.log(
+				`[reopenParentFromDelegation] Failed to collect context summary for child ${childTaskId} (non-fatal): ${
+					(err as Error)?.message ?? String(err)
+				}`,
+			)
+			// Fall back to unstructured summary
+		}
+
 		// 2) Inject synthetic records: UI subtask_result and update API tool_result
 		const ts = Date.now()
 
@@ -2953,10 +3039,26 @@ export class ClineProvider
 		if (!Array.isArray(parentClineMessages)) parentClineMessages = []
 		if (!Array.isArray(parentApiMessages)) parentApiMessages = []
 
+		// Try to parse completionResultSummary as a structured SubtaskSummary (JSON).
+		// If it's not valid JSON, treat it as a plain-text result for backward compatibility.
+		let parsedSummary: SubtaskSummary | undefined
+		let apiResultText: string
+		try {
+			parsedSummary = JSON.parse(completionResultSummary) as SubtaskSummary
+			// Use the enriched format for API history so the parent LLM gets structured context
+			apiResultText = `Subtask ${childTaskId} completed.\n\n${formatSubtaskSummaryForApi(parsedSummary)}`
+		} catch {
+			// Not JSON - plain text result (backward compatible path)
+			apiResultText = `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`
+		}
+
+		// For the UI message, pass the raw completionResultSummary (JSON or plain text).
+		// The webview ChatRow component will detect JSON and render structured data.
 		const subtaskUiMessage: ClineMessage = {
 			type: "say",
 			say: "subtask_result",
-			text: completionResultSummary,
+			text: effectiveSummary,
+			text: contextSummary ? JSON.stringify(contextSummary) : completionResultSummary,
 			ts,
 		}
 		parentClineMessages.push(subtaskUiMessage)
@@ -2988,8 +3090,10 @@ export class ClineProvider
 			if (lastMsg?.role === "user" && Array.isArray(lastMsg.content)) {
 				for (const block of lastMsg.content) {
 					if (block.type === "tool_result" && block.tool_use_id === toolUseId) {
+						// Update the existing tool_result content with enriched summary
+						block.content = apiResultText
 						// Update the existing tool_result content
-						block.content = `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`
+						block.content = `Subtask ${childTaskId} completed.\n\n${formattedSummary}`
 						alreadyHasToolResult = true
 						break
 					}
@@ -3004,7 +3108,8 @@ export class ClineProvider
 						{
 							type: "tool_result" as const,
 							tool_use_id: toolUseId,
-							content: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
+							content: apiResultText,
+							content: `Subtask ${childTaskId} completed.\n\n${formattedSummary}`,
 						},
 					],
 					ts,
@@ -3027,7 +3132,7 @@ export class ClineProvider
 				content: [
 					{
 						type: "text" as const,
-						text: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
+						text: apiResultText,
 					},
 				],
 				ts,
@@ -3069,7 +3174,9 @@ export class ClineProvider
 			...historyItem,
 			status: "active",
 			completedByChildId: childTaskId,
+			completionResultSummary: effectiveSummary,
 			completionResultSummary,
+			contextHandoffSummary: contextSummary,
 			awaitingChildId: undefined,
 			childIds,
 		}
@@ -3077,7 +3184,7 @@ export class ClineProvider
 
 		// 6) Emit TaskDelegationCompleted (provider-level)
 		try {
-			this.emit(RooCodeEventName.TaskDelegationCompleted, parentTaskId, childTaskId, completionResultSummary)
+			this.emit(RooCodeEventName.TaskDelegationCompleted, parentTaskId, childTaskId, effectiveSummary)
 		} catch {
 			// non-fatal
 		}
@@ -3109,6 +3216,152 @@ export class ClineProvider
 		} catch {
 			// non-fatal
 		}
+	}
+
+	/**
+	 * Advance the sequential fan-out subtask queue.
+	 * Called when a child completes and the parent has a subtaskQueue.
+	 *
+	 * Returns { handled: true } if the next subtask was started (caller should return).
+	 * Returns { handled: false, aggregatedSummary } if queue is exhausted (caller should continue with normal reopen).
+	 */
+	private async advanceSubtaskQueue(params: {
+		parentTaskId: string
+		childTaskId: string
+		completionResultSummary: string
+		historyItem: HistoryItem
+	}): Promise<{ handled: true } | { handled: false; aggregatedSummary: string }> {
+		const { parentTaskId, childTaskId, completionResultSummary, historyItem } = params
+		const { subtaskQueue, subtaskQueueIndex, subtaskResults } = historyItem
+		if (!subtaskQueue || subtaskQueue.length === 0) {
+			return { handled: false, aggregatedSummary: completionResultSummary }
+		}
+
+		// currentIndex is the next queue item to dispatch (0-based).
+		// When the initial child (from mode/message params) completes, currentIndex is 0,
+		// meaning queue[0] should be dispatched first.
+		const currentIndex = subtaskQueueIndex ?? 0
+
+		// Close current child if still open
+		const current = this.getCurrentTask()
+		if (current?.taskId === childTaskId) {
+			await this.removeClineFromStack()
+		}
+
+		// Fetch child history to get the child's actual mode and mark it completed
+		let completedMode = "unknown"
+		try {
+			const { historyItem: childHistory } = await this.getTaskWithId(childTaskId)
+			completedMode = childHistory.mode ?? "unknown"
+			await this.updateTaskHistory({ ...childHistory, status: "completed" })
+		} catch (err) {
+			this.log(
+				`[advanceSubtaskQueue] Failed to persist child completed status for ${childTaskId}: ${
+					(err as Error)?.message ?? String(err)
+				}`,
+			)
+		}
+
+		// Record this child's result using the child's actual mode
+		const updatedResults = [
+			...(subtaskResults ?? []),
+			{ taskId: childTaskId, mode: completedMode, summary: completionResultSummary },
+		]
+
+		// Emit completion event for the finished child
+		try {
+			this.emit(RooCodeEventName.TaskDelegationCompleted, parentTaskId, childTaskId, completionResultSummary)
+		} catch {
+			// non-fatal
+		}
+
+		if (currentIndex < subtaskQueue.length) {
+			// More subtasks in queue — start the next one
+			const nextSubtask = subtaskQueue[currentIndex]
+			this.log(
+				`[advanceSubtaskQueue] Auto-advancing queue: subtask ${currentIndex + 1}/${subtaskQueue.length} (mode: ${nextSubtask.mode})`,
+			)
+
+			// Switch mode
+			try {
+				await this.handleModeSwitch(nextSubtask.mode as any)
+			} catch (e) {
+				this.log(
+					`[advanceSubtaskQueue] handleModeSwitch failed for queued mode '${nextSubtask.mode}': ${
+						(e as Error)?.message ?? String(e)
+					}`,
+				)
+			}
+
+			// Create next child
+			const nextChild = await this.createTask(nextSubtask.message, undefined, undefined, {
+				initialTodos: [],
+				initialStatus: "active",
+				startTask: false,
+			})
+
+			// Update parent metadata
+			const childIds = Array.from(new Set([...(historyItem.childIds ?? []), childTaskId, nextChild.taskId]))
+			await this.updateTaskHistory({
+				...historyItem,
+				status: "delegated",
+				delegatedToId: nextChild.taskId,
+				awaitingChildId: nextChild.taskId,
+				childIds,
+				subtaskQueue,
+				subtaskQueueIndex: currentIndex + 1,
+				subtaskResults: updatedResults,
+			})
+
+			// Start the child
+			nextChild.start()
+
+			try {
+				this.emit(RooCodeEventName.TaskDelegated, parentTaskId, nextChild.taskId)
+			} catch {
+				// non-fatal
+			}
+
+			return { handled: true }
+		}
+
+		// Queue exhausted — aggregate results and let normal reopen proceed
+		const aggregatedSummary = this.formatAggregatedQueueResults(updatedResults, completionResultSummary)
+
+		// Clear queue from parent metadata (will be fully updated by caller)
+		const childIds = Array.from(new Set([...(historyItem.childIds ?? []), childTaskId]))
+		await this.updateTaskHistory({
+			...historyItem,
+			subtaskQueue: undefined,
+			subtaskQueueIndex: undefined,
+			subtaskResults: updatedResults,
+			childIds,
+		})
+
+		return { handled: false, aggregatedSummary }
+	}
+
+	/**
+	 * Format aggregated results from all completed subtasks in a queue.
+	 */
+	private formatAggregatedQueueResults(
+		results: Array<{ taskId: string; mode: string; summary: string }>,
+		lastSummary: string,
+	): string {
+		if (results.length === 0) {
+			return lastSummary
+		}
+
+		const lines = [`## Sequential Fan-Out Complete (${results.length} subtask${results.length > 1 ? "s" : ""})`, ""]
+
+		for (let i = 0; i < results.length; i++) {
+			const r = results[i]
+			lines.push(`### Subtask ${i + 1} (${r.mode}) — ${r.taskId}`)
+			lines.push(r.summary)
+			lines.push("")
+		}
+
+		return lines.join("\n")
 	}
 
 	/**

@@ -260,7 +260,16 @@
 		"resultContent": "Alt Görev Sonuçları",
 		"defaultResult": "Lütfen sonraki göreve devam edin.",
 		"completionInstructions": "Alt görev tamamlandı! Sonuçları inceleyebilir ve düzeltmeler veya sonraki adımlar önerebilirsiniz. Her şey iyi görünüyorsa, sonucu üst göreve döndürmek için onaylayın.",
-		"goToSubtask": "Görevi görüntüle"
+		"goToSubtask": "Görevi görüntüle",
+		"filesModified": "Değiştirilen Dosyalar",
+		"filesRead": "Okunan Dosyalar",
+		"commandsExecuted": "Çalıştırılan Komutlar",
+		"todoStats": "Görevler: {{completed}}/{{total}} tamamlandı",
+		"permissionBoundaries": "İzin Sınırları",
+		"permissionFilePatterns": "İzin verilen dosyalar: {{patterns}}",
+		"permissionCommandPatterns": "İzin verilen komutlar: {{patterns}}",
+		"permissionAllowedTools": "İzin verilen araçlar: {{tools}}",
+		"permissionDeniedTools": "Reddedilen araçlar: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo'nun bir sorusu var"
@@ -488,5 +497,13 @@
 		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
 		"openSettings": "Ayarları aç",
 		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+	},
+	"contextHandoff": {
+		"title": "Bağlam Aktarımı Özeti",
+		"mode": "Mod",
+		"filesModified": "Değiştirilen Dosyalar",
+		"filesRead": "Okunan Dosyalar",
+		"commandsExecuted": "Yürütülen Komutlar",
+		"apiRequests": "API İstekleri"
 	}
 }

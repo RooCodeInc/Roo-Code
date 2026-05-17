@@ -41,6 +41,8 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		setLastNonRelevantSort,
 		showAllWorkspaces,
 		setShowAllWorkspaces,
+		showBackgroundTasks,
+		setShowBackgroundTasks,
 	} = useTaskSearch()
 	const { t } = useAppTranslation()
 
@@ -219,6 +221,30 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 									<div className="flex items-center gap-2">
 										<span className="codicon codicon-search" />
 										{t("history:mostRelevant")}
+									</div>
+								</SelectItem>
+							</SelectContent>
+						</Select>
+						<Select
+							value={showBackgroundTasks ? "all" : "foregroundOnly"}
+							onValueChange={(value) => setShowBackgroundTasks(value === "all")}>
+							<SelectTrigger className="flex-1">
+								<SelectValue>
+									{t("history:filter.prefix")}{" "}
+									{t(`history:filter.${showBackgroundTasks ? "all" : "foregroundOnly"}`)}
+								</SelectValue>
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">
+									<div className="flex items-center gap-2">
+										<span className="codicon codicon-list-flat" />
+										{t("history:filter.all")}
+									</div>
+								</SelectItem>
+								<SelectItem value="foregroundOnly">
+									<div className="flex items-center gap-2">
+										<span className="codicon codicon-eye-closed" />
+										{t("history:filter.foregroundOnly")}
 									</div>
 								</SelectItem>
 							</SelectContent>

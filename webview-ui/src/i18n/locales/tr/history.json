@@ -47,5 +47,15 @@
 	"subtaskTag": "Alt görev",
 	"deleteWithSubtasks": "Bu, {{count}} alt görev(i) de silecektir. Emin misiniz?",
 	"expandSubtasks": "Alt görevleri genişlet",
-	"collapseSubtasks": "Alt görevleri daralt"
+	"collapseSubtasks": "Alt görevleri daralt",
+	"backgroundTag": "Arka plan",
+	"interruptedTag": "Kesintiye uğradı",
+	"showBackgroundTasks": "Arka plan görevlerini göster",
+	"hideBackgroundTasks": "Arka plan görevlerini gizle",
+	"filter": {
+		"prefix": "Filtre:",
+		"all": "Tüm Görevler",
+		"foregroundOnly": "Yalnızca Ön Plan"
+	},
+	"interruptedTooltip": "This background task was interrupted because VS Code was closed while it was still running."
 }

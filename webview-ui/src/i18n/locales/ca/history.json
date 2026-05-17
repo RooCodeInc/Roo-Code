@@ -54,5 +54,15 @@
 	"subtaskTag": "Subtasca",
 	"deleteWithSubtasks": "Això també eliminarà {{count}} subtasca(s). Estàs segur?",
 	"expandSubtasks": "Expandir subtasques",
-	"collapseSubtasks": "Contreure subtasques"
+	"collapseSubtasks": "Contreure subtasques",
+	"backgroundTag": "Segon pla",
+	"interruptedTag": "Interrompuda",
+	"showBackgroundTasks": "Mostrar tasques en segon pla",
+	"hideBackgroundTasks": "Amagar tasques en segon pla",
+	"filter": {
+		"prefix": "Filtre:",
+		"all": "Totes les tasques",
+		"foregroundOnly": "Només primer pla"
+	},
+	"interruptedTooltip": "This background task was interrupted because VS Code was closed while it was still running."
 }

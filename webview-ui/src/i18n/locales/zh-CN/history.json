@@ -47,5 +47,15 @@
 	"subtaskTag": "子任务",
 	"deleteWithSubtasks": "这也将删除 {{count}} 个子任务。您确定吗？",
 	"expandSubtasks": "展开子任务",
-	"collapseSubtasks": "收起子任务"
+	"collapseSubtasks": "收起子任务",
+	"backgroundTag": "后台",
+	"interruptedTag": "已中断",
+	"showBackgroundTasks": "显示后台任务",
+	"hideBackgroundTasks": "隐藏后台任务",
+	"filter": {
+		"prefix": "筛选：",
+		"all": "所有任务",
+		"foregroundOnly": "仅前台"
+	},
+	"interruptedTooltip": "This background task was interrupted because VS Code was closed while it was still running."
 }

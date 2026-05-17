@@ -260,7 +260,16 @@
 		"resultContent": "子任务结果",
 		"defaultResult": "请继续下一个任务。",
 		"completionInstructions": "子任务已完成！您可以查看结果并提出修改或下一步建议。如果一切正常，请确认以将结果返回给主任务。",
-		"goToSubtask": "查看任务"
+		"goToSubtask": "查看任务",
+		"filesModified": "修改的文件",
+		"filesRead": "读取的文件",
+		"commandsExecuted": "执行的命令",
+		"todoStats": "待办事项：{{completed}}/{{total}} 已完成",
+		"permissionBoundaries": "权限边界",
+		"permissionFilePatterns": "允许的文件：{{patterns}}",
+		"permissionCommandPatterns": "允许的命令：{{patterns}}",
+		"permissionAllowedTools": "允许的工具：{{tools}}",
+		"permissionDeniedTools": "拒绝的工具：{{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo有一个问题"
@@ -488,5 +497,13 @@
 		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
 		"openSettings": "打开设置",
 		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+	},
+	"contextHandoff": {
+		"title": "上下文交接摘要",
+		"mode": "模式",
+		"filesModified": "已修改的文件",
+		"filesRead": "已读取的文件",
+		"commandsExecuted": "已执行的命令",
+		"apiRequests": "API 请求"
 	}
 }

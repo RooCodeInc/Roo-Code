@@ -109,4 +109,48 @@ describe("TaskItem", () => {
 		const taskItem = screen.getByTestId("task-item-1")
 		expect(taskItem).toHaveClass("hover:text-vscode-foreground")
 	})
+
+	it("sends switchTab message for background tasks to open replay view", async () => {
+		const { vscode } = await import("@/utils/vscode")
+		const backgroundTask = { ...mockTask, id: "bg-1", background: true }
+
+		render(
+			<TaskItem
+				item={backgroundTask}
+				variant="full"
+				isSelected={false}
+				onToggleSelection={vi.fn()}
+				isSelectionMode={false}
+			/>,
+		)
+
+		fireEvent.click(screen.getByTestId("task-item-bg-1"))
+
+		expect(vscode.postMessage).toHaveBeenCalledWith({
+			type: "switchTab",
+			tab: "bgTaskReplay",
+			values: { taskId: "bg-1" },
+		})
+	})
+
+	it("sends showTaskWithId message for non-background tasks", async () => {
+		const { vscode } = await import("@/utils/vscode")
+
+		render(
+			<TaskItem
+				item={mockTask}
+				variant="full"
+				isSelected={false}
+				onToggleSelection={vi.fn()}
+				isSelectionMode={false}
+			/>,
+		)
+
+		fireEvent.click(screen.getByTestId("task-item-1"))
+
+		expect(vscode.postMessage).toHaveBeenCalledWith({
+			type: "showTaskWithId",
+			text: "1",
+		})
+	})
 })

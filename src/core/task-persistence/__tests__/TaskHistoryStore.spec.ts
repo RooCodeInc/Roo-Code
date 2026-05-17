@@ -439,4 +439,58 @@ describe("TaskHistoryStore", () => {
 			expect(store.get("gone-task")).toBeUndefined()
 		})
 	})
+
+	describe("markInterruptedBackgroundTasks()", () => {
+		it("marks active background tasks as interrupted on initialize", async () => {
+			// Create a background task with active status before initializing
+			const taskDir = path.join(tmpDir, "tasks", "bg-active-task")
+			await fs.mkdir(taskDir, { recursive: true })
+			const bgItem = makeHistoryItem({
+				id: "bg-active-task",
+				background: true,
+				status: "active",
+			})
+			await fs.writeFile(path.join(taskDir, GlobalFileNames.historyItem), JSON.stringify(bgItem))
+
+			await store.initialize()
+
+			const result = store.get("bg-active-task")
+			expect(result).toBeDefined()
+			expect(result!.status).toBe("interrupted")
+			expect(result!.background).toBe(true)
+		})
+
+		it("does not mark completed background tasks as interrupted", async () => {
+			const taskDir = path.join(tmpDir, "tasks", "bg-completed-task")
+			await fs.mkdir(taskDir, { recursive: true })
+			const bgItem = makeHistoryItem({
+				id: "bg-completed-task",
+				background: true,
+				status: "completed",
+			})
+			await fs.writeFile(path.join(taskDir, GlobalFileNames.historyItem), JSON.stringify(bgItem))
+
+			await store.initialize()
+
+			const result = store.get("bg-completed-task")
+			expect(result).toBeDefined()
+			expect(result!.status).toBe("completed")
+		})
+
+		it("does not mark non-background active tasks as interrupted", async () => {
+			const taskDir = path.join(tmpDir, "tasks", "fg-active-task")
+			await fs.mkdir(taskDir, { recursive: true })
+			const fgItem = makeHistoryItem({
+				id: "fg-active-task",
+				status: "active",
+			})
+			await fs.writeFile(path.join(taskDir, GlobalFileNames.historyItem), JSON.stringify(fgItem))
+
+			await store.initialize()
+
+			const result = store.get("fg-active-task")
+			expect(result).toBeDefined()
+			expect(result!.status).toBe("active")
+		})
+	})
 })

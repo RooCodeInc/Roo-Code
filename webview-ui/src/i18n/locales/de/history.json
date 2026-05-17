@@ -54,5 +54,15 @@
 	"subtaskTag": "Teilaufgabe",
 	"deleteWithSubtasks": "Dies löscht auch {{count}} Teilaufgabe(n). Bist du sicher?",
 	"expandSubtasks": "Teilaufgaben erweitern",
-	"collapseSubtasks": "Teilaufgaben einklappen"
+	"collapseSubtasks": "Teilaufgaben einklappen",
+	"backgroundTag": "Hintergrund",
+	"interruptedTag": "Unterbrochen",
+	"showBackgroundTasks": "Hintergrundaufgaben anzeigen",
+	"hideBackgroundTasks": "Hintergrundaufgaben ausblenden",
+	"filter": {
+		"prefix": "Filter:",
+		"all": "Alle Aufgaben",
+		"foregroundOnly": "Nur Vordergrund"
+	},
+	"interruptedTooltip": "This background task was interrupted because VS Code was closed while it was still running."
 }

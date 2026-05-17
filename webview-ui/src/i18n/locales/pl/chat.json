@@ -259,7 +259,16 @@
 		"resultContent": "Wyniki podzadania",
 		"defaultResult": "Proszę kontynuować następne zadanie.",
 		"completionInstructions": "Podzadanie zakończone! Możesz przejrzeć wyniki i zasugerować poprawki lub następne kroki. Jeśli wszystko wygląda dobrze, potwierdź, aby zwrócić wynik do zadania nadrzędnego.",
-		"goToSubtask": "Wyświetl zadanie"
+		"goToSubtask": "Wyświetl zadanie",
+		"filesModified": "Zmodyfikowane pliki",
+		"filesRead": "Odczytane pliki",
+		"commandsExecuted": "Wykonane polecenia",
+		"todoStats": "Zadania: {{completed}}/{{total}} ukończonych",
+		"permissionBoundaries": "Granice uprawnień",
+		"permissionFilePatterns": "Dozwolone pliki: {{patterns}}",
+		"permissionCommandPatterns": "Dozwolone polecenia: {{patterns}}",
+		"permissionAllowedTools": "Dozwolone narzędzia: {{tools}}",
+		"permissionDeniedTools": "Odmówione narzędzia: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo ma pytanie"
@@ -487,5 +496,13 @@
 		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
 		"openSettings": "Otwórz ustawienia",
 		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+	},
+	"contextHandoff": {
+		"title": "Podsumowanie przekazania kontekstu",
+		"mode": "Tryb",
+		"filesModified": "Zmodyfikowane pliki",
+		"filesRead": "Odczytane pliki",
+		"commandsExecuted": "Wykonane polecenia",
+		"apiRequests": "Żądania API"
 	}
 }

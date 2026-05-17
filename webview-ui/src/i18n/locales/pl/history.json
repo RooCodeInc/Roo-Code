@@ -47,5 +47,15 @@
 	"subtaskTag": "Podzadanie",
 	"deleteWithSubtasks": "Spowoduje to usunięcie {{count}} podzadania(ń). Jesteś pewny?",
 	"expandSubtasks": "Rozwiń podzadania",
-	"collapseSubtasks": "Zwiń podzadania"
+	"collapseSubtasks": "Zwiń podzadania",
+	"backgroundTag": "W tle",
+	"interruptedTag": "Przerwane",
+	"showBackgroundTasks": "Pokaż zadania w tle",
+	"hideBackgroundTasks": "Ukryj zadania w tle",
+	"filter": {
+		"prefix": "Filtr:",
+		"all": "Wszystkie zadania",
+		"foregroundOnly": "Tylko na pierwszym planie"
+	},
+	"interruptedTooltip": "This background task was interrupted because VS Code was closed while it was still running."
 }

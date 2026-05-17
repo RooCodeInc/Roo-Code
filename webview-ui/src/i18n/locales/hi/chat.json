@@ -259,7 +259,16 @@
 		"resultContent": "उपकार्य परिणाम",
 		"defaultResult": "कृपया अगले कार्य पर जारी रखें।",
 		"completionInstructions": "उपकार्य पूर्ण! आप परिणामों की समीक्षा कर सकते हैं और सुधार या अगले चरण सुझा सकते हैं। यदि सब कुछ ठीक लगता है, तो मुख्य कार्य को परिणाम वापस करने के लिए पुष्टि करें।",
-		"goToSubtask": "कार्य देखें"
+		"goToSubtask": "कार्य देखें",
+		"filesModified": "संशोधित फ़ाइलें",
+		"filesRead": "पढ़ी गई फ़ाइलें",
+		"commandsExecuted": "निष्पादित कमांड",
+		"todoStats": "कार्य: {{completed}}/{{total}} पूर्ण",
+		"permissionBoundaries": "अनुमति सीमाएँ",
+		"permissionFilePatterns": "अनुमत फ़ाइलें: {{patterns}}",
+		"permissionCommandPatterns": "अनुमत कमांड: {{patterns}}",
+		"permissionAllowedTools": "अनुमत टूल: {{tools}}",
+		"permissionDeniedTools": "अस्वीकृत टूल: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo का एक प्रश्न है"
@@ -487,5 +496,13 @@
 		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
 		"openSettings": "सेटिंग्स खोलें",
 		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+	},
+	"contextHandoff": {
+		"title": "कॉन्टेक्स्ट हैंडऑफ़ सारांश",
+		"mode": "मोड",
+		"filesModified": "संशोधित फ़ाइलें",
+		"filesRead": "पढ़ी गई फ़ाइलें",
+		"commandsExecuted": "निष्पादित कमांड",
+		"apiRequests": "API अनुरोध"
 	}
 }

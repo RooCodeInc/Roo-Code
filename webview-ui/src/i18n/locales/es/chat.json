@@ -259,7 +259,16 @@
 		"resultContent": "Resultados de la subtarea",
 		"defaultResult": "Por favor, continúa con la siguiente tarea.",
 		"completionInstructions": "¡Subtarea completada! Puedes revisar los resultados y sugerir correcciones o próximos pasos. Si todo se ve bien, confirma para devolver el resultado a la tarea principal.",
-		"goToSubtask": "Ver tarea"
+		"goToSubtask": "Ver tarea",
+		"filesModified": "Archivos modificados",
+		"filesRead": "Archivos leídos",
+		"commandsExecuted": "Comandos ejecutados",
+		"todoStats": "Tareas: {{completed}}/{{total}} completadas",
+		"permissionBoundaries": "Límites de permisos",
+		"permissionFilePatterns": "Archivos permitidos: {{patterns}}",
+		"permissionCommandPatterns": "Comandos permitidos: {{patterns}}",
+		"permissionAllowedTools": "Herramientas permitidas: {{tools}}",
+		"permissionDeniedTools": "Herramientas denegadas: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo tiene una pregunta"
@@ -487,5 +496,13 @@
 		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
 		"openSettings": "Abrir configuración",
 		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+	},
+	"contextHandoff": {
+		"title": "Resumen del traspaso de contexto",
+		"mode": "Modo",
+		"filesModified": "Archivos modificados",
+		"filesRead": "Archivos leídos",
+		"commandsExecuted": "Comandos ejecutados",
+		"apiRequests": "Solicitudes de API"
 	}
 }

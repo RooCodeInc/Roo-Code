@@ -869,6 +869,39 @@ export const ChatRowContent = ({
 						</div>
 						<div className="border-l border-muted-foreground/80 ml-2 pl-4 pb-1">
 							<MarkdownBlock markdown={tool.content} />
+							{tool.permissions && (
+								<div className="mt-2 p-2 rounded text-xs text-vscode-descriptionForeground bg-vscode-editor-background border border-vscode-editorGroup-border">
+									<div className="font-semibold mb-1">{t("chat:subtasks.permissionBoundaries")}</div>
+									{tool.permissions.filePatterns && (
+										<div>
+											{t("chat:subtasks.permissionFilePatterns", {
+												patterns: tool.permissions.filePatterns.join(", "),
+											})}
+										</div>
+									)}
+									{tool.permissions.commandPatterns && (
+										<div>
+											{t("chat:subtasks.permissionCommandPatterns", {
+												patterns: tool.permissions.commandPatterns.join(", "),
+											})}
+										</div>
+									)}
+									{tool.permissions.allowedTools && (
+										<div>
+											{t("chat:subtasks.permissionAllowedTools", {
+												tools: tool.permissions.allowedTools.join(", "),
+											})}
+										</div>
+									)}
+									{tool.permissions.deniedTools && (
+										<div>
+											{t("chat:subtasks.permissionDeniedTools", {
+												tools: tool.permissions.deniedTools.join(", "),
+											})}
+										</div>
+									)}
+								</div>
+							)}
 							<div>
 								{childTaskId && !isFollowedBySubtaskResult && (
 									<button
@@ -1020,16 +1053,172 @@ export const ChatRowContent = ({
 							showCopyButton={true}
 						/>
 					)
-				case "subtask_result":
+				case "subtask_result": {
 					// Get the child task ID that produced this result
 					const completedChildTaskId = currentTaskItem?.completedByChildId
+
+					// Try to parse structured summary (JSON). Falls back to plain text.
+					let structuredSummary: {
+						result?: string
+					// Try to parse structured context summary
+					let contextSummary: {
+						mode?: string
+						filesModified?: string[]
+						filesRead?: string[]
+						commandsExecuted?: string[]
+						toolUsageSummary?: Record<string, number>
+						todoStats?: { completed: number; total: number }
+					} | null = null
+					try {
+						if (message.text?.startsWith("{")) {
+							structuredSummary = JSON.parse(message.text)
+						}
+					} catch {
+						// Not JSON, use plain text rendering
+					}
+
+						toolUsageCounts?: Record<string, number>
+						apiRequestCount?: number
+						result?: string
+					} | null = null
+					try {
+						if (message.text) {
+							const parsed = JSON.parse(message.text)
+							if (parsed && typeof parsed === "object" && "result" in parsed) {
+								contextSummary = parsed
+							}
+						}
+					} catch {
+						// Not structured JSON - fall back to plain text display
+					}
+
+					const resultText = contextSummary?.result ?? message.text
+
 					return (
 						<div className="border-l border-muted-foreground/80 ml-2 pl-4 pt-2 pb-1 -mt-5">
 							<div style={headerStyle}>
 								<span style={{ fontWeight: "bold" }}>{t("chat:subtasks.resultContent")}</span>
 								<Check className="size-3" />
 							</div>
-							<MarkdownBlock markdown={message.text} />
+
+							{structuredSummary ? (
+								<div className="text-sm">
+									{structuredSummary.mode && (
+										<div className="mb-2">
+											<span className="inline-block text-xs px-1.5 py-0.5 rounded border border-vscode-dropdown-border/50 text-vscode-descriptionForeground">
+												{structuredSummary.mode}
+											</span>
+										</div>
+									)}
+
+									{structuredSummary.result && <MarkdownBlock markdown={structuredSummary.result} />}
+
+									{structuredSummary.filesModified && structuredSummary.filesModified.length > 0 && (
+										<div className="mt-2">
+											<div className="text-xs font-semibold text-vscode-descriptionForeground mb-1">
+												{t("chat:subtasks.filesModified")}
+											</div>
+											<ul className="list-none m-0 p-0">
+												{structuredSummary.filesModified.map((f: string, i: number) => (
+													<li
+														key={i}
+														className="text-xs text-vscode-descriptionForeground pl-2">
+							<MarkdownBlock markdown={resultText} />
+
+							{/* Structured context handoff details */}
+							{contextSummary && (
+								<div className="mt-2 text-xs text-vscode-descriptionForeground border border-vscode-panel-border rounded p-2 space-y-1">
+									<div className="font-semibold text-vscode-foreground mb-1">
+										{t("chat:contextHandoff.title")}
+									</div>
+									{contextSummary.mode && (
+										<div>
+											<span className="opacity-70">{t("chat:contextHandoff.mode")}:</span>{" "}
+											{contextSummary.mode}
+										</div>
+									)}
+									{contextSummary.filesModified && contextSummary.filesModified.length > 0 && (
+										<div>
+											<span className="opacity-70">
+												{t("chat:contextHandoff.filesModified")}:
+											</span>
+											<ul className="list-disc ml-4 mt-0.5">
+												{contextSummary.filesModified.map((f: string, i: number) => (
+													<li key={i} className="font-mono text-[11px]">
+														{f}
+													</li>
+												))}
+											</ul>
+										</div>
+									)}
+									{contextSummary.filesRead && contextSummary.filesRead.length > 0 && (
+										<div>
+											<span className="opacity-70">{t("chat:contextHandoff.filesRead")}:</span>
+											<ul className="list-disc ml-4 mt-0.5">
+												{contextSummary.filesRead.map((f: string, i: number) => (
+													<li key={i} className="font-mono text-[11px]">
+														{f}
+													</li>
+												))}
+											</ul>
+										</div>
+									)}
+
+									{structuredSummary.commandsExecuted &&
+										structuredSummary.commandsExecuted.length > 0 && (
+											<div className="mt-2">
+												<div className="text-xs font-semibold text-vscode-descriptionForeground mb-1">
+													{t("chat:subtasks.commandsExecuted")}
+												</div>
+												<ul className="list-none m-0 p-0">
+													{structuredSummary.commandsExecuted.map((c: string, i: number) => (
+														<li
+															key={i}
+															className="text-xs text-vscode-descriptionForeground pl-2 font-mono">
+															{c}
+														</li>
+													))}
+												</ul>
+											</div>
+										)}
+
+									{structuredSummary.todoStats && (
+										<div className="mt-2 text-xs text-vscode-descriptionForeground">
+											{t("chat:subtasks.todoStats", {
+												completed: structuredSummary.todoStats.completed,
+												total: structuredSummary.todoStats.total,
+											})}
+										</div>
+									)}
+								</div>
+							) : (
+								<MarkdownBlock markdown={message.text} />
+									{contextSummary.commandsExecuted && contextSummary.commandsExecuted.length > 0 && (
+										<div>
+											<span className="opacity-70">
+												{t("chat:contextHandoff.commandsExecuted")}:
+											</span>
+											<ul className="list-disc ml-4 mt-0.5">
+												{contextSummary.commandsExecuted.map((c: string, i: number) => (
+													<li key={i} className="font-mono text-[11px]">
+														{c}
+													</li>
+												))}
+											</ul>
+										</div>
+									)}
+									{contextSummary.apiRequestCount !== undefined &&
+										contextSummary.apiRequestCount > 0 && (
+											<div>
+												<span className="opacity-70">
+													{t("chat:contextHandoff.apiRequests")}:
+												</span>{" "}
+												{contextSummary.apiRequestCount}
+											</div>
+										)}
+								</div>
+							)}
+
 							{completedChildTaskId && (
 								<button
 									className="cursor-pointer flex gap-1 items-center mt-2 text-vscode-descriptionForeground hover:text-vscode-descriptionForeground hover:underline font-normal"
@@ -1042,6 +1231,7 @@ export const ChatRowContent = ({
 							)}
 						</div>
 					)
+				}
 				case "reasoning":
 					return (
 						<ReasoningBlock

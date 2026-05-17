@@ -47,5 +47,15 @@
 	"subtaskTag": "Sottoattività",
 	"deleteWithSubtasks": "Questo eliminerà anche {{count}} sottoattività. Sei sicuro?",
 	"expandSubtasks": "Espandi sottoattività",
-	"collapseSubtasks": "Comprimi sottoattività"
+	"collapseSubtasks": "Comprimi sottoattività",
+	"backgroundTag": "Background",
+	"interruptedTag": "Interrotto",
+	"showBackgroundTasks": "Mostra attività in background",
+	"hideBackgroundTasks": "Nascondi attività in background",
+	"filter": {
+		"prefix": "Filtro:",
+		"all": "Tutte le attività",
+		"foregroundOnly": "Solo primo piano"
+	},
+	"interruptedTooltip": "This background task was interrupted because VS Code was closed while it was still running."
 }

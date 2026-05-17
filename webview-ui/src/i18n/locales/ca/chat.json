@@ -259,7 +259,16 @@
 		"resultContent": "Resultats de la subtasca",
 		"defaultResult": "Si us plau, continua amb la següent tasca.",
 		"completionInstructions": "Subtasca completada! Pots revisar els resultats i suggerir correccions o següents passos. Si tot sembla correcte, confirma per tornar el resultat a la tasca principal.",
-		"goToSubtask": "Veure tasca"
+		"goToSubtask": "Veure tasca",
+		"filesModified": "Fitxers modificats",
+		"filesRead": "Fitxers llegits",
+		"commandsExecuted": "Comandes executades",
+		"todoStats": "Tasques: {{completed}}/{{total}} completades",
+		"permissionBoundaries": "Límits de permisos",
+		"permissionFilePatterns": "Fitxers permesos: {{patterns}}",
+		"permissionCommandPatterns": "Comandes permeses: {{patterns}}",
+		"permissionAllowedTools": "Eines permeses: {{tools}}",
+		"permissionDeniedTools": "Eines denegades: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo té una pregunta"
@@ -487,5 +496,13 @@
 		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
 		"openSettings": "Obrir configuració",
 		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+	},
+	"contextHandoff": {
+		"title": "Resum del traspàs de context",
+		"mode": "Mode",
+		"filesModified": "Fitxers modificats",
+		"filesRead": "Fitxers llegits",
+		"commandsExecuted": "Comandes executades",
+		"apiRequests": "Sol·licituds d'API"
 	}
 }

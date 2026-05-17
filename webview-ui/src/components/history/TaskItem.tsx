@@ -35,6 +35,9 @@ const TaskItem = ({
 	const handleClick = () => {
 		if (isSelectionMode && onToggleSelection) {
 			onToggleSelection(item.id, !isSelected)
+		} else if (item.background) {
+			// Background tasks open in the read-only replay view
+			vscode.postMessage({ type: "switchTab", tab: "bgTaskReplay", values: { taskId: item.id } })
 		} else {
 			vscode.postMessage({ type: "showTaskWithId", text: item.id })
 		}

@@ -301,7 +301,24 @@
 		"resultContent": "Subtask completed",
 		"defaultResult": "Please continue to the next task.",
 		"completionInstructions": "You can review the results and suggest any corrections or next steps. If everything looks good, confirm to return the result to the parent task.",
-		"goToSubtask": "View task"
+		"goToSubtask": "View task",
+		"filesModified": "Files Modified",
+		"filesRead": "Files Read",
+		"commandsExecuted": "Commands Executed",
+		"todoStats": "Todos: {{completed}}/{{total}} completed",
+"permissionBoundaries": "Permission Boundaries",
+		"permissionFilePatterns": "Allowed files: {{patterns}}",
+		"permissionCommandPatterns": "Allowed commands: {{patterns}}",
+		"permissionAllowedTools": "Allowed tools: {{tools}}",
+		"permissionDeniedTools": "Denied tools: {{tools}}"
+	},
+	"contextHandoff": {
+		"title": "Context Handoff Summary",
+		"mode": "Mode",
+		"filesModified": "Files Modified",
+		"filesRead": "Files Read",
+		"commandsExecuted": "Commands Executed",
+		"apiRequests": "API Requests"
 	},
 	"questions": {
 		"hasQuestion": "Roo has a question"

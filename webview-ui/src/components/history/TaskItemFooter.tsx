@@ -6,7 +6,7 @@ import { ExportButton } from "./ExportButton"
 import { DeleteButton } from "./DeleteButton"
 import { StandardTooltip } from "../ui/standard-tooltip"
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import { Split } from "lucide-react"
+import { Split, Layers, AlertTriangle } from "lucide-react"
 
 export interface TaskItemFooterProps {
 	item: HistoryItem
@@ -28,6 +28,25 @@ const TaskItemFooter: React.FC<TaskItemFooterProps> = ({
 	return (
 		<div className="text-xs text-vscode-descriptionForeground flex justify-between items-center">
 			<div className="flex gap-1 items-center text-vscode-descriptionForeground/60">
+				{/* Background task tag */}
+				{item.background && (
+					<>
+						{item.status === "interrupted" ? (
+							<StandardTooltip content={t("history:interruptedTooltip")}>
+								<span className="inline-flex items-center gap-1 text-vscode-editorWarning-foreground">
+									<AlertTriangle className="size-3" />
+									{t("history:interruptedTag")}
+								</span>
+							</StandardTooltip>
+						) : (
+							<>
+								<Layers className="size-3" />
+								<span>{t("history:backgroundTag")}</span>
+							</>
+						)}
+						<span>&middot;</span>
+					</>
+				)}
 				{/* Subtask tag */}
 				{isSubtask && (
 					<>

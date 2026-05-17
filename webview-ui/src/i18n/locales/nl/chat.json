@@ -254,7 +254,16 @@
 		"resultContent": "Subtaakresultaten",
 		"defaultResult": "Ga verder met de volgende taak.",
 		"completionInstructions": "Subtaak voltooid! Je kunt de resultaten bekijken en eventuele correcties of volgende stappen voorstellen. Als alles goed is, bevestig dan om het resultaat terug te sturen naar de hoofdtaak.",
-		"goToSubtask": "Taak weergeven"
+		"goToSubtask": "Taak weergeven",
+		"filesModified": "Gewijzigde bestanden",
+		"filesRead": "Gelezen bestanden",
+		"commandsExecuted": "Uitgevoerde opdrachten",
+		"todoStats": "Taken: {{completed}}/{{total}} voltooid",
+		"permissionBoundaries": "Machtigingsgrenzen",
+		"permissionFilePatterns": "Toegestane bestanden: {{patterns}}",
+		"permissionCommandPatterns": "Toegestane opdrachten: {{patterns}}",
+		"permissionAllowedTools": "Toegestane tools: {{tools}}",
+		"permissionDeniedTools": "Geweigerde tools: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo heeft een vraag"
@@ -487,5 +496,13 @@
 		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
 		"openSettings": "Instellingen openen",
 		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+	},
+	"contextHandoff": {
+		"title": "Samenvatting contextoverdracht",
+		"mode": "Modus",
+		"filesModified": "Gewijzigde bestanden",
+		"filesRead": "Gelezen bestanden",
+		"commandsExecuted": "Uitgevoerde opdrachten",
+		"apiRequests": "API-verzoeken"
 	}
 }

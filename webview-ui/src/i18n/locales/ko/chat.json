@@ -259,7 +259,16 @@
 		"resultContent": "하위 작업 결과",
 		"defaultResult": "다음 작업을 계속 진행해주세요.",
 		"completionInstructions": "하위 작업 완료! 결과를 검토하고 수정 사항이나 다음 단계를 제안할 수 있습니다. 모든 것이 괜찮아 보이면, 부모 작업에 결과를 반환하기 위해 확인해주세요.",
-		"goToSubtask": "작업 보기"
+		"goToSubtask": "작업 보기",
+		"filesModified": "수정된 파일",
+		"filesRead": "읽은 파일",
+		"commandsExecuted": "실행된 명령어",
+		"todoStats": "할 일: {{completed}}/{{total}} 완료",
+		"permissionBoundaries": "권한 경계",
+		"permissionFilePatterns": "허용된 파일: {{patterns}}",
+		"permissionCommandPatterns": "허용된 명령: {{patterns}}",
+		"permissionAllowedTools": "허용된 도구: {{tools}}",
+		"permissionDeniedTools": "거부된 도구: {{tools}}"
 	},
 	"questions": {
 		"hasQuestion": "Roo에게 질문이 있습니다"
@@ -487,5 +496,13 @@
 		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
 		"openSettings": "설정 열기",
 		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+	},
+	"contextHandoff": {
+		"title": "컨텍스트 핸드오프 요약",
+		"mode": "모드",
+		"filesModified": "수정된 파일",
+		"filesRead": "읽은 파일",
+		"commandsExecuted": "실행된 명령",
+		"apiRequests": "API 요청"
 	}
 }

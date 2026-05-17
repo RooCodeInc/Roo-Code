@@ -47,5 +47,15 @@
 	"subtaskTag": "サブタスク",
 	"deleteWithSubtasks": "これにより {{count}} サブタスクも削除されます。よろしいですか?",
 	"expandSubtasks": "サブタスクを展開",
-	"collapseSubtasks": "サブタスクを折りたたむ"
+	"collapseSubtasks": "サブタスクを折りたたむ",
+	"backgroundTag": "バックグラウンド",
+	"interruptedTag": "中断",
+	"showBackgroundTasks": "バックグラウンドタスクを表示",
+	"hideBackgroundTasks": "バックグラウンドタスクを非表示",
+	"filter": {
+		"prefix": "フィルター：",
+		"all": "すべてのタスク",
+		"foregroundOnly": "フォアグラウンドのみ"
+	},
+	"interruptedTooltip": "This background task was interrupted because VS Code was closed while it was still running."
 }
