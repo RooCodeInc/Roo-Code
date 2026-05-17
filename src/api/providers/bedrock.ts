@@ -293,36 +293,42 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				contextWindow: 200_000,
 				supportsImages: true,
 				supportsPromptCache: true,
+				cachableFields: ["system", "messages", "tools"],
 			},
 			"claude-3-7": {
 				maxTokens: 8192,
 				contextWindow: 200_000,
 				supportsImages: true,
 				supportsPromptCache: true,
+				cachableFields: ["system", "messages", "tools"],
 			},
 			"claude-3-5": {
 				maxTokens: 8192,
 				contextWindow: 200_000,
 				supportsImages: true,
 				supportsPromptCache: true,
+				cachableFields: ["system", "messages", "tools"],
 			},
 			"claude-4-opus": {
 				maxTokens: 4096,
 				contextWindow: 200_000,
 				supportsImages: true,
 				supportsPromptCache: true,
+				cachableFields: ["system", "messages", "tools"],
 			},
 			"claude-3-opus": {
 				maxTokens: 4096,
 				contextWindow: 200_000,
 				supportsImages: true,
 				supportsPromptCache: true,
+				cachableFields: ["system", "messages", "tools"],
 			},
 			"claude-3-haiku": {
 				maxTokens: 4096,
 				contextWindow: 200_000,
 				supportsImages: true,
 				supportsPromptCache: true,
+				cachableFields: ["system", "messages", "tools"],
 			},
 		}
 
@@ -1164,14 +1170,28 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 	private supportsAwsPromptCache(modelConfig: { id: BedrockModelId | string; info: ModelInfo }): boolean | undefined {
 		// Check if the model supports prompt cache
-		// The cachableFields property is not part of the ModelInfo type in schemas
-		// but it's used in the bedrockModels object in shared/api.ts
-		return (
-			modelConfig?.info?.supportsPromptCache &&
-			// Use optional chaining and type assertion to access cachableFields
-			(modelConfig?.info as any)?.cachableFields &&
-			(modelConfig?.info as any)?.cachableFields?.length > 0
-		)
+		const hasCachableFields = modelConfig?.info?.cachableFields && modelConfig.info.cachableFields.length > 0
+
+		if (modelConfig?.info?.supportsPromptCache && hasCachableFields) {
+			return true
+		}
+
+		// When using a custom ARN and the user has enabled prompt caching (or left it
+		// at the default), respect their intent even if the model info is incomplete.
+		// The model info may lack cachableFields or supportsPromptCache when the model
+		// ID extracted from the ARN doesn't match a known model in bedrockModels.
+		// In this case, inject defaults so the downstream caching logic works correctly.
+		// If the underlying model truly does not support caching, the Bedrock API
+		// simply ignores cache points without erroring.
+		if (this.options.awsCustomArn && this.options.awsUsePromptCache !== false) {
+			if (!hasCachableFields) {
+				modelConfig.info.cachableFields = ["system", "messages", "tools"]
+			}
+			modelConfig.info.supportsPromptCache = true
+			return true
+		}
+
+		return false
 	}
 
 	/**
