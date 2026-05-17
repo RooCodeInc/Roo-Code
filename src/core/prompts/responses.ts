@@ -39,12 +39,16 @@ export const formatResponse = {
 			suggestion: "Try to continue without this file, or ask the user to update the .rooignore file",
 		}),
 
-	noToolsUsed: () => {
+	noToolsUsed: (malformedToolCallInfo?: string) => {
 		const instructions = getToolInstructionsReminder()
+
+		const malformedHint = malformedToolCallInfo
+			? `\n\n# Malformed Tool Call Detected\n\nIt looks like you tried to call a tool using XML markup in your text response, but this is not supported. You must use the native/platform tool calling mechanism instead of writing XML tags.\n\nHere is what was detected in your response:\n${malformedToolCallInfo}\n\nPlease retry using the proper native tool calling mechanism with the correct tool name and parameters.`
+			: ""
 
 		return `[ERROR] You did not use a tool in your previous response! Please retry with a tool use.
 
-${instructions}
+${instructions}${malformedHint}
 
 # Next Steps
 

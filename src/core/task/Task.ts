@@ -91,6 +91,7 @@ import { getTaskDirectoryPath } from "../../utils/storage"
 import { formatResponse } from "../prompts/responses"
 import { SYSTEM_PROMPT } from "../prompts/system"
 import { buildNativeToolsArrayWithRestrictions } from "./build-tools"
+import { recoverMalformedToolCall, formatRecoveredToolCall } from "./malformed-tool-call-recovery"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
@@ -3493,10 +3494,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							this.consecutiveMistakeCount++
 						}
 
+						// Attempt to detect malformed XML-style tool calls in the text output.
+						// This helps open-weight models self-correct by providing specific feedback.
+						let malformedToolCallInfo: string | undefined
+						if (assistantMessage) {
+							const recovered = recoverMalformedToolCall(assistantMessage)
+							if (recovered) {
+								malformedToolCallInfo = formatRecoveredToolCall(recovered)
+							}
+						}
+
 						// Use the task's locked protocol for consistent behavior
 						this.userMessageContent.push({
 							type: "text",
-							text: formatResponse.noToolsUsed(),
+							text: formatResponse.noToolsUsed(malformedToolCallInfo),
 						})
 					} else {
 						// Reset counter when tools are used successfully
