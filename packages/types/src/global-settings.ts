@@ -255,6 +255,7 @@ export const SECRET_STATE_KEYS = [
 	"awsSessionToken",
 	"openAiApiKey",
 	"ollamaApiKey",
+	"atomicChatApiKey",
 	"geminiApiKey",
 	"openAiNativeApiKey",
 	"deepSeekApiKey",

@@ -37,6 +37,7 @@ type ModelIdKey = keyof Pick<
 	| "apiModelId"
 	| "ollamaModelId"
 	| "lmStudioModelId"
+	| "atomicChatModelId"
 	| "lmStudioDraftModelId"
 	| "vsCodeLmModelSelector"
 >

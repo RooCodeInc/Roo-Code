@@ -39,6 +39,7 @@ export interface ExtensionMessage {
 		| "openAiModels"
 		| "ollamaModels"
 		| "lmStudioModels"
+		| "atomicChatModels"
 		| "vsCodeLmModels"
 		| "vsCodeLmApiAvailable"
 		| "updatePrompt"
@@ -126,6 +127,7 @@ export interface ExtensionMessage {
 	openAiModels?: string[]
 	ollamaModels?: ModelRecord
 	lmStudioModels?: ModelRecord
+	atomicChatModels?: ModelRecord
 	vsCodeLmModels?: { vendor?: string; family?: string; version?: string; id?: string }[]
 	mcpServers?: McpServer[]
 	commits?: GitCommit[]
@@ -402,6 +404,7 @@ export interface WebviewMessage {
 		| "requestOpenAiModels"
 		| "requestOllamaModels"
 		| "requestLmStudioModels"
+		| "requestAtomicChatModels"
 		| "requestVsCodeLmModels"
 		| "openImage"
 		| "saveImage"

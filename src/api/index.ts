@@ -15,6 +15,7 @@ import {
 	OpenAiHandler,
 	OpenAiCodexHandler,
 	LmStudioHandler,
+	AtomicChatHandler,
 	GeminiHandler,
 	OpenAiNativeHandler,
 	DeepSeekHandler,
@@ -137,6 +138,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new NativeOllamaHandler(options)
 		case "lmstudio":
 			return new LmStudioHandler(options)
+		case "atomic-chat":
+			return new AtomicChatHandler(options)
 		case "gemini":
 			return new GeminiHandler(options)
 		case "openai-codex":

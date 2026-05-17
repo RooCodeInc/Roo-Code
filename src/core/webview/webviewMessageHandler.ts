@@ -892,6 +892,7 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 						unbound: {},
 						ollama: {},
 						lmstudio: {},
+						"atomic-chat": {},
 						poe: {},
 					}
 
@@ -1053,6 +1054,29 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 			} catch (error) {
 				// Silently fail - user hasn't configured LM Studio yet.
 				console.debug("LM Studio models fetch failed:", error)
+			}
+			break
+		}
+		case "requestAtomicChatModels": {
+			const { apiConfiguration: atomicChatApiConfig } = await provider.getState()
+			try {
+				const atomicChatOptions = {
+					provider: "atomic-chat" as const,
+					baseUrl: atomicChatApiConfig.atomicChatBaseUrl,
+					apiKey: atomicChatApiConfig.atomicChatApiKey,
+				}
+				await flushModels(atomicChatOptions, true)
+
+				const atomicChatModels = await getModels(atomicChatOptions)
+
+				if (Object.keys(atomicChatModels).length > 0) {
+					provider.postMessageToWebview({
+						type: "atomicChatModels",
+						atomicChatModels: atomicChatModels,
+					})
+				}
+			} catch (error) {
+				console.debug("Atomic Chat models fetch failed:", error)
 			}
 			break
 		}

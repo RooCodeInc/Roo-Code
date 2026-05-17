@@ -36,6 +36,7 @@ import {
 import { useRouterModels } from "./useRouterModels"
 import { useOpenRouterModelProviders } from "./useOpenRouterModelProviders"
 import { useLmStudioModels } from "./useLmStudioModels"
+import { useAtomicChatModels } from "./useAtomicChatModels"
 import { useOllamaModels } from "./useOllamaModels"
 
 /**
@@ -56,6 +57,7 @@ export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 	const dynamicProvider = activeProvider && isDynamicProvider(activeProvider) ? activeProvider : undefined
 	const openRouterModelId = activeProvider === "openrouter" ? apiConfiguration?.openRouterModelId : undefined
 	const lmStudioModelId = activeProvider === "lmstudio" ? apiConfiguration?.lmStudioModelId : undefined
+	const atomicChatModelId = activeProvider === "atomic-chat" ? apiConfiguration?.atomicChatModelId : undefined
 	const ollamaModelId = activeProvider === "ollama" ? apiConfiguration?.ollamaModelId : undefined
 
 	// Only fetch router models for dynamic providers
@@ -67,12 +69,14 @@ export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 
 	const openRouterModelProviders = useOpenRouterModelProviders(openRouterModelId)
 	const lmStudioModels = useLmStudioModels(lmStudioModelId)
+	const atomicChatModels = useAtomicChatModels(atomicChatModelId)
 	const ollamaModels = useOllamaModels(ollamaModelId)
 
 	// Compute readiness only for the data actually needed for the selected provider
 	const needRouterModels = shouldFetchRouterModels
 	const needOpenRouterProviders = activeProvider === "openrouter"
 	const needLmStudio = typeof lmStudioModelId !== "undefined"
+	const needAtomicChat = typeof atomicChatModelId !== "undefined"
 	const needOllama = typeof ollamaModelId !== "undefined"
 
 	const hasValidRouterData =
@@ -85,6 +89,7 @@ export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 
 	const isReady =
 		(!needLmStudio || typeof lmStudioModels.data !== "undefined") &&
+		(!needAtomicChat || typeof atomicChatModels.data !== "undefined") &&
 		(!needOllama || typeof ollamaModels.data !== "undefined") &&
 		hasValidRouterData &&
 		(!needOpenRouterProviders || typeof openRouterModelProviders.data !== "undefined")
@@ -97,6 +102,7 @@ export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 					routerModels: (routerModels.data || {}) as RouterModels,
 					openRouterModelProviders: (openRouterModelProviders.data || {}) as Record<string, ModelInfo>,
 					lmStudioModels: (lmStudioModels.data || undefined) as ModelRecord | undefined,
+					atomicChatModels: (atomicChatModels.data || undefined) as ModelRecord | undefined,
 					ollamaModels: (ollamaModels.data || undefined) as ModelRecord | undefined,
 				})
 			: { id: getProviderDefaultModelId(activeProvider ?? "openrouter"), info: undefined }
@@ -109,11 +115,13 @@ export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 			(needRouterModels && routerModels.isLoading) ||
 			(needOpenRouterProviders && openRouterModelProviders.isLoading) ||
 			(needLmStudio && lmStudioModels!.isLoading) ||
+			(needAtomicChat && atomicChatModels!.isLoading) ||
 			(needOllama && ollamaModels!.isLoading),
 		isError:
 			(needRouterModels && routerModels.isError) ||
 			(needOpenRouterProviders && openRouterModelProviders.isError) ||
 			(needLmStudio && lmStudioModels!.isError) ||
+			(needAtomicChat && atomicChatModels!.isError) ||
 			(needOllama && ollamaModels!.isError),
 	}
 }
@@ -124,6 +132,7 @@ function getSelectedModel({
 	routerModels,
 	openRouterModelProviders,
 	lmStudioModels,
+	atomicChatModels,
 	ollamaModels,
 }: {
 	provider: ProviderName
@@ -131,6 +140,7 @@ function getSelectedModel({
 	routerModels: RouterModels
 	openRouterModelProviders: Record<string, ModelInfo>
 	lmStudioModels: ModelRecord | undefined
+	atomicChatModels: ModelRecord | undefined
 	ollamaModels: ModelRecord | undefined
 }): { id: string; info: ModelInfo | undefined } {
 	// the `undefined` case are used to show the invalid selection to prevent
@@ -289,6 +299,14 @@ function getSelectedModel({
 		case "lmstudio": {
 			const id = apiConfiguration.lmStudioModelId ?? ""
 			const modelInfo = lmStudioModels && lmStudioModels[apiConfiguration.lmStudioModelId!]
+			return {
+				id,
+				info: modelInfo ? { ...lMStudioDefaultModelInfo, ...modelInfo } : undefined,
+			}
+		}
+		case "atomic-chat": {
+			const id = apiConfiguration.atomicChatModelId ?? ""
+			const modelInfo = atomicChatModels && atomicChatModels[apiConfiguration.atomicChatModelId!]
 			return {
 				id,
 				info: modelInfo ? { ...lMStudioDefaultModelInfo, ...modelInfo } : undefined,

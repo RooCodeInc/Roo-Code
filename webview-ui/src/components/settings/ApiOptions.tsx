@@ -72,6 +72,7 @@ import {
 	DeepSeek,
 	Gemini,
 	LMStudio,
+	AtomicChat,
 	LiteLLM,
 	Mistral,
 	Moonshot,
@@ -235,6 +236,8 @@ const ApiOptions = ({
 				vscode.postMessage({ type: "requestOllamaModels" })
 			} else if (selectedProvider === "lmstudio") {
 				vscode.postMessage({ type: "requestLmStudioModels" })
+			} else if (selectedProvider === "atomic-chat") {
+				vscode.postMessage({ type: "requestAtomicChatModels" })
 			} else if (selectedProvider === "vscode-lm") {
 				vscode.postMessage({ type: "requestVsCodeLmModels" })
 			} else if (selectedProvider === "litellm" || selectedProvider === "poe") {
@@ -249,6 +252,8 @@ const ApiOptions = ({
 			apiConfiguration?.openAiApiKey,
 			apiConfiguration?.ollamaBaseUrl,
 			apiConfiguration?.lmStudioBaseUrl,
+			apiConfiguration?.atomicChatBaseUrl,
+			apiConfiguration?.atomicChatApiKey,
 			apiConfiguration?.litellmBaseUrl,
 			apiConfiguration?.litellmApiKey,
 			apiConfiguration?.poeApiKey,
@@ -362,6 +367,7 @@ const ApiOptions = ({
 				openai: { field: "openAiModelId" },
 				ollama: { field: "ollamaModelId" },
 				lmstudio: { field: "lmStudioModelId" },
+				"atomic-chat": { field: "atomicChatModelId" },
 			}
 
 			const config = PROVIDER_MODEL_CONFIG[value]
@@ -393,6 +399,7 @@ const ApiOptions = ({
 		const slugs: Record<string, string> = {
 			"openai-native": "openai",
 			openai: "openai-compatible",
+			"atomic-chat": "openai-compatible",
 		}
 
 		const slug = slugs[selectedProvider] || selectedProvider
@@ -599,6 +606,13 @@ const ApiOptions = ({
 
 					{selectedProvider === "lmstudio" && (
 						<LMStudio
+							apiConfiguration={apiConfiguration}
+							setApiConfigurationField={setApiConfigurationField}
+						/>
+					)}
+
+					{selectedProvider === "atomic-chat" && (
+						<AtomicChat
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
 						/>

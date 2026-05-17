@@ -21,6 +21,7 @@ export function checkExistKey(config: ProviderSettings | undefined) {
 		config.vertexProjectId,
 		config.ollamaModelId,
 		config.lmStudioModelId,
+		config.atomicChatModelId,
 		config.vsCodeLmModelSelector,
 	].some((value) => value !== undefined)
 

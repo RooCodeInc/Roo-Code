@@ -43,6 +43,7 @@ describe("Model Validation Functions", () => {
 		litellm: {},
 		ollama: {},
 		lmstudio: {},
+		"atomic-chat": {},
 		"vercel-ai-gateway": {},
 		poe: {},
 	}

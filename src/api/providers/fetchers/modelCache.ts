@@ -23,6 +23,7 @@ import { getLiteLLMModels } from "./litellm"
 import { GetModelsOptions } from "../../../shared/api"
 import { getOllamaModels } from "./ollama"
 import { getLMStudioModels } from "./lmstudio"
+import { getAtomicChatModels } from "./atomic-chat"
 import { getPoeModels } from "./poe"
 
 const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
@@ -80,6 +81,9 @@ async function fetchModelsFromProvider(options: GetModelsOptions): Promise<Model
 			break
 		case "lmstudio":
 			models = await getLMStudioModels(options.baseUrl)
+			break
+		case "atomic-chat":
+			models = await getAtomicChatModels(options.baseUrl, options.apiKey)
 			break
 		case "vercel-ai-gateway":
 			models = await getVercelAiGatewayModels()

@@ -42,6 +42,8 @@ function getModelIdForProvider(config: ProviderSettings): string | undefined {
 			return config.ollamaModelId
 		case "lmstudio":
 			return config.lmStudioModelId
+		case "atomic-chat":
+			return config.atomicChatModelId
 		case "openai":
 			return config.openAiModelId
 		case "requesty":

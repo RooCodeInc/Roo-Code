@@ -515,6 +515,13 @@
 			"noModelsFound": "No draft models found. Please ensure LM Studio is running with Server Mode enabled.",
 			"description": "LM Studio allows you to run models locally on your computer. For instructions on how to get started, see their <a>quickstart guide</a>. You will also need to start LM Studio's <b>local server</b> feature to use it with this extension. <span>Note:</span> Roo Code uses complex prompts and works best with Claude models. Less capable models may not work as expected."
 		},
+		"atomicChat": {
+			"baseUrl": "Base URL (optional)",
+			"apiKey": "API key (optional)",
+			"apiKeyPlaceholder": "Leave empty for default local server",
+			"apiKeyHelp": "Only needed if your Atomic Chat server requires Bearer authentication.",
+			"description": "<a>Atomic Chat</a> runs local models and exposes an OpenAI-compatible API. Enable the <b>local API server</b> in Atomic Chat (default <code>http://127.0.0.1:1337/v1</code>), then pick a model below. <span>Note:</span> Roo Code uses complex prompts and works best with capable models; smaller local models may hit context limits."
+		},
 		"ollama": {
 			"baseUrl": "Base URL (optional)",
 			"modelId": "Model ID",
@@ -957,6 +964,7 @@
 		"modelId": {
 			"lmStudio": "e.g. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "e.g. lmstudio-community/llama-3.2-1b-instruct",
+			"atomicChat": "e.g. gemma-4-E4B-it-IQ4_XS",
 			"ollama": "e.g. llama3.1"
 		},
 		"numbers": {
@@ -970,6 +978,7 @@
 	"defaults": {
 		"ollamaUrl": "Default: http://localhost:11434",
 		"lmStudioUrl": "Default: http://localhost:1234",
+		"atomicChatUrl": "Default: http://127.0.0.1:1337",
 		"geminiUrl": "Default: https://generativelanguage.googleapis.com"
 	},
 	"labels": {

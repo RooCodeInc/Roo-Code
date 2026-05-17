@@ -47,7 +47,7 @@ export const isDynamicProvider = (key: string): key is DynamicProvider =>
  * Local providers require localhost API calls in order to get the model list.
  */
 
-export const localProviders = ["ollama", "lmstudio"] as const
+export const localProviders = ["ollama", "lmstudio", "atomic-chat"] as const
 
 export type LocalProvider = (typeof localProviders)[number]
 
@@ -274,6 +274,12 @@ const lmStudioSchema = baseProviderSettingsSchema.extend({
 	lmStudioSpeculativeDecodingEnabled: z.boolean().optional(),
 })
 
+const atomicChatSchema = baseProviderSettingsSchema.extend({
+	atomicChatModelId: z.string().optional(),
+	atomicChatBaseUrl: z.string().optional(),
+	atomicChatApiKey: z.string().optional(),
+})
+
 const geminiSchema = apiModelIdProviderModelSchema.extend({
 	geminiApiKey: z.string().optional(),
 	googleGeminiBaseUrl: z.string().optional(),
@@ -394,6 +400,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	ollamaSchema.merge(z.object({ apiProvider: z.literal("ollama") })),
 	vsCodeLmSchema.merge(z.object({ apiProvider: z.literal("vscode-lm") })),
 	lmStudioSchema.merge(z.object({ apiProvider: z.literal("lmstudio") })),
+	atomicChatSchema.merge(z.object({ apiProvider: z.literal("atomic-chat") })),
 	geminiSchema.merge(z.object({ apiProvider: z.literal("gemini") })),
 	geminiCliSchema.merge(z.object({ apiProvider: z.literal("gemini-cli") })),
 	openAiCodexSchema.merge(z.object({ apiProvider: z.literal("openai-codex") })),
@@ -427,6 +434,7 @@ export const providerSettingsSchema = z.object({
 	...ollamaSchema.shape,
 	...vsCodeLmSchema.shape,
 	...lmStudioSchema.shape,
+	...atomicChatSchema.shape,
 	...geminiSchema.shape,
 	...geminiCliSchema.shape,
 	...openAiCodexSchema.shape,
@@ -473,6 +481,7 @@ export const modelIdKeys = [
 	"ollamaModelId",
 	"lmStudioModelId",
 	"lmStudioDraftModelId",
+	"atomicChatModelId",
 	"requestyModelId",
 	"unboundModelId",
 	"litellmModelId",
@@ -504,6 +513,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	"openai-native": "openAiModelId",
 	ollama: "ollamaModelId",
 	lmstudio: "lmStudioModelId",
+	"atomic-chat": "atomicChatModelId",
 	gemini: "apiModelId",
 	"gemini-cli": "apiModelId",
 	mistral: "apiModelId",
@@ -636,4 +646,5 @@ export const MODELS_BY_PROVIDER: Record<
 	// Local providers; models discovered from localhost endpoints.
 	lmstudio: { id: "lmstudio", label: "LM Studio", models: [] },
 	ollama: { id: "ollama", label: "Ollama", models: [] },
+	"atomic-chat": { id: "atomic-chat", label: "Atomic Chat", models: [] },
 }

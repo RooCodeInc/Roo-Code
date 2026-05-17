@@ -97,6 +97,8 @@ export function getProviderDefaultModelId(
 			return "" // Ollama uses dynamic model selection
 		case "lmstudio":
 			return "" // LMStudio uses dynamic model selection
+		case "atomic-chat":
+			return "" // Atomic Chat uses dynamic model selection
 		case "vscode-lm":
 			return vscodeLlmDefaultModelId
 		case "sambanova":
