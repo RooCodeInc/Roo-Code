@@ -283,6 +283,8 @@
 		"providerDocumentation": "{{provider}} 文档",
 		"configProfile": "配置文件",
 		"description": "保存多组API配置便于快速切换",
+		"lockApiConfigAcrossModes": "Use the same configuration for all modes",
+		"lockApiConfigAcrossModesDescription": "When enabled, switching modes (e.g. Code, Architect, Ask) will keep the current API configuration instead of switching to a mode-specific one.",
 		"apiProvider": "API提供商",
 		"apiProviderDocs": "提供商文档",
 		"model": "模型",

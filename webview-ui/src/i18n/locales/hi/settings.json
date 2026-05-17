@@ -283,6 +283,8 @@
 		"providerDocumentation": "{{provider}} दस्तावेज़ीकरण",
 		"configProfile": "कॉन्फिगरेशन प्रोफाइल",
 		"description": "विभिन्न API कॉन्फ़िगरेशन सहेजें ताकि प्रदाताओं और सेटिंग्स के बीच त्वरित रूप से स्विच कर सकें।",
+		"lockApiConfigAcrossModes": "Use the same configuration for all modes",
+		"lockApiConfigAcrossModesDescription": "When enabled, switching modes (e.g. Code, Architect, Ask) will keep the current API configuration instead of switching to a mode-specific one.",
 		"apiProvider": "API प्रदाता",
 		"apiProviderDocs": "प्रदाता डॉक्स",
 		"model": "मॉडल",

@@ -283,6 +283,8 @@
 		"providerDocumentation": "Documentación de {{provider}}",
 		"configProfile": "Perfil de configuración",
 		"description": "Guarde diferentes configuraciones de API para cambiar rápidamente entre proveedores y ajustes.",
+		"lockApiConfigAcrossModes": "Use the same configuration for all modes",
+		"lockApiConfigAcrossModesDescription": "When enabled, switching modes (e.g. Code, Architect, Ask) will keep the current API configuration instead of switching to a mode-specific one.",
 		"apiProvider": "Proveedor de API",
 		"apiProviderDocs": "Documentación del Proveedor",
 		"model": "Modelo",

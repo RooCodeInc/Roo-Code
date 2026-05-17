@@ -283,6 +283,8 @@
 		"providerDocumentation": "Документация {{provider}}",
 		"configProfile": "Профиль конфигурации",
 		"description": "Сохраняйте различные конфигурации API для быстрого переключения между провайдерами и настройками.",
+		"lockApiConfigAcrossModes": "Use the same configuration for all modes",
+		"lockApiConfigAcrossModesDescription": "When enabled, switching modes (e.g. Code, Architect, Ask) will keep the current API configuration instead of switching to a mode-specific one.",
 		"apiProvider": "Провайдер API",
 		"apiProviderDocs": "Документация провайдера",
 		"model": "Модель",

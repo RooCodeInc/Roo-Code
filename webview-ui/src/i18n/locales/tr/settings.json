@@ -283,6 +283,8 @@
 		"providerDocumentation": "{{provider}} Dokümantasyonu",
 		"configProfile": "Yapılandırma Profili",
 		"description": "Sağlayıcılar ve ayarlar arasında hızlıca geçiş yapmak için farklı API yapılandırmalarını kaydedin.",
+		"lockApiConfigAcrossModes": "Use the same configuration for all modes",
+		"lockApiConfigAcrossModesDescription": "When enabled, switching modes (e.g. Code, Architect, Ask) will keep the current API configuration instead of switching to a mode-specific one.",
 		"apiProvider": "API Sağlayıcı",
 		"apiProviderDocs": "Sağlayıcı Belgeleri",
 		"model": "Model",

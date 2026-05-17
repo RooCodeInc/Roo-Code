@@ -283,6 +283,8 @@
 		"providerDocumentation": "{{provider}} 문서",
 		"configProfile": "구성 프로필",
 		"description": "다양한 API 구성을 저장하여 제공자와 설정 간에 빠르게 전환할 수 있습니다.",
+		"lockApiConfigAcrossModes": "Use the same configuration for all modes",
+		"lockApiConfigAcrossModesDescription": "When enabled, switching modes (e.g. Code, Architect, Ask) will keep the current API configuration instead of switching to a mode-specific one.",
 		"apiProvider": "API 제공자",
 		"apiProviderDocs": "공급자 문서",
 		"model": "모델",

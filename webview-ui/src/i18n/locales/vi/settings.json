@@ -283,6 +283,8 @@
 		"providerDocumentation": "Tài liệu {{provider}}",
 		"configProfile": "Hồ sơ cấu hình",
 		"description": "Lưu các cấu hình API khác nhau để nhanh chóng chuyển đổi giữa các nhà cung cấp và cài đặt.",
+		"lockApiConfigAcrossModes": "Use the same configuration for all modes",
+		"lockApiConfigAcrossModesDescription": "When enabled, switching modes (e.g. Code, Architect, Ask) will keep the current API configuration instead of switching to a mode-specific one.",
 		"apiProvider": "Nhà cung cấp API",
 		"apiProviderDocs": "Tài liệu Nhà cung cấp",
 		"model": "Mẫu",

@@ -283,6 +283,8 @@
 		"providerDocumentation": "{{provider}}のドキュメント",
 		"configProfile": "設定プロファイル",
 		"description": "異なるAPI設定を保存して、プロバイダーと設定をすばやく切り替えることができます。",
+		"lockApiConfigAcrossModes": "Use the same configuration for all modes",
+		"lockApiConfigAcrossModesDescription": "When enabled, switching modes (e.g. Code, Architect, Ask) will keep the current API configuration instead of switching to a mode-specific one.",
 		"apiProvider": "APIプロバイダー",
 		"apiProviderDocs": "プロバイダードキュメント",
 		"model": "モデル",

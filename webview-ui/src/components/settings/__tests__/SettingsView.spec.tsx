@@ -10,6 +10,20 @@ import SettingsView from "../SettingsView"
 
 vi.mock("@src/utils/vscode", () => ({ vscode: { postMessage: vi.fn() } }))
 
+vi.mock("vscrui", () => ({
+	Checkbox: ({ children, checked, onChange, "data-testid": dataTestId }: any) => (
+		<label>
+			<input
+				type="checkbox"
+				checked={checked}
+				onChange={(e) => onChange(e.target.checked)}
+				data-testid={dataTestId}
+			/>
+			{children}
+		</label>
+	),
+}))
+
 vi.mock("../ApiConfigManager", () => ({
 	__esModule: true,
 	default: ({ currentApiConfigName }: any) => (
@@ -710,6 +724,42 @@ describe("SettingsView - Duplicate Commands", () => {
 				updatedSettings: expect.objectContaining({
 					allowedCommands: ["npm test"],
 				}),
+			}),
+		)
+	})
+})
+
+describe("SettingsView - Lock API Config Across Modes", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it("renders lock API config checkbox unchecked by default on the providers tab", () => {
+		const { getSettingsContent } = renderSettingsView()
+
+		const content = getSettingsContent()
+		const lockCheckbox = within(content).getByTestId("lock-api-config-checkbox")
+		expect(lockCheckbox).not.toBeChecked()
+	})
+
+	it("toggles lock API config and sends lockApiConfigAcrossModes message on save", () => {
+		const { getSettingsContent } = renderSettingsView()
+
+		const content = getSettingsContent()
+		const lockCheckbox = within(content).getByTestId("lock-api-config-checkbox")
+
+		// Enable the lock
+		fireEvent.click(lockCheckbox)
+		expect(lockCheckbox).toBeChecked()
+
+		// Click Save
+		const saveButton = screen.getByTestId("save-button")
+		fireEvent.click(saveButton)
+
+		expect(vscode.postMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "lockApiConfigAcrossModes",
+				bool: true,
 			}),
 		)
 	})

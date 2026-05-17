@@ -59,6 +59,7 @@ import {
 	StandardTooltip,
 } from "@src/components/ui"
 
+import { Checkbox } from "vscrui"
 import { Tab, TabContent, TabHeader, TabList, TabTrigger } from "../common/Tab"
 import { SetCachedStateField, SetExperimentEnabled } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -201,6 +202,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		includeCurrentTime,
 		includeCurrentCost,
 		maxGitStatusFiles,
+		lockApiConfigAcrossModes,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -416,6 +418,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			// by the `updateSettings` message.
 			vscode.postMessage({ type: "upsertApiConfiguration", text: currentApiConfigName, apiConfiguration })
 			vscode.postMessage({ type: "debugSetting", bool: cachedState.debug })
+			vscode.postMessage({ type: "lockApiConfigAcrossModes", bool: !!lockApiConfigAcrossModes })
 
 			setChangeDetected(false)
 		}
@@ -752,6 +755,19 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 											})
 										}
 									/>
+									<div className="flex flex-col gap-1 mt-4 mb-2">
+										<Checkbox
+											checked={!!lockApiConfigAcrossModes}
+											onChange={(checked: boolean) =>
+												setCachedStateField("lockApiConfigAcrossModes", checked)
+											}
+											data-testid="lock-api-config-checkbox">
+											{t("settings:providers.lockApiConfigAcrossModes")}
+										</Checkbox>
+										<div className="text-sm text-vscode-descriptionForeground ml-6">
+											{t("settings:providers.lockApiConfigAcrossModesDescription")}
+										</div>
+									</div>
 									<ApiOptions
 										uriScheme={uriScheme}
 										apiConfiguration={apiConfiguration}
