@@ -313,6 +313,107 @@ describe("NativeToolCallParser", () => {
 		})
 	})
 
+	describe("write_to_file partial streaming", () => {
+		it("should not set nativeArgs when only path is present (content missing)", () => {
+			const id = "toolu_wtf_partial_1"
+			NativeToolCallParser.startStreamingToolCall(id, "write_to_file")
+
+			// Simulate partial chunk with only path, no content yet
+			const result = NativeToolCallParser.processStreamingChunk(id, JSON.stringify({ path: "test.txt" }))
+
+			// nativeArgs should NOT be set when content is missing
+			expect(result).not.toBeNull()
+			if (result) {
+				expect(result.nativeArgs).toBeUndefined()
+				// params should still have path for UI display
+				expect(result.params.path).toBe("test.txt")
+			}
+		})
+
+		it("should set nativeArgs when both path and content are present", () => {
+			const id = "toolu_wtf_partial_2"
+			NativeToolCallParser.startStreamingToolCall(id, "write_to_file")
+
+			const result = NativeToolCallParser.processStreamingChunk(
+				id,
+				JSON.stringify({ path: "test.txt", content: "hello world" }),
+			)
+
+			expect(result).not.toBeNull()
+			if (result) {
+				expect(result.nativeArgs).toBeDefined()
+				const nativeArgs = result.nativeArgs as { path: string; content: string }
+				expect(nativeArgs.path).toBe("test.txt")
+				expect(nativeArgs.content).toBe("hello world")
+			}
+		})
+	})
+
+	describe("write_to_file parseToolCall (complete)", () => {
+		it("should return null when content is missing from complete tool call", () => {
+			const toolCall = {
+				id: "toolu_wtf_complete_1",
+				name: "write_to_file" as const,
+				arguments: JSON.stringify({ path: "test.txt" }),
+			}
+
+			// parseToolCall throws internally and returns null for invalid args
+			const result = NativeToolCallParser.parseToolCall(toolCall)
+			expect(result).toBeNull()
+		})
+
+		it("should parse correctly when both path and content are present", () => {
+			const toolCall = {
+				id: "toolu_wtf_complete_2",
+				name: "write_to_file" as const,
+				arguments: JSON.stringify({ path: "test.txt", content: "hello world" }),
+			}
+
+			const result = NativeToolCallParser.parseToolCall(toolCall)
+			expect(result).not.toBeNull()
+			expect(result?.type).toBe("tool_use")
+			if (result?.type === "tool_use") {
+				expect(result.nativeArgs).toBeDefined()
+				const nativeArgs = result.nativeArgs as { path: string; content: string }
+				expect(nativeArgs.path).toBe("test.txt")
+				expect(nativeArgs.content).toBe("hello world")
+			}
+		})
+	})
+
+	describe("write_to_file finalization fallback", () => {
+		it("should return null when finalized with missing content", () => {
+			const id = "toolu_wtf_finalize_1"
+			NativeToolCallParser.startStreamingToolCall(id, "write_to_file")
+
+			// Stream only path, no content
+			NativeToolCallParser.processStreamingChunk(id, JSON.stringify({ path: "test.txt" }))
+
+			// Finalization should fail (return null) because content is missing
+			const result = NativeToolCallParser.finalizeStreamingToolCall(id)
+			expect(result).toBeNull()
+		})
+
+		it("should finalize successfully when both path and content are present", () => {
+			const id = "toolu_wtf_finalize_2"
+			NativeToolCallParser.startStreamingToolCall(id, "write_to_file")
+
+			NativeToolCallParser.processStreamingChunk(
+				id,
+				JSON.stringify({ path: "test.txt", content: "file content" }),
+			)
+
+			const result = NativeToolCallParser.finalizeStreamingToolCall(id)
+			expect(result).not.toBeNull()
+			expect(result?.type).toBe("tool_use")
+			if (result?.type === "tool_use") {
+				const nativeArgs = result.nativeArgs as { path: string; content: string }
+				expect(nativeArgs.path).toBe("test.txt")
+				expect(nativeArgs.content).toBe("file content")
+			}
+		})
+	})
+
 	describe("finalizeStreamingToolCall", () => {
 		describe("read_file tool", () => {
 			it("should parse read_file args on finalize", () => {
