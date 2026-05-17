@@ -98,6 +98,31 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 			.replace(/^\\:start_line:/gm, ":start_line:")
 	}
 
+	/**
+	 * Detects and strips a botched :start_line directive that leaked into search content.
+	 * This handles cases where the model uses a malformed format (e.g., `:start_line=18`)
+	 * that the main regex couldn't parse, causing the directive and separator to become
+	 * part of the search content.
+	 *
+	 * Returns the cleaned search content and any extracted start line number.
+	 */
+	private stripLeakedStartLineDirective(searchContent: string): {
+		cleanedContent: string
+		extractedStartLine: number | null
+	} {
+		// Match patterns like `:start_line=18\n-------\n` or `:start_line 18\n-------\n`
+		// at the beginning of search content (the directive + separator leaked in)
+		const leakedPattern = /^:start_line\s*[=]\s*(\d+)\s*\n(?:-------\s*\n)?/
+		const match = searchContent.match(leakedPattern)
+		if (match) {
+			return {
+				cleanedContent: searchContent.slice(match[0].length),
+				extractedStartLine: parseInt(match[1], 10),
+			}
+		}
+		return { cleanedContent: searchContent, extractedStartLine: null }
+	}
+
 	private validateMarkerSequencing(diffContent: string): { success: boolean; error?: string } {
 		enum State {
 			START,
@@ -267,9 +292,11 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 
 			3. ((?:\:start_line:\s*(\d+)\s*\n))?  
 			  Optionally matches a ":start_line:" line. The outer capturing group is group 1 and the inner (\d+) is group 2.
+			  Also accepts ":start_line=" as delimiter (e.g. ":start_line=18").
 
 			4. ((?:\:end_line:\s*(\d+)\s*\n))?  
 			  Optionally matches a ":end_line:" line. Group 3 is the whole match and group 4 is the digits.
+			  Also accepts ":end_line=" as delimiter.
 
 			5. ((?<!\\)-------\s*\n)?  
 			  Optionally matches the "-------" marker line (group 5).
@@ -289,7 +316,7 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 
 		let matches = [
 			...diffContent.matchAll(
-				/(?:^|\n)(?<!\\)<<<<<<< SEARCH>?\s*\n((?:\:start_line:\s*(\d+)\s*\n))?((?:\:end_line:\s*(\d+)\s*\n))?((?<!\\)-------\s*\n)?([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)=======\s*\n)([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)>>>>>>> REPLACE)(?=\n|$)/g,
+				/(?:^|\n)(?<!\\)<<<<<<< SEARCH>?\s*\n((?:\:start_line[:=]\s*(\d+)\s*\n))?((?:\:end_line[:=]\s*(\d+)\s*\n))?((?<!\\)-------\s*\n)?([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)=======\s*\n)([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)>>>>>>> REPLACE)(?=\n|$)/g,
 			),
 		]
 
@@ -320,6 +347,16 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 			// First unescape any escaped markers in the content
 			searchContent = this.unescapeMarkers(searchContent)
 			replaceContent = this.unescapeMarkers(replaceContent)
+
+			// Fallback: detect and strip a botched :start_line directive that leaked into search content
+			// This handles cases like `:start_line=18` where the `=` delimiter wasn't caught by the main regex
+			if (startLine === 0) {
+				const { cleanedContent, extractedStartLine } = this.stripLeakedStartLineDirective(searchContent)
+				if (extractedStartLine !== null) {
+					searchContent = cleanedContent
+					startLine = extractedStartLine + delta
+				}
+			}
 
 			// Strip line numbers from search and replace content if every line starts with a line number
 			const hasAllLineNumbers =

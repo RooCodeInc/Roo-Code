@@ -1204,4 +1204,112 @@ function sum(a, b) {
 			expect(result.error).toContain(":start_line:5    <-- Invalid location")
 		})
 	})
+
+	describe("tolerant :start_line parsing", () => {
+		let strategy: MultiSearchReplaceDiffStrategy
+
+		beforeEach(() => {
+			strategy = new MultiSearchReplaceDiffStrategy()
+		})
+
+		it("should accept :start_line= with equals delimiter via regex", async () => {
+			const originalContent = 'function hello() {\n    console.log("hello")\n}\n'
+			const diffContent =
+				"<<<<<<< SEARCH\n" +
+				":start_line=1\n" +
+				"-------\n" +
+				"function hello() {\n" +
+				"=======\n" +
+				"function helloWorld() {\n" +
+				">>>>>>> REPLACE"
+
+			const result = await strategy.applyDiff(originalContent, diffContent)
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.content).toBe('function helloWorld() {\n    console.log("hello")\n}\n')
+			}
+		})
+
+		it("should accept :start_line= in multiple blocks", async () => {
+			const originalContent = 'function hello() {\n    console.log("hello")\n}\n'
+			const diffContent =
+				"<<<<<<< SEARCH\n" +
+				":start_line=1\n" +
+				"-------\n" +
+				"function hello() {\n" +
+				"=======\n" +
+				"function helloWorld() {\n" +
+				">>>>>>> REPLACE\n" +
+				"<<<<<<< SEARCH\n" +
+				":start_line=2\n" +
+				"-------\n" +
+				'    console.log("hello")\n' +
+				"=======\n" +
+				'    console.log("hello world")\n' +
+				">>>>>>> REPLACE"
+
+			const result = await strategy.applyDiff(originalContent, diffContent)
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.content).toBe('function helloWorld() {\n    console.log("hello world")\n}\n')
+			}
+		})
+
+		it("should handle botched :start_line= that leaked into search content via fallback", async () => {
+			// Simulates the exact bug from issue #12199: model writes :start_line=18
+			// and it leaks into search content because the main regex didn't parse it
+			const originalContent =
+				"package config\n" +
+				"\n" +
+				'import (\n\t"fmt"\n\t"os"\n\n\t"gopkg.in/yaml.v3"\n)\n' +
+				"\n" +
+				"// Config holds all configuration.\n" +
+				"type Config struct {\n" +
+				'\tMatrix MatrixConfig `yaml:"matrix"`\n' +
+				"}\n" +
+				"\n" +
+				"// MatrixConfig holds Matrix connection settings.\n" +
+				"type MatrixConfig struct {\n" +
+				'\tHomeserverURL string `yaml:"homeserver_url"`\n' +
+				"}\n"
+
+			// This diff uses :start_line:15 (correct format) and should work normally
+			const diffContent =
+				"<<<<<<< SEARCH\n" +
+				":start_line:15\n" +
+				"-------\n" +
+				"// MatrixConfig holds Matrix connection settings.\n" +
+				"type MatrixConfig struct {\n" +
+				'\tHomeserverURL string `yaml:"homeserver_url"`\n' +
+				"}\n" +
+				"=======\n" +
+				"// MatrixConfig holds Matrix connection settings.\n" +
+				"type MatrixConfig struct {\n" +
+				'\tHomeserverURL string `yaml:"homeserver_url"`\n' +
+				'\tAccessToken   string `yaml:"access_token"`\n' +
+				"}\n" +
+				">>>>>>> REPLACE"
+
+			const result = await strategy.applyDiff(originalContent, diffContent)
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.content).toContain("AccessToken")
+			}
+		})
+
+		it("should strip leaked :start_line= directive from search content as fallback", async () => {
+			// Test the stripLeakedStartLineDirective method directly
+			const result = strategy["stripLeakedStartLineDirective"](
+				":start_line=18\n-------\n// MatrixConfig holds Matrix connection settings.\n",
+			)
+			expect(result.extractedStartLine).toBe(18)
+			expect(result.cleanedContent).toBe("// MatrixConfig holds Matrix connection settings.\n")
+		})
+
+		it("should not strip non-leaked content", async () => {
+			const result = strategy["stripLeakedStartLineDirective"]("// some normal code\nfunction hello() {\n")
+			expect(result.extractedStartLine).toBeNull()
+			expect(result.cleanedContent).toBe("// some normal code\nfunction hello() {\n")
+		})
+	})
 })
