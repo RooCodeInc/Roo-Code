@@ -163,5 +163,35 @@ describe("VertexHandler", () => {
 			expect(excludedCount).toBe(1)
 			expect(includedCount).toBe(1)
 		})
+
+		it("should pass through custom/unknown model IDs with sensible defaults", () => {
+			const testHandler = new VertexHandler({
+				apiModelId: "gemini-4.0-ultra-preview",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+
+			const modelInfo = testHandler.getModel()
+			expect(modelInfo.id).toBe("gemini-4.0-ultra-preview")
+			expect(modelInfo.info).toBeDefined()
+			expect(modelInfo.info.maxTokens).toBe(8192)
+			expect(modelInfo.info.contextWindow).toBe(1_048_576)
+			expect(modelInfo.info.supportsImages).toBe(true)
+			expect(modelInfo.info.supportsPromptCache).toBe(false)
+			expect(modelInfo.info.excludedTools).toContain("apply_diff")
+			expect(modelInfo.info.includedTools).toContain("edit")
+		})
+
+		it("should fall back to default model when no model ID is provided", () => {
+			const testHandler = new VertexHandler({
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+
+			const modelInfo = testHandler.getModel()
+			expect(modelInfo.id).toBeDefined()
+			expect(modelInfo.info).toBeDefined()
+			expect(modelInfo.info.maxTokens).toBeGreaterThan(0)
+		})
 	})
 })

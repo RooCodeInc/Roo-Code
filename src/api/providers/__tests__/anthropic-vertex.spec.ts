@@ -869,6 +869,34 @@ describe("VertexHandler", () => {
 			expect(result.temperature).toBe(0)
 		})
 
+		it("should pass through custom/unknown model IDs with sensible defaults", () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: "claude-5-opus@20260101",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+
+			const modelInfo = handler.getModel()
+			expect(modelInfo.id).toBe("claude-5-opus@20260101")
+			expect(modelInfo.info).toBeDefined()
+			expect(modelInfo.info.maxTokens).toBe(8192)
+			expect(modelInfo.info.contextWindow).toBe(200_000)
+			expect(modelInfo.info.supportsImages).toBe(true)
+			expect(modelInfo.info.supportsPromptCache).toBe(false)
+		})
+
+		it("should fall back to default model when no model ID is provided", () => {
+			const handler = new AnthropicVertexHandler({
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+
+			const modelInfo = handler.getModel()
+			expect(modelInfo.id).toBeDefined()
+			expect(modelInfo.info).toBeDefined()
+			expect(modelInfo.info.maxTokens).toBeGreaterThan(0)
+		})
+
 		it("should enable 1M context for Claude Sonnet 4 when beta flag is set", () => {
 			const handler = new AnthropicVertexHandler({
 				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],

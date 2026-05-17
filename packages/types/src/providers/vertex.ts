@@ -35,6 +35,17 @@ export const vertexModels = {
 			},
 		],
 	},
+	"gemini-3.1-flash-lite-preview": {
+		maxTokens: 65_536,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: true,
+
+		supportsTemperature: true,
+		defaultTemperature: 1,
+		inputPrice: 0.0,
+		outputPrice: 0.0,
+	},
 	"gemini-3.1-pro-preview-customtools": {
 		maxTokens: 65_536,
 		contextWindow: 1_048_576,
