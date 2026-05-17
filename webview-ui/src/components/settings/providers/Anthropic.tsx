@@ -19,6 +19,7 @@ type AnthropicProps = {
 export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: AnthropicProps) => {
 	const { t } = useAppTranslation()
 	const selectedModel = useSelectedModel(apiConfiguration)
+	const modelInfo = selectedModel?.info
 
 	const [anthropicBaseUrlSelected, setAnthropicBaseUrlSelected] = useState(!!apiConfiguration?.anthropicBaseUrl)
 
@@ -101,6 +102,53 @@ export const Anthropic = ({ apiConfiguration, setApiConfigurationField }: Anthro
 					<div className="text-sm text-vscode-descriptionForeground mt-1 ml-6">
 						{t("settings:providers.anthropic1MContextBetaDescription")}
 					</div>
+				</div>
+			)}
+			{modelInfo?.supportsAdvisorTool && (
+				<div>
+					<Checkbox
+						checked={apiConfiguration?.anthropicAdvisorEnabled ?? false}
+						onChange={(checked: boolean) => {
+							setApiConfigurationField("anthropicAdvisorEnabled", checked)
+						}}>
+						{t("settings:providers.anthropicAdvisorToolLabel")}
+					</Checkbox>
+					{apiConfiguration?.anthropicAdvisorEnabled && (
+						<div className="mt-2 ml-6 space-y-2">
+							<div>
+								<label className="block text-sm font-medium mb-1">
+									{t("settings:providers.anthropicAdvisorModelLabel")}
+								</label>
+								<select
+									value={apiConfiguration?.anthropicAdvisorModel ?? "claude-opus-4-6"}
+									onChange={(event) => {
+										setApiConfigurationField("anthropicAdvisorModel", event.target.value)
+									}}
+									className="w-full px-2 py-1 rounded border border-vscode-input-border bg-vscode-input-background text-vscode-foreground">
+									<option value="claude-opus-4-6">claude-opus-4-6</option>
+								</select>
+							</div>
+							<div>
+								<label className="block text-sm font-medium mb-1">
+									{t("settings:providers.anthropicAdvisorMaxUsesLabel")}
+								</label>
+								<input
+									type="number"
+									min="1"
+									value={apiConfiguration?.anthropicAdvisorMaxUses ?? 3}
+									onChange={(event) => {
+										const value = event.target.value
+										setApiConfigurationField(
+											"anthropicAdvisorMaxUses",
+											value === "" ? undefined : parseInt(value, 10),
+										)
+									}}
+									placeholder={t("settings:providers.anthropicAdvisorMaxUsesPlaceholder")}
+									className="w-full px-2 py-1 rounded border border-vscode-input-border bg-vscode-input-background text-vscode-foreground"
+								/>
+							</div>
+						</div>
+					)}
 				</div>
 			)}
 		</>

@@ -91,6 +91,10 @@
 	"scrollToBottom": "채팅 하단으로 스크롤",
 	"scrollToLatestCheckpoint": "이전 체크포인트로 스크롤",
 	"about": "Roo Code는 편집기 안에 있는 전체 AI 개발팀입니다.",
+	"advisor": {
+		"isConsulting": "자문가와 상담 중...",
+		"resultLabel": "자문가 응답"
+	},
 	"docs": "더 알아보려면 <DocsLink>문서</DocsLink>를 확인하세요.",
 	"onboarding": "이 작업 공간의 작업 목록이 비어 있습니다.",
 	"rooTips": {

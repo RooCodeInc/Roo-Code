@@ -91,6 +91,10 @@
 	"scrollToBottom": "チャットの最下部にスクロール",
 	"scrollToLatestCheckpoint": "前のチェックポイントまでスクロール",
 	"about": "Roo Codeは、エディタに常駐するAI開発チームです。",
+	"advisor": {
+		"isConsulting": "アドバイザーに相談中...",
+		"resultLabel": "アドバイザーからの回答"
+	},
 	"docs": "詳細については、<DocsLink>ドキュメント</DocsLink>をご確認ください。",
 	"onboarding": "このワークスペースのタスクリストは空です。",
 	"rooTips": {

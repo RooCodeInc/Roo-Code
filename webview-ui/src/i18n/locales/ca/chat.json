@@ -91,6 +91,10 @@
 	"scrollToBottom": "Desplaça't al final del xat",
 	"scrollToLatestCheckpoint": "Desplaça't al checkpoint anterior",
 	"about": "Roo Code és tot un equip de desenvolupament d'IA al teu editor.",
+	"advisor": {
+		"isConsulting": "Consultant l'assessor...",
+		"resultLabel": "Resposta de l'assessor"
+	},
 	"docs": "Consulta els nostres <DocsLink>documents</DocsLink> per a més informació.",
 	"onboarding": "La teva llista de tasques en aquest espai de treball està buida.",
 	"rooTips": {

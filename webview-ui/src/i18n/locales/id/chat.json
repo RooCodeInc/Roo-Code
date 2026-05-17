@@ -121,6 +121,10 @@
 	"scrollToBottom": "Gulir ke bawah chat",
 	"scrollToLatestCheckpoint": "Gulir ke checkpoint sebelumnya",
 	"about": "Roo Code adalah seluruh tim pengembang AI di editor Anda.",
+	"advisor": {
+		"isConsulting": "Berkonsultasi dengan penasihat...",
+		"resultLabel": "Respons penasihat"
+	},
 	"docs": "Lihat <DocsLink>dokumentasi</DocsLink> kami untuk mempelajari lebih lanjut.",
 	"onboarding": "Daftar tugas Anda di ruang kerja ini kosong.",
 	"rooTips": {

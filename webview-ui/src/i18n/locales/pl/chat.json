@@ -91,6 +91,10 @@
 	"scrollToBottom": "Przewiń do dołu czatu",
 	"scrollToLatestCheckpoint": "Przewiń do poprzedniego punktu kontrolnego",
 	"about": "Roo Code to cały zespół deweloperów AI w Twoim edytorze.",
+	"advisor": {
+		"isConsulting": "Konsultowanie się z doradcą...",
+		"resultLabel": "Odpowiedź doradcy"
+	},
 	"docs": "Sprawdź naszą <DocsLink>dokumentację</DocsLink>, aby dowiedzieć się więcej.",
 	"onboarding": "Twoja lista zadań w tym obszarze roboczym jest pusta.",
 	"rooTips": {

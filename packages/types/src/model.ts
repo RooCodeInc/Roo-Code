@@ -98,6 +98,7 @@ export const modelInfoSchema = z.object({
 	outputPrice: z.number().optional(),
 	cacheWritesPrice: z.number().optional(),
 	cacheReadsPrice: z.number().optional(),
+	supportsAdvisorTool: z.boolean().optional(),
 	longContextPricing: z
 		.object({
 			thresholdTokens: z.number(),

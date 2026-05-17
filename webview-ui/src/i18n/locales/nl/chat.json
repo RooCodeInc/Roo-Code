@@ -91,6 +91,10 @@
 	"scrollToBottom": "Scroll naar onderaan de chat",
 	"scrollToLatestCheckpoint": "Scroll naar het vorige checkpoint",
 	"about": "Roo Code is een heel AI-ontwikkelteam in je editor.",
+	"advisor": {
+		"isConsulting": "Raadpleging van adviseur...",
+		"resultLabel": "Antwoord van adviseur"
+	},
 	"docs": "Bekijk onze <DocsLink>documentatie</DocsLink> voor meer informatie.",
 	"onboarding": "Je takenlijst in deze werkruimte is leeg.",
 	"rooTips": {

@@ -91,6 +91,10 @@
 	"scrollToBottom": "Zum Chat-Ende scrollen",
 	"scrollToLatestCheckpoint": "Zum vorherigen Checkpoint scrollen",
 	"about": "Roo Code ist ein ganzes KI-Entwicklerteam in deinem Editor.",
+	"advisor": {
+		"isConsulting": "Berater wird konsultiert...",
+		"resultLabel": "Berater-Antwort"
+	},
 	"docs": "Schau in unsere <DocsLink>Dokumentation</DocsLink>, um mehr zu erfahren.",
 	"onboarding": "Deine Aufgabenliste in diesem Arbeitsbereich ist leer.",
 	"rooTips": {
