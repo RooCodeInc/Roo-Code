@@ -255,12 +255,11 @@ describe("DeepSeekHandler", () => {
 			const model = handlerWithInvalidModel.getModel()
 			expect(model.id).toBe("invalid-model") // Returns provided ID
 			expect(model.info).toBeDefined()
-			// With the current implementation, it's the same object reference when using default model info
-			expect(model.info).toBe(handler.getModel().info)
-			// Should have the same base properties
-			expect(model.info.contextWindow).toBe(handler.getModel().info.contextWindow)
-			// And should have supportsPromptCache set to true
+			// Falls back to the default model (deepseek-v4-flash) when ID is invalid
+			expect(model.info.maxTokens).toBe(384_000) // v4-flash: 384K max output
+			expect(model.info.contextWindow).toBe(1_000_000) // v4-flash: 1M context window
 			expect(model.info.supportsPromptCache).toBe(true)
+			expect(model.info.preserveReasoning).toBe(true) // v4-flash supports thinking mode
 		})
 
 		it("should return default model if no model ID is provided", () => {

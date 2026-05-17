@@ -23,6 +23,12 @@ export type ApiHandlerOptions = Omit<ProviderSettings, "apiProvider"> & {
 	 * When undefined, Ollama will use the model's default num_ctx from the Modelfile.
 	 */
 	ollamaNumCtx?: number
+	/**
+	 * Optional reasoning_effort parameter for DeepSeek v4-pro model.
+	 * Controls the depth of reasoning: "high" or "max".
+	 * When undefined, defaults to "high".
+	 */
+	reasoningEffort?: "high" | "max"
 }
 
 // RouterName
