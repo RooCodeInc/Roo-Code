@@ -546,7 +546,7 @@
 			"maxTokensLabel": "Jetons de sortie max",
 			"maxTokensDescription": "Nombre maximum de jetons de sortie pour les réponses de Claude Code. La valeur par défaut est 8000."
 		},
-		"retiredRooProviderMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+		"retiredRooProviderMessage": "Dans le cadre de notre décision de mettre fin à l'extension Roo Code, nous avons également arrêté Roo Code Router, qui n'existait que pour prendre en charge l'extension. Si vous aviez un solde inutilisé, vous devriez avoir reçu un e-mail de billing@roocode.com au sujet d'un remboursement."
 	},
 	"checkpoints": {
 		"timeout": {

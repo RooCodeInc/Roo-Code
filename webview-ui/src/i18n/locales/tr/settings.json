@@ -546,7 +546,7 @@
 			"maxTokensLabel": "Maksimum Çıktı Token sayısı",
 			"maxTokensDescription": "Claude Code yanıtları için maksimum çıktı token sayısı. Varsayılan 8000'dir."
 		},
-		"retiredRooProviderMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+		"retiredRooProviderMessage": "Roo Code uzantısını sonlandırma kararımızın bir parçası olarak, yalnızca uzantıyı desteklemek için var olan Roo Code Router'ı da sonlandırdık. Kullanılmamış bakiyeniz varsa, geri ödeme hakkında billing@roocode.com adresinden bir e-posta almış olmalısınız."
 	},
 	"checkpoints": {
 		"timeout": {

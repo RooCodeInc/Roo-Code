@@ -487,6 +487,6 @@
 		"title": "供应商不再受支持",
 		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
 		"openSettings": "打开设置",
-		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+		"rooMessage": "作为停用 Roo Code 扩展这一决定的一部分，我们也结束了 Roo Code Router；它原本只是为了支持该扩展而存在。如果你有任何未使用的余额，应该已经收到 billing@roocode.com 发来的退款相关邮件。"
 	}
 }

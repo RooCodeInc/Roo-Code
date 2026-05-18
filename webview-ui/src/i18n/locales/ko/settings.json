@@ -546,7 +546,7 @@
 			"maxTokensLabel": "최대 출력 토큰",
 			"maxTokensDescription": "Claude Code 응답의 최대 출력 토큰 수. 기본값은 8000입니다."
 		},
-		"retiredRooProviderMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+		"retiredRooProviderMessage": "Roo Code 확장 프로그램을 종료하기로 한 결정에 따라, 확장 프로그램 지원만을 위해 존재하던 Roo Code Router도 종료했습니다. 사용하지 않은 잔액이 있었다면 환불과 관련하여 billing@roocode.com에서 보낸 이메일을 받으셨을 것입니다."
 	},
 	"checkpoints": {
 		"timeout": {

@@ -546,7 +546,7 @@
 			"maxTokensLabel": "Maximale Ausgabe-Tokens",
 			"maxTokensDescription": "Maximale Anzahl an Ausgabe-Tokens für Claude Code-Antworten. Standard ist 8000."
 		},
-		"retiredRooProviderMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+		"retiredRooProviderMessage": "Im Zuge unserer Entscheidung, die Roo Code-Erweiterung einzustellen, haben wir auch den Roo Code Router eingestellt, der nur zur Unterstützung der Erweiterung existierte. Wenn du ungenutztes Guthaben hattest, solltest du eine E-Mail von billing@roocode.com zu einer Rückerstattung erhalten haben."
 	},
 	"checkpoints": {
 		"timeout": {

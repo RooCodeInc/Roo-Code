@@ -546,7 +546,7 @@
 			"maxTokensLabel": "Макс. выходных токенов",
 			"maxTokensDescription": "Максимальное количество выходных токенов для ответов Claude Code. По умолчанию 8000."
 		},
-		"retiredRooProviderMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+		"retiredRooProviderMessage": "В рамках нашего решения прекратить поддержку расширения Roo Code мы также закрыли Roo Code Router, который существовал только для поддержки расширения. Если у вас был неиспользованный баланс, вы должны были получить письмо от billing@roocode.com о возврате средств."
 	},
 	"checkpoints": {
 		"timeout": {

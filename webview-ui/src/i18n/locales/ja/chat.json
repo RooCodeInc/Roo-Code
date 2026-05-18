@@ -486,6 +486,6 @@
 		"title": "プロバイダーのサポート終了",
 		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
 		"openSettings": "設定を開く",
-		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+		"rooMessage": "Roo Code 拡張機能の提供終了に伴い、その拡張機能をサポートするためだけに存在していた Roo Code Router も終了しました。未使用残高があった場合は、返金について billing@roocode.com からメールを受け取っているはずです。"
 	}
 }

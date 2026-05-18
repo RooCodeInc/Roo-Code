@@ -114,7 +114,7 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 	if (apiProvider && isRetiredProvider(apiProvider)) {
 		const retiredProviderMessage =
 			apiProvider === "roo"
-				? "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+				? "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. If you had any unused balance, you should have received an email from billing@roocode.com about a refund."
 				: "This provider is no longer supported."
 
 		throw new Error(`${retiredProviderMessage}\n\nPlease select a different provider in your API profile settings.`)

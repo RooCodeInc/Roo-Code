@@ -487,6 +487,6 @@
 		"title": "Nhà cung cấp không còn được hỗ trợ",
 		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
 		"openSettings": "Mở cài đặt",
-		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+		"rooMessage": "Trong quyết định ngừng hỗ trợ tiện ích Roo Code, chúng tôi cũng đã kết thúc Roo Code Router, vốn chỉ tồn tại để hỗ trợ tiện ích này. Nếu bạn có số dư chưa sử dụng, bạn hẳn đã nhận được email từ billing@roocode.com về khoản hoàn tiền."
 	}
 }

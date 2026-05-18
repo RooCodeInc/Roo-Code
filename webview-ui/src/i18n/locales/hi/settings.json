@@ -546,7 +546,7 @@
 			"maxTokensLabel": "अधिकतम आउटपुट टोकन",
 			"maxTokensDescription": "Claude Code प्रतिक्रियाओं के लिए आउटपुट टोकन की अधिकतम संख्या। डिफ़ॉल्ट 8000 है।"
 		},
-		"retiredRooProviderMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+		"retiredRooProviderMessage": "Roo Code एक्सटेंशन को बंद करने के हमारे निर्णय के हिस्से के रूप में, हमने Roo Code Router को भी बंद कर दिया, जो केवल एक्सटेंशन का समर्थन करने के लिए मौजूद था। यदि आपके पास कोई अप्रयुक्त शेष राशि थी, तो आपको रिफंड के बारे में billing@roocode.com से ईमेल प्राप्त हुआ होगा।"
 	},
 	"checkpoints": {
 		"timeout": {

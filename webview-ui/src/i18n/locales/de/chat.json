@@ -486,6 +486,6 @@
 		"title": "Anbieter wird nicht mehr unterstützt",
 		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
 		"openSettings": "Einstellungen öffnen",
-		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+		"rooMessage": "Im Zuge unserer Entscheidung, die Roo Code-Erweiterung einzustellen, haben wir auch den Roo Code Router eingestellt, der nur zur Unterstützung der Erweiterung existierte. Wenn du ungenutztes Guthaben hattest, solltest du eine E-Mail von billing@roocode.com zu einer Rückerstattung erhalten haben."
 	}
 }

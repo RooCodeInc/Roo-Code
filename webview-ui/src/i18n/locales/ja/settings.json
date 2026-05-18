@@ -546,7 +546,7 @@
 			"maxTokensLabel": "最大出力トークン",
 			"maxTokensDescription": "Claude Codeレスポンスの最大出力トークン数。デフォルトは8000です。"
 		},
-		"retiredRooProviderMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+		"retiredRooProviderMessage": "Roo Code 拡張機能の提供終了に伴い、その拡張機能をサポートするためだけに存在していた Roo Code Router も終了しました。未使用残高があった場合は、返金について billing@roocode.com からメールを受け取っているはずです。"
 	},
 	"checkpoints": {
 		"timeout": {

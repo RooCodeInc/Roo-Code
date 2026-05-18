@@ -486,6 +486,6 @@
 		"title": "Proveïdor ja no compatible",
 		"message": "This provider is no longer supported. Please select a different provider in your API profile settings.",
 		"openSettings": "Obrir configuració",
-		"rooMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+		"rooMessage": "Com a part de la nostra decisió de retirar l'extensió Roo Code, també vam tancar Roo Code Router, que només existia per donar suport a l'extensió. Si tenies saldo sense utilitzar, hauries d'haver rebut un correu electrònic de billing@roocode.com sobre un reemborsament."
 	}
 }

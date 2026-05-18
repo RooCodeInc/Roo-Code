@@ -546,7 +546,7 @@
 			"maxTokensLabel": "Token Output Maks",
 			"maxTokensDescription": "Jumlah maksimum token output untuk respons Claude Code. Default adalah 8000."
 		},
-		"retiredRooProviderMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+		"retiredRooProviderMessage": "Sebagai bagian dari keputusan kami untuk menghentikan ekstensi Roo Code, kami juga mengakhiri Roo Code Router, yang hanya ada untuk mendukung ekstensi tersebut. Jika Anda memiliki saldo yang belum digunakan, Anda seharusnya sudah menerima email dari billing@roocode.com tentang pengembalian dana."
 	},
 	"checkpoints": {
 		"timeout": {

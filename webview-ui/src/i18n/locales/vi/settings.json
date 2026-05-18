@@ -546,7 +546,7 @@
 			"maxTokensLabel": "Số token đầu ra tối đa",
 			"maxTokensDescription": "Số lượng token đầu ra tối đa cho các phản hồi của Claude Code. Mặc định là 8000."
 		},
-		"retiredRooProviderMessage": "As part of our decision to sunset the Roo Code extension, we also ended the Roo Code Router, which only existed to support the extension. Sorry about the hassle."
+		"retiredRooProviderMessage": "Trong quyết định ngừng hỗ trợ tiện ích Roo Code, chúng tôi cũng đã kết thúc Roo Code Router, vốn chỉ tồn tại để hỗ trợ tiện ích này. Nếu bạn có số dư chưa sử dụng, bạn hẳn đã nhận được email từ billing@roocode.com về khoản hoàn tiền."
 	},
 	"checkpoints": {
 		"timeout": {
