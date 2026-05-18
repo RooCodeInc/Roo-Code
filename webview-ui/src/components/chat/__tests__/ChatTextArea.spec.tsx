@@ -4,6 +4,7 @@ import { render, fireEvent, screen } from "@src/utils/test-utils"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { vscode } from "@src/utils/vscode"
 import * as pathMentions from "@src/utils/path-mentions"
+import { useSelectedModel } from "@src/components/ui/hooks/useSelectedModel"
 
 import { ChatTextArea } from "../ChatTextArea"
 
@@ -32,6 +33,13 @@ const mockConvertToMentionPath = pathMentions.convertToMentionPath as ReturnType
 
 // Mock ExtensionStateContext
 vi.mock("@src/context/ExtensionStateContext")
+vi.mock("@src/components/ui/hooks/useSelectedModel")
+
+beforeAll(() => {
+	if (!HTMLElement.prototype.hasPointerCapture) {
+		HTMLElement.prototype.hasPointerCapture = vi.fn()
+	}
+})
 
 // Custom query function to get the enhance prompt button
 const getEnhancePromptButton = () => {
@@ -73,6 +81,7 @@ describe("ChatTextArea", () => {
 			taskHistory: [],
 			cwd: "/test/workspace",
 		})
+		;(useSelectedModel as ReturnType<typeof vi.fn>).mockReturnValue({ id: "claude-test", info: undefined })
 	})
 
 	describe("enhance prompt button", () => {
@@ -179,6 +188,49 @@ describe("ChatTextArea", () => {
 
 			// Verify the enhance button appears after apiConfiguration changes
 			expect(getEnhancePromptButton()).toBeInTheDocument()
+		})
+	})
+
+	describe("quick reasoning effort selector", () => {
+		it("does not render when the selected model does not support reasoning effort", () => {
+			render(<ChatTextArea {...defaultProps} />)
+
+			expect(screen.queryByTestId("quick-reasoning-effort-selector")).not.toBeInTheDocument()
+		})
+
+		it("renders when the selected model supports reasoning effort", () => {
+			;(useExtensionState as ReturnType<typeof vi.fn>).mockReturnValue({
+				filePaths: [],
+				openedTabs: [],
+				apiConfiguration: {
+					apiProvider: "deepseek",
+					apiModelId: "deepseek-v4-pro",
+					reasoningEffort: "xhigh",
+					enableReasoningEffort: true,
+				},
+				currentApiConfigName: "DeepSeek",
+				listApiConfigMeta: [{ id: "deepseek", name: "DeepSeek", modelId: "deepseek-v4-pro" }],
+				taskHistory: [],
+				cwd: "/test/workspace",
+			})
+			;(useSelectedModel as ReturnType<typeof vi.fn>).mockReturnValue({
+				id: "deepseek-v4-pro",
+				info: {
+					contextWindow: 1_000_000,
+					supportsPromptCache: true,
+					supportsReasoningEffort: ["disable", "high", "xhigh"],
+					reasoningEffort: "high",
+				},
+			})
+
+			render(<ChatTextArea {...defaultProps} />)
+
+			expect(screen.getByTestId("quick-reasoning-effort-selector")).toBeInTheDocument()
+			expect(
+				screen.getByRole("combobox", { name: "settings:providers.reasoningEffort.label" }),
+			).toBeInTheDocument()
+			expect(screen.getByText("max")).toBeInTheDocument()
+			expect(screen.queryByText("settings:providers.reasoningEffort.xhigh")).not.toBeInTheDocument()
 		})
 	})
 

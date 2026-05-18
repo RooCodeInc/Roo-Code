@@ -1,9 +1,9 @@
 import React, { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useEvent } from "react-use"
 import DynamicTextArea from "react-textarea-autosize"
-import { VolumeX, Image, WandSparkles, SendHorizontal, X, ListEnd, Square } from "lucide-react"
+import { VolumeX, Image, WandSparkles, SendHorizontal, X, ListEnd, Square, Brain } from "lucide-react"
 
-import type { ExtensionMessage } from "@roo-code/types"
+import { reasoningEfforts, type ExtensionMessage, type ModelInfo, type ProviderSettings } from "@roo-code/types"
 
 import { mentionRegex, mentionRegexGlobal, commandRegexGlobal, unescapeSpaces } from "@roo/context-mentions"
 import { WebviewMessage } from "@roo/WebviewMessage"
@@ -22,7 +22,8 @@ import {
 } from "@src/utils/context-mentions"
 import { cn } from "@src/lib/utils"
 import { convertToMentionPath } from "@src/utils/path-mentions"
-import { StandardTooltip } from "@src/components/ui"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, StandardTooltip } from "@src/components/ui"
+import { useSelectedModel } from "@src/components/ui/hooks/useSelectedModel"
 
 import Thumbnails from "../common/Thumbnails"
 import { ModeSelector } from "./ModeSelector"
@@ -32,6 +33,146 @@ import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import ContextMenu from "./ContextMenu"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
 import { usePromptHistory } from "./hooks/usePromptHistory"
+
+type ReasoningEffortOption = "disable" | "none" | "minimal" | "low" | "medium" | "high" | "xhigh"
+
+interface ReasoningEffortSelectorProps {
+	apiConfiguration?: ProviderSettings
+	currentApiConfigName?: string
+	modelId?: string
+	modelInfo?: ModelInfo
+	disabled?: boolean
+}
+
+const ReasoningEffortSelector = ({
+	apiConfiguration,
+	currentApiConfigName,
+	modelId,
+	modelInfo,
+	disabled,
+}: ReasoningEffortSelectorProps) => {
+	const { t } = useAppTranslation()
+
+	const supports = modelInfo?.supportsReasoningEffort
+	const isSupported = !!supports
+
+	const availableOptions = useMemo<ReadonlyArray<ReasoningEffortOption>>(() => {
+		if (!isSupported) {
+			return []
+		}
+
+		const baseOptions =
+			supports === true
+				? (reasoningEfforts as readonly ReasoningEffortOption[])
+				: Array.isArray(supports)
+					? (supports as ReadonlyArray<ReasoningEffortOption>)
+					: (reasoningEfforts as readonly ReasoningEffortOption[])
+
+		if (!modelInfo?.requiredReasoningEffort && supports === true && !baseOptions.includes("disable")) {
+			return ["disable", ...baseOptions]
+		}
+
+		return baseOptions
+	}, [isSupported, modelInfo?.requiredReasoningEffort, supports])
+
+	const currentReasoningEffort = useMemo<ReasoningEffortOption>(() => {
+		const storedReasoningEffort = apiConfiguration?.reasoningEffort as ReasoningEffortOption | undefined
+		const defaultReasoningEffort = modelInfo?.requiredReasoningEffort
+			? ((modelInfo.reasoningEffort as ReasoningEffortOption | undefined) ?? "medium")
+			: "disable"
+
+		if (storedReasoningEffort && availableOptions.includes(storedReasoningEffort)) {
+			return storedReasoningEffort
+		}
+
+		if (defaultReasoningEffort && availableOptions.includes(defaultReasoningEffort)) {
+			return defaultReasoningEffort
+		}
+
+		return availableOptions[0] ?? "disable"
+	}, [
+		apiConfiguration?.reasoningEffort,
+		availableOptions,
+		modelInfo?.reasoningEffort,
+		modelInfo?.requiredReasoningEffort,
+	])
+
+	const configuredModelId = apiConfiguration?.apiModelId ?? apiConfiguration?.openAiModelId ?? modelId
+	const isDeepSeekV4Model = configuredModelId?.startsWith("deepseek-v4-") ?? false
+
+	const getOptionLabel = useCallback(
+		(value: ReasoningEffortOption) => {
+			if (isDeepSeekV4Model) {
+				if (value === "disable" || value === "none") {
+					return "off"
+				}
+
+				if (value === "xhigh") {
+					return "max"
+				}
+
+				return value
+			}
+
+			return value === "none" || value === "disable"
+				? t("settings:providers.reasoningEffort.none")
+				: t(`settings:providers.reasoningEffort.${value}`)
+		},
+		[isDeepSeekV4Model, t],
+	)
+
+	const handleReasoningEffortChange = useCallback(
+		(value: ReasoningEffortOption) => {
+			if (!apiConfiguration || !currentApiConfigName) {
+				return
+			}
+
+			const updatedConfiguration: ProviderSettings = {
+				...apiConfiguration,
+				enableReasoningEffort: value !== "disable",
+				reasoningEffort: value,
+			}
+
+			vscode.postMessage({
+				type: "upsertApiConfiguration",
+				text: currentApiConfigName,
+				apiConfiguration: updatedConfiguration,
+			})
+		},
+		[apiConfiguration, currentApiConfigName],
+	)
+
+	if (!isSupported || availableOptions.length === 0) {
+		return null
+	}
+
+	return (
+		<div className="flex-shrink-0" data-testid="quick-reasoning-effort-selector">
+			<Select
+				value={currentReasoningEffort}
+				onValueChange={(value) => handleReasoningEffortChange(value as ReasoningEffortOption)}
+				disabled={disabled}>
+				<SelectTrigger
+					aria-label={t("settings:providers.reasoningEffort.label")}
+					className={cn(
+						"h-[24px] min-w-[56px] max-w-[150px] rounded-md px-1.5 py-1 text-xs gap-1 bg-transparent",
+						"border-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.03)]",
+						"[&_svg]:size-3.5",
+					)}>
+					<Brain className="size-3.5 flex-shrink-0 opacity-70" />
+					<SelectValue>{getOptionLabel(currentReasoningEffort)}</SelectValue>
+				</SelectTrigger>
+				<SelectContent align="start" sideOffset={4} className="min-w-[150px]">
+					{availableOptions.map((value) => (
+						<SelectItem key={value} value={value}>
+							{getOptionLabel(value)}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
+		</div>
+	)
+}
 
 interface ChatTextAreaProps {
 	inputValue: string
@@ -97,7 +238,9 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			commands,
 			enterBehavior,
 			lockApiConfigAcrossModes,
+			apiConfiguration,
 		} = useExtensionState()
+		const { id: selectedModelId, info: selectedModelInfo } = useSelectedModel(apiConfiguration)
 
 		// Find the ID and display text for the currently selected API configuration.
 		const { currentConfigId, displayName } = useMemo(() => {
@@ -1317,6 +1460,13 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							togglePinnedApiConfig={togglePinnedApiConfig}
 							lockApiConfigAcrossModes={!!lockApiConfigAcrossModes}
 							onToggleLockApiConfig={handleToggleLockApiConfig}
+						/>
+						<ReasoningEffortSelector
+							apiConfiguration={apiConfiguration}
+							currentApiConfigName={currentApiConfigName}
+							modelId={selectedModelId}
+							modelInfo={selectedModelInfo}
+							disabled={selectApiConfigDisabled}
 						/>
 						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
 					</div>

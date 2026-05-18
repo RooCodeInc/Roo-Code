@@ -38,7 +38,7 @@ export type DeepSeekAssistantMessage = AssistantMessage & {
  */
 export function convertToR1Format(
 	messages: AnthropicMessage[],
-	options?: { mergeToolResultText?: boolean },
+	options?: { mergeToolResultText?: boolean; requireReasoningContentForToolCalls?: boolean },
 ): Message[] {
 	const result: Message[] = []
 
@@ -46,6 +46,7 @@ export function convertToR1Format(
 		// Check if the message has reasoning_content (for DeepSeek interleaved thinking)
 		const messageWithReasoning = message as AnthropicMessage & { reasoning_content?: string }
 		const reasoningContent = messageWithReasoning.reasoning_content
+		const hasReasoningContent = typeof reasoningContent === "string"
 
 		if (message.role === "user") {
 			// Handle user messages - may contain tool_result blocks
@@ -187,15 +188,21 @@ export function convertToR1Format(
 					}
 				}
 
-				// Use reasoning from content blocks if not provided at top level
-				const finalReasoning = reasoningContent || extractedReasoning
+				// Use reasoning from content blocks if not provided at top level.
+				// Empty reasoning_content is meaningful for DeepSeek thinking-mode tool call continuations.
+				const finalReasoning = hasReasoningContent ? reasoningContent : extractedReasoning
+				const needsEmptyToolCallReasoning =
+					options?.requireReasoningContentForToolCalls === true &&
+					toolCalls.length > 0 &&
+					typeof finalReasoning !== "string"
+				const shouldAttachReasoning = typeof finalReasoning === "string" || needsEmptyToolCallReasoning
 
 				const assistantMessage: DeepSeekAssistantMessage = {
 					role: "assistant",
 					content: textParts.length > 0 ? textParts.join("\n") : null,
 					...(toolCalls.length > 0 && { tool_calls: toolCalls }),
 					// Preserve reasoning_content for DeepSeek interleaved thinking
-					...(finalReasoning && { reasoning_content: finalReasoning }),
+					...(shouldAttachReasoning && { reasoning_content: finalReasoning ?? "" }),
 				}
 
 				// Check if we can merge with the last message (only if no tool calls)
@@ -209,8 +216,8 @@ export function convertToR1Format(
 						lastMessage.content = `${lastContent}\n${assistantMessage.content}`
 					}
 					// Preserve reasoning_content from the new message if present
-					if (finalReasoning) {
-						;(lastMessage as DeepSeekAssistantMessage).reasoning_content = finalReasoning
+					if (shouldAttachReasoning) {
+						;(lastMessage as DeepSeekAssistantMessage).reasoning_content = finalReasoning ?? ""
 					}
 				} else {
 					result.push(assistantMessage)
@@ -225,14 +232,14 @@ export function convertToR1Format(
 						lastMessage.content = message.content
 					}
 					// Preserve reasoning_content from the new message if present
-					if (reasoningContent) {
+					if (hasReasoningContent) {
 						;(lastMessage as DeepSeekAssistantMessage).reasoning_content = reasoningContent
 					}
 				} else {
 					const assistantMessage: DeepSeekAssistantMessage = {
 						role: "assistant",
 						content: message.content,
-						...(reasoningContent && { reasoning_content: reasoningContent }),
+						...(hasReasoningContent && { reasoning_content: reasoningContent }),
 					}
 					result.push(assistantMessage)
 				}

@@ -2192,7 +2192,7 @@ describe("importExport", () => {
 			{
 				testCase: "supportsReasoningBudget is false",
 				providerName: "deepseek-provider",
-				modelId: "deepseek-chat",
+				modelId: "deepseek-v4-flash",
 				providerId: "deepseek-id",
 			},
 			{
@@ -2204,7 +2204,7 @@ describe("importExport", () => {
 			{
 				testCase: "both supportsReasoningBudget and requiredReasoningBudget are false",
 				providerName: "deepseek-provider-3",
-				modelId: "deepseek-reasoner",
+				modelId: "deepseek-v4-pro",
 				providerId: "deepseek-id-3",
 			},
 		])(

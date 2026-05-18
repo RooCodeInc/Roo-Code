@@ -614,6 +614,41 @@ describe("convertToR1Format", () => {
 				// Most importantly: NO user message after tool message
 				expect(result.filter((m) => m.role === "user")).toHaveLength(1)
 			})
+
+			it("should add empty reasoning_content to prior tool calls when required", () => {
+				const input = [
+					{ role: "user" as const, content: "Start" },
+					{
+						role: "assistant" as const,
+						content: [
+							{
+								type: "tool_use" as const,
+								id: "call_123",
+								name: "test_tool",
+								input: {},
+							},
+						],
+					},
+					{
+						role: "user" as const,
+						content: [
+							{
+								type: "tool_result" as const,
+								tool_use_id: "call_123",
+								content: "Result",
+							},
+						],
+					},
+				]
+
+				const result = convertToR1Format(input as Anthropic.Messages.MessageParam[], {
+					mergeToolResultText: true,
+					requireReasoningContentForToolCalls: true,
+				})
+
+				expect((result[1] as any).tool_calls).toBeDefined()
+				expect((result[1] as any).reasoning_content).toBe("")
+			})
 		})
 	})
 })

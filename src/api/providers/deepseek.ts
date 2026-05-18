@@ -53,19 +53,28 @@ export class DeepSeekHandler extends OpenAiHandler {
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const modelId = this.options.apiModelId ?? deepSeekDefaultModelId
-		const { info: modelInfo } = this.getModel()
+		const { info: modelInfo, reasoning } = this.getModel()
 
-		// Check if this is a thinking-enabled model (deepseek-reasoner)
-		const isThinkingModel = modelId.includes("deepseek-reasoner")
+		const isDeepSeekV4Model = modelId.includes("deepseek-v4")
+		const isThinkingModel = isDeepSeekV4Model
+		const thinkingType =
+			isDeepSeekV4Model &&
+			(this.options.reasoningEffort === "disable" || this.options.enableReasoningEffort === false)
+				? "disabled"
+				: "enabled"
+		const selectedReasoningEffort = (reasoning as { reasoning_effort?: string } | undefined)?.reasoning_effort
+		const reasoningEffort =
+			selectedReasoningEffort === "xhigh" ? "max" : selectedReasoningEffort === "high" ? "high" : undefined
 
 		// Convert messages to R1 format (merges consecutive same-role messages)
 		// This is required for DeepSeek which does not support successive messages with the same role
-		// For thinking models (deepseek-reasoner), enable mergeToolResultText to preserve reasoning_content
-		// during tool call sequences. Without this, environment_details text after tool_results would
-		// create user messages that cause DeepSeek to drop all previous reasoning_content.
+		// For thinking models, enable mergeToolResultText to preserve reasoning_content during tool call
+		// sequences. Without this, environment_details text after tool_results would create user messages
+		// that cause DeepSeek to drop all previous reasoning_content.
 		// See: https://api-docs.deepseek.com/guides/thinking_mode
 		const convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages], {
 			mergeToolResultText: isThinkingModel,
+			requireReasoningContentForToolCalls: isThinkingModel && thinkingType === "enabled",
 		})
 
 		const requestOptions: DeepSeekChatCompletionParams = {
@@ -74,8 +83,12 @@ export class DeepSeekHandler extends OpenAiHandler {
 			messages: convertedMessages,
 			stream: true as const,
 			stream_options: { include_usage: true },
-			// Enable thinking mode for deepseek-reasoner or when tools are used with thinking model
-			...(isThinkingModel && { thinking: { type: "enabled" } }),
+			// Enable thinking mode for DeepSeek reasoning models. DeepSeek V4 also supports explicit disabling.
+			...(isThinkingModel && { thinking: { type: thinkingType } }),
+			...(reasoningEffort && {
+				// DeepSeek accepts "max"; the OpenAI SDK type has not caught up yet.
+				reasoning_effort: reasoningEffort as OpenAI.Chat.ChatCompletionCreateParams["reasoning_effort"],
+			}),
 			tools: this.convertToolsForOpenAI(metadata?.tools),
 			tool_choice: metadata?.tool_choice,
 			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
@@ -113,10 +126,10 @@ export class DeepSeekHandler extends OpenAiHandler {
 
 			// Handle reasoning_content from DeepSeek's interleaved thinking
 			// This is the proper way DeepSeek sends thinking content in streaming
-			if ("reasoning_content" in delta && delta.reasoning_content) {
+			if ("reasoning_content" in delta && typeof delta.reasoning_content === "string") {
 				yield {
 					type: "reasoning",
-					text: (delta.reasoning_content as string) || "",
+					text: delta.reasoning_content,
 				}
 			}
 

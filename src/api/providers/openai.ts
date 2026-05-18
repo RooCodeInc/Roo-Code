@@ -25,6 +25,22 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 
+type OpenAiCompatibleChatCompletionParamsStreaming = Omit<
+	OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming,
+	"reasoning_effort"
+> & {
+	thinking?: { type: "enabled" | "disabled" }
+	reasoning_effort?: OpenAI.Chat.ChatCompletionCreateParams["reasoning_effort"]
+}
+
+type OpenAiCompatibleChatCompletionParamsNonStreaming = Omit<
+	OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming,
+	"reasoning_effort"
+> & {
+	thinking?: { type: "enabled" | "disabled" }
+	reasoning_effort?: OpenAI.Chat.ChatCompletionCreateParams["reasoning_effort"]
+}
+
 // TODO: Rename this to OpenAICompatibleHandler. Also, I think the
 // `OpenAINativeHandler` can subclass from this, since it's obviously
 // compatible with the OpenAI API. We can also rename it to `OpenAIHandler`.
@@ -89,7 +105,22 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const modelId = this.options.openAiModelId ?? ""
 		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
 		const isAzureAiInference = this._isAzureAiInference(modelUrl)
-		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
+		const isDeepSeekV4Model = modelId.includes("deepseek-v4")
+		const usesDeepSeekThinkingParam = isDeepSeekV4Model
+		const deepseekReasoner = usesDeepSeekThinkingParam || enabledR1Format
+		const deepseekThinkingType =
+			isDeepSeekV4Model &&
+			(this.options.reasoningEffort === "disable" || this.options.enableReasoningEffort === false)
+				? "disabled"
+				: "enabled"
+		const selectedReasoningEffort = (reasoning as { reasoning_effort?: string } | undefined)?.reasoning_effort
+		const providerReasoning =
+			isDeepSeekV4Model && selectedReasoningEffort === "xhigh"
+				? {
+						// DeepSeek accepts "max"; the OpenAI SDK type has not caught up yet.
+						reasoning_effort: "max" as OpenAI.Chat.ChatCompletionCreateParams["reasoning_effort"],
+					}
+				: reasoning
 
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
 			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages, metadata)
@@ -105,7 +136,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			let convertedMessages
 
 			if (deepseekReasoner) {
-				convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+				convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages], {
+					mergeToolResultText: usesDeepSeekThinkingParam && deepseekThinkingType === "enabled",
+					requireReasoningContentForToolCalls:
+						usesDeepSeekThinkingParam && deepseekThinkingType === "enabled",
+				})
 			} else {
 				if (modelInfo.supportsPromptCache) {
 					systemMessage = {
@@ -152,13 +187,14 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			const isGrokXAI = this._isGrokXAI(this.options.openAiBaseUrl)
 
-			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
+			const requestOptions: OpenAiCompatibleChatCompletionParamsStreaming = {
 				model: modelId,
 				temperature: this.options.modelTemperature ?? (deepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
 				messages: convertedMessages,
 				stream: true as const,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
-				...(reasoning && reasoning),
+				...(usesDeepSeekThinkingParam && { thinking: { type: deepseekThinkingType } }),
+				...(providerReasoning && providerReasoning),
 				tools: this.convertToolsForOpenAI(metadata?.tools),
 				tool_choice: metadata?.tool_choice,
 				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
@@ -199,10 +235,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					}
 				}
 
-				if ("reasoning_content" in delta && delta.reasoning_content) {
+				if ("reasoning_content" in delta && typeof delta.reasoning_content === "string") {
 					yield {
 						type: "reasoning",
-						text: (delta.reasoning_content as string | undefined) || "",
+						text: delta.reasoning_content,
 					}
 				}
 
@@ -221,11 +257,17 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				yield this.processUsageMetrics(lastUsage, modelInfo)
 			}
 		} else {
-			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+			const requestOptions: OpenAiCompatibleChatCompletionParamsNonStreaming = {
 				model: modelId,
 				messages: deepseekReasoner
-					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages], {
+							mergeToolResultText: usesDeepSeekThinkingParam && deepseekThinkingType === "enabled",
+							requireReasoningContentForToolCalls:
+								usesDeepSeekThinkingParam && deepseekThinkingType === "enabled",
+						})
 					: [systemMessage, ...convertToOpenAiMessages(messages)],
+				...(usesDeepSeekThinkingParam && { thinking: { type: deepseekThinkingType } }),
+				...(providerReasoning && providerReasoning),
 				// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS)
 				tools: this.convertToolsForOpenAI(metadata?.tools),
 				tool_choice: metadata?.tool_choice,
