@@ -17,6 +17,7 @@ export type FireworksModelId =
 	| "accounts/fireworks/models/glm-4p5-air"
 	| "accounts/fireworks/models/glm-4p6"
 	| "accounts/fireworks/models/glm-4p7"
+	| "accounts/fireworks/models/glm-5"
 	| "accounts/fireworks/models/gpt-oss-20b"
 	| "accounts/fireworks/models/gpt-oss-120b"
 	| "accounts/fireworks/models/llama-v3p3-70b-instruct"
@@ -209,6 +210,19 @@ export const fireworksModels = {
 		outputPrice: 2.19,
 		description:
 			"Z.ai GLM-4.7 is the latest coding model with exceptional performance on complex programming tasks. Features improved reasoning capabilities and enhanced code generation quality.",
+	},
+	"accounts/fireworks/models/glm-5": {
+		maxTokens: 16384,
+		contextWindow: 202752,
+		supportsImages: false,
+		supportsPromptCache: true,
+		supportsReasoningEffort: ["disable", "medium"],
+		reasoningEffort: "medium",
+		preserveReasoning: true,
+		inputPrice: 0.55,
+		outputPrice: 2.19,
+		description:
+			"Z.ai GLM-5 is Zhipu's next-generation model with a 202k context window and built-in thinking capabilities. It delivers state-of-the-art reasoning, coding, and agentic performance.",
 	},
 	"accounts/fireworks/models/llama-v3p3-70b-instruct": {
 		maxTokens: 16384,
