@@ -30,7 +30,8 @@ vi.mock("openai", () => {
 						}
 
 						// Check if this is a reasoning_content test by looking at model
-						const isReasonerModel = options.model?.includes("deepseek-reasoner")
+						const isReasonerModel =
+							options.model?.includes("deepseek-reasoner") || options.model?.includes("deepseek-v4")
 						const isToolCallTest = options.tools?.length > 0
 
 						// Return async iterator for streaming
@@ -237,6 +238,24 @@ describe("DeepSeekHandler", () => {
 			})
 			const model = handlerWithReasoner.getModel()
 			// Cast to ModelInfo to access preserveReasoning which is an optional property
+			expect((model.info as ModelInfo).preserveReasoning).toBe(true)
+		})
+
+		it("should have preserveReasoning enabled for deepseek-v4-flash", () => {
+			const handlerV4Flash = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-flash",
+			})
+			const model = handlerV4Flash.getModel()
+			expect((model.info as ModelInfo).preserveReasoning).toBe(true)
+		})
+
+		it("should have preserveReasoning enabled for deepseek-v4-pro", () => {
+			const handlerV4Pro = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-pro",
+			})
+			const model = handlerV4Pro.getModel()
 			expect((model.info as ModelInfo).preserveReasoning).toBe(true)
 		})
 
@@ -456,6 +475,44 @@ describe("DeepSeekHandler", () => {
 					thinking: { type: "enabled" },
 				}),
 				{}, // Empty path options for non-Azure URLs
+			)
+		})
+
+		it("should pass thinking parameter for deepseek-v4-flash model", async () => {
+			const v4FlashHandler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-flash",
+			})
+
+			const stream = v4FlashHandler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// Consume the stream
+			}
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					thinking: { type: "enabled" },
+				}),
+				{},
+			)
+		})
+
+		it("should pass thinking parameter for deepseek-v4-pro model", async () => {
+			const v4ProHandler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-pro",
+			})
+
+			const stream = v4ProHandler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// Consume the stream
+			}
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					thinking: { type: "enabled" },
+				}),
+				{},
 			)
 		})
 

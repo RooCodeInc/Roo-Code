@@ -89,7 +89,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const modelId = this.options.openAiModelId ?? ""
 		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
 		const isAzureAiInference = this._isAzureAiInference(modelUrl)
-		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
+		const deepseekReasoner =
+			modelId.includes("deepseek-reasoner") || modelId.includes("deepseek-v4") || enabledR1Format
 
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
 			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages, metadata)
