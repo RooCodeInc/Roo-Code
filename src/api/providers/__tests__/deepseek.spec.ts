@@ -30,7 +30,8 @@ vi.mock("openai", () => {
 						}
 
 						// Check if this is a reasoning_content test by looking at model
-						const isReasonerModel = options.model?.includes("deepseek-reasoner")
+						const isReasonerModel =
+							options.model?.includes("deepseek-reasoner") || options.model?.includes("deepseek-v4")
 						const isToolCallTest = options.tools?.length > 0
 
 						// Return async iterator for streaming
@@ -506,6 +507,70 @@ describe("DeepSeekHandler", () => {
 			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
 			expect(toolCallChunks.length).toBeGreaterThan(0)
 			expect(toolCallChunks[0].name).toBe("get_weather")
+		})
+
+		it("should handle reasoning_content in streaming responses for deepseek-v4-pro", async () => {
+			const v4Handler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-pro",
+			})
+
+			const stream = v4Handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should have reasoning chunks
+			const reasoningChunks = chunks.filter((chunk) => chunk.type === "reasoning")
+			expect(reasoningChunks.length).toBeGreaterThan(0)
+			expect(reasoningChunks[0].text).toBe("Let me think about this...")
+			expect(reasoningChunks[1].text).toBe(" I'll analyze step by step.")
+		})
+
+		it("should pass thinking parameter for deepseek-v4-pro model", async () => {
+			const v4Handler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-pro",
+			})
+
+			const stream = v4Handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// Consume the stream
+			}
+
+			// Verify that the thinking parameter was passed to the API
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					thinking: { type: "enabled" },
+				}),
+				{}, // Empty path options for non-Azure URLs
+			)
+		})
+
+		it("should have preserveReasoning enabled for deepseek-v4-pro", () => {
+			const v4Handler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-pro",
+			})
+			const model = v4Handler.getModel()
+			expect((model.info as ModelInfo).preserveReasoning).toBe(true)
+		})
+	})
+
+	describe("deepseek-v4-pro model info", () => {
+		it("should return correct model info for deepseek-v4-pro", () => {
+			const v4Handler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-pro",
+			})
+			const model = v4Handler.getModel()
+			expect(model.id).toBe("deepseek-v4-pro")
+			expect(model.info).toBeDefined()
+			expect(model.info.maxTokens).toBe(16_384)
+			expect(model.info.contextWindow).toBe(164_000)
+			expect(model.info.supportsImages).toBe(true)
+			expect(model.info.supportsPromptCache).toBe(true)
 		})
 	})
 })
