@@ -42,6 +42,7 @@ interface ChatTextAreaProps {
 	selectedImages: string[]
 	setSelectedImages: React.Dispatch<React.SetStateAction<string[]>>
 	onSend: () => void
+	onAccept?: () => void // Called when Enter should trigger approval (when action buttons are visible)
 	onSelectImages: () => void
 	shouldDisableImages: boolean
 	onHeightChange?: (height: number) => void
@@ -67,6 +68,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			selectedImages,
 			setSelectedImages,
 			onSend,
+			onAccept,
 			onSelectImages,
 			shouldDisableImages,
 			onHeightChange,
@@ -488,20 +490,23 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 				// Handle Enter key based on enterBehavior setting
 				if (event.key === "Enter" && !isComposing) {
+					// Determine the action handler: use onAccept if provided (for approval behavior), otherwise onSend
+					const actionHandler = onAccept ?? onSend
+
 					if (enterBehavior === "newline") {
-						// New behavior: Enter = newline, Shift+Enter or Ctrl+Enter = send
+						// New behavior: Enter = newline, Shift+Enter or Ctrl+Enter = send/accept
 						if (event.shiftKey || event.ctrlKey || event.metaKey) {
 							event.preventDefault()
 							resetHistoryNavigation()
-							onSend()
+							actionHandler()
 						}
 						// Otherwise, let Enter create newline (don't preventDefault)
 					} else {
-						// Default behavior: Enter = send, Shift+Enter = newline
+						// Default behavior: Enter = send/accept, Shift+Enter = newline
 						if (!event.shiftKey) {
 							event.preventDefault()
 							resetHistoryNavigation()
-							onSend()
+							actionHandler()
 						}
 					}
 				}
@@ -552,6 +557,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			},
 			[
 				onSend,
+				onAccept,
 				showContextMenu,
 				searchQuery,
 				selectedMenuIndex,
