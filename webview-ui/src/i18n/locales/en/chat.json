@@ -301,7 +301,9 @@
 		"resultContent": "Subtask completed",
 		"defaultResult": "Please continue to the next task.",
 		"completionInstructions": "You can review the results and suggest any corrections or next steps. If everything looks good, confirm to return the result to the parent task.",
-		"goToSubtask": "View task"
+		"goToSubtask": "View task",
+		"showActiveSubtask": "Show subtask",
+		"showActiveSubtaskTooltip": "A subtask is currently running. Click to view it."
 	},
 	"questions": {
 		"hasQuestion": "Roo has a question"

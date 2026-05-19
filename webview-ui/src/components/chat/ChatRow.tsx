@@ -872,7 +872,7 @@ export const ChatRowContent = ({
 							<div>
 								{childTaskId && !isFollowedBySubtaskResult && (
 									<button
-										className="cursor-pointer flex gap-1 items-center mt-2 text-vscode-descriptionForeground hover:text-vscode-descriptionForeground hover:underline font-normal"
+										className="cursor-pointer flex gap-1 items-center mt-2 px-2 py-1 rounded text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground bg-vscode-textLink-foreground/10 hover:bg-vscode-textLink-foreground/20 font-medium transition-colors"
 										onClick={() =>
 											vscode.postMessage({ type: "showTaskWithId", text: childTaskId })
 										}>
@@ -1032,7 +1032,7 @@ export const ChatRowContent = ({
 							<MarkdownBlock markdown={message.text} />
 							{completedChildTaskId && (
 								<button
-									className="cursor-pointer flex gap-1 items-center mt-2 text-vscode-descriptionForeground hover:text-vscode-descriptionForeground hover:underline font-normal"
+									className="cursor-pointer flex gap-1 items-center mt-2 px-2 py-1 rounded text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground bg-vscode-textLink-foreground/10 hover:bg-vscode-textLink-foreground/20 font-medium transition-colors"
 									onClick={() =>
 										vscode.postMessage({ type: "showTaskWithId", text: completedChildTaskId })
 									}>

@@ -139,6 +139,7 @@
 	--color-vscode-widget-shadow: var(--vscode-widget-shadow);
 
 	--color-vscode-textLink-foreground: var(--vscode-textLink-foreground);
+	--color-vscode-textLink-activeForeground: var(--vscode-textLink-activeForeground);
 
 	--color-vscode-textCodeBlock-background: var(--vscode-textCodeBlock-background);
 
