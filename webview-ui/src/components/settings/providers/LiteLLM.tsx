@@ -86,13 +86,16 @@ export const LiteLLM = ({
 		const key = apiConfiguration.litellmApiKey
 		const url = apiConfiguration.litellmBaseUrl
 
-		if (!key || !url) {
+		if (!url) {
 			setRefreshStatus("error")
 			setRefreshError(t("settings:providers.refreshModels.missingConfig"))
 			return
 		}
 
-		vscode.postMessage({ type: "requestRouterModels", values: { litellmApiKey: key, litellmBaseUrl: url } })
+		vscode.postMessage({
+			type: "requestRouterModels",
+			values: { ...(key ? { litellmApiKey: key } : {}), litellmBaseUrl: url },
+		})
 	}, [apiConfiguration, setRefreshStatus, setRefreshError, t])
 
 	return (
@@ -121,9 +124,7 @@ export const LiteLLM = ({
 			<Button
 				variant="outline"
 				onClick={handleRefreshModels}
-				disabled={
-					refreshStatus === "loading" || !apiConfiguration.litellmApiKey || !apiConfiguration.litellmBaseUrl
-				}
+				disabled={refreshStatus === "loading" || !apiConfiguration.litellmBaseUrl}
 				className="w-full">
 				<div className="flex items-center gap-2">
 					{refreshStatus === "loading" ? (

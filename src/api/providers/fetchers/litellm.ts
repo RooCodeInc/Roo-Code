@@ -11,7 +11,7 @@ import { DEFAULT_HEADERS } from "../constants"
  * @returns A promise that resolves to a record of model IDs to model info
  * @throws Will throw an error if the request fails or the response is not as expected.
  */
-export async function getLiteLLMModels(apiKey: string, baseUrl: string): Promise<ModelRecord> {
+export async function getLiteLLMModels(apiKey: string | undefined, baseUrl: string): Promise<ModelRecord> {
 	try {
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",

@@ -929,11 +929,11 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 				{ key: "vercel-ai-gateway", options: { provider: "vercel-ai-gateway" } },
 			]
 
-			// LiteLLM is conditional on baseUrl+apiKey
+			// LiteLLM is conditional on baseUrl (apiKey is optional)
 			const litellmApiKey = apiConfiguration.litellmApiKey || message?.values?.litellmApiKey
 			const litellmBaseUrl = apiConfiguration.litellmBaseUrl || message?.values?.litellmBaseUrl
 
-			if (litellmApiKey && litellmBaseUrl) {
+			if (litellmBaseUrl) {
 				// If explicit credentials are provided in message.values (from Refresh Models button),
 				// flush the cache first to ensure we fetch fresh data with the new credentials
 				if (message?.values?.litellmApiKey || message?.values?.litellmBaseUrl) {
