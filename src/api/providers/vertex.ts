@@ -14,8 +14,34 @@ export class VertexHandler extends GeminiHandler implements SingleCompletionHand
 
 	override getModel() {
 		const modelId = this.options.apiModelId
-		let id = modelId && modelId in vertexModels ? (modelId as VertexModelId) : vertexDefaultModelId
-		let info: ModelInfo = vertexModels[id]
+
+		let id: string
+		let info: ModelInfo
+
+		if (modelId && modelId in vertexModels) {
+			// Known Vertex model -- use its curated ModelInfo.
+			id = modelId as VertexModelId
+			info = vertexModels[id as VertexModelId]
+		} else if (modelId) {
+			// Custom / third-party MaaS model.
+			// Users may supply either a bare model name (e.g. "gpt-oss-120b-maas")
+			// or a fully-qualified publisher path
+			// (e.g. "publishers/openai/models/gpt-oss-120b-maas").
+			// Both forms are passed through as-is; the @google/genai SDK and
+			// Vertex AI API accept full resource names directly.
+			id = modelId
+			info = {
+				maxTokens: 8192,
+				contextWindow: 128_000,
+				supportsImages: true,
+				supportsPromptCache: false,
+			}
+		} else {
+			// No model specified -- fall back to the default.
+			id = vertexDefaultModelId
+			info = vertexModels[vertexDefaultModelId]
+		}
+
 		const params = getModelParams({
 			format: "gemini",
 			modelId: id,

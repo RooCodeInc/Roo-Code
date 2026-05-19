@@ -163,5 +163,56 @@ describe("VertexHandler", () => {
 			expect(excludedCount).toBe(1)
 			expect(includedCount).toBe(1)
 		})
+
+		it("should pass through custom/unknown model IDs instead of falling back to default", () => {
+			const testHandler = new VertexHandler({
+				apiModelId: "gpt-oss-120b-maas",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+
+			const modelInfo = testHandler.getModel()
+			// The critical fix: custom model ID is preserved, not replaced with the default
+			expect(modelInfo.id).toBe("gpt-oss-120b-maas")
+			expect(modelInfo.info).toBeDefined()
+		})
+
+		it("should pass through publisher-qualified model paths as-is", () => {
+			const testHandler = new VertexHandler({
+				apiModelId: "publishers/openai/models/gpt-oss-120b-maas",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+
+			const modelInfo = testHandler.getModel()
+			// Full publisher path is passed through unchanged
+			expect(modelInfo.id).toBe("publishers/openai/models/gpt-oss-120b-maas")
+			expect(modelInfo.info).toBeDefined()
+		})
+
+		it("should still apply edit/apply_diff tool preferences to custom models", () => {
+			const testHandler = new VertexHandler({
+				apiModelId: "publishers/openai/models/gpt-oss-120b-maas",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+
+			const modelInfo = testHandler.getModel()
+			expect(modelInfo.info.excludedTools).toContain("apply_diff")
+			expect(modelInfo.info.includedTools).toContain("edit")
+		})
+
+		it("should fall back to default model when no model ID is provided", () => {
+			const testHandler = new VertexHandler({
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+			})
+
+			const modelInfo = testHandler.getModel()
+			// Should use the default vertex model, not crash
+			expect(modelInfo.id).toBeDefined()
+			expect(modelInfo.info).toBeDefined()
+			expect(modelInfo.info.maxTokens).toBeGreaterThan(0)
+		})
 	})
 })
