@@ -330,11 +330,15 @@ export function filterNativeToolsForMode(
 }
 
 /**
- * Helper function to check if any MCP server has resources available
+ * Helper function to check if any MCP server has resources or resource templates available
  */
 function hasAnyMcpResources(mcpHub: McpHub): boolean {
 	const servers = mcpHub.getServers()
-	return servers.some((server) => server.resources && server.resources.length > 0)
+	return servers.some(
+		(server) =>
+			(server.resources && server.resources.length > 0) ||
+			(server.resourceTemplates && server.resourceTemplates.length > 0),
+	)
 }
 
 /**

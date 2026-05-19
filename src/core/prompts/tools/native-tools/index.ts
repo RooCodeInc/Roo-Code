@@ -1,5 +1,5 @@
 import type OpenAI from "openai"
-import accessMcpResource from "./access_mcp_resource"
+import accessMcpResource, { createAccessMcpResourceTool } from "./access_mcp_resource"
 import { apply_diff } from "./apply_diff"
 import applyPatch from "./apply_patch"
 import askFollowupQuestion from "./ask_followup_question"
@@ -25,12 +25,16 @@ export { getMcpServerTools } from "./mcp_server"
 export { convertOpenAIToolToAnthropic, convertOpenAIToolsToAnthropic } from "./converters"
 export type { ReadFileToolOptions } from "./read_file"
 
+import type { McpHub } from "../../../../services/mcp/McpHub"
+
 /**
  * Options for customizing the native tools array.
  */
 export interface NativeToolsOptions {
 	/** Whether the model supports image processing (default: false) */
 	supportsImages?: boolean
+	/** MCP hub for generating dynamic resource descriptions */
+	mcpHub?: McpHub
 }
 
 /**
@@ -40,14 +44,14 @@ export interface NativeToolsOptions {
  * @returns Array of native tool definitions
  */
 export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.ChatCompletionTool[] {
-	const { supportsImages = false } = options
+	const { supportsImages = false, mcpHub } = options
 
 	const readFileOptions: ReadFileToolOptions = {
 		supportsImages,
 	}
 
 	return [
-		accessMcpResource,
+		mcpHub ? createAccessMcpResourceTool(mcpHub) : accessMcpResource,
 		apply_diff,
 		applyPatch,
 		askFollowupQuestion,

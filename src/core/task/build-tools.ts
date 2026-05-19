@@ -108,9 +108,10 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 	// Check if the model supports images for read_file tool description.
 	const supportsImages = modelInfo?.supportsImages ?? false
 
-	// Build native tools with dynamic read_file tool based on settings.
+	// Build native tools with dynamic read_file tool and MCP resource descriptions.
 	const nativeTools = getNativeTools({
 		supportsImages,
+		mcpHub: mcpHub ?? undefined,
 	})
 
 	// Filter native tools based on mode restrictions.
