@@ -17,6 +17,7 @@ export type FireworksModelId =
 	| "accounts/fireworks/models/glm-4p5-air"
 	| "accounts/fireworks/models/glm-4p6"
 	| "accounts/fireworks/models/glm-4p7"
+	| "accounts/fireworks/models/glm-5"
 	| "accounts/fireworks/models/gpt-oss-20b"
 	| "accounts/fireworks/models/gpt-oss-120b"
 	| "accounts/fireworks/models/llama-v3p3-70b-instruct"
@@ -209,6 +210,16 @@ export const fireworksModels = {
 		outputPrice: 2.19,
 		description:
 			"Z.ai GLM-4.7 is the latest coding model with exceptional performance on complex programming tasks. Features improved reasoning capabilities and enhanced code generation quality.",
+	},
+	"accounts/fireworks/models/glm-5": {
+		maxTokens: 25344,
+		contextWindow: 198000,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.55,
+		outputPrice: 2.19,
+		description:
+			"Z.ai GLM-5 is the newest generation model from the GLM family with advanced reasoning, coding, and intelligent agent capabilities.",
 	},
 	"accounts/fireworks/models/llama-v3p3-70b-instruct": {
 		maxTokens: 16384,
