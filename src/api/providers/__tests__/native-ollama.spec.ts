@@ -3,14 +3,19 @@
 import { NativeOllamaHandler } from "../native-ollama"
 import { ApiHandlerOptions } from "../../../shared/api"
 import { getOllamaModels } from "../fetchers/ollama"
+import { getApiRequestTimeout } from "../utils/timeout-config"
 
 // Mock the ollama package
-const mockChat = vitest.fn()
+const { mockChat, MockOllama } = vitest.hoisted(() => {
+	const mockChat = vitest.fn()
+	const MockOllama = vitest.fn().mockImplementation(() => ({
+		chat: mockChat,
+	}))
+	return { mockChat, MockOllama }
+})
 vitest.mock("ollama", () => {
 	return {
-		Ollama: vitest.fn().mockImplementation(() => ({
-			chat: mockChat,
-		})),
+		Ollama: MockOllama,
 		Message: vitest.fn(),
 	}
 })
@@ -20,6 +25,13 @@ vitest.mock("../fetchers/ollama", () => ({
 	getOllamaModels: vitest.fn(),
 }))
 
+// Mock the timeout config
+vitest.mock("../utils/timeout-config", () => ({
+	getApiRequestTimeout: vitest.fn(),
+}))
+
+const mockGetApiRequestTimeout = vitest.mocked(getApiRequestTimeout)
+
 const mockGetOllamaModels = vitest.mocked(getOllamaModels)
 
 describe("NativeOllamaHandler", () => {
@@ -27,6 +39,9 @@ describe("NativeOllamaHandler", () => {
 
 	beforeEach(() => {
 		vitest.clearAllMocks()
+
+		// Default mock for timeout config (600s = 600000ms)
+		mockGetApiRequestTimeout.mockReturnValue(600_000)
 
 		// Default mock for getOllamaModels
 		mockGetOllamaModels.mockResolvedValue({
@@ -603,6 +618,66 @@ describe("NativeOllamaHandler", () => {
 			}
 			const firstEndIndex = results.findIndex((r) => r.type === "tool_call_end")
 			expect(firstEndIndex).toBeGreaterThan(lastPartialIndex)
+		})
+	})
+
+	describe("timeout configuration", () => {
+		it("should pass a custom fetch with timeout to the Ollama client", async () => {
+			mockGetApiRequestTimeout.mockReturnValue(900_000) // 900s
+
+			// Create a new handler to trigger ensureClient with the mocked timeout
+			const options: ApiHandlerOptions = {
+				apiModelId: "llama2",
+				ollamaModelId: "llama2",
+				ollamaBaseUrl: "http://localhost:11434",
+			}
+
+			const timeoutHandler = new NativeOllamaHandler(options)
+
+			mockChat.mockImplementation(async function* () {
+				yield { message: { content: "Response" } }
+			})
+
+			const stream = timeoutHandler.createMessage("System", [{ role: "user" as const, content: "Test" }])
+			for await (const _ of stream) {
+				// consume stream
+			}
+
+			// Verify Ollama constructor was called with a fetch option
+			expect(MockOllama).toHaveBeenCalledWith(
+				expect.objectContaining({
+					host: "http://localhost:11434",
+					fetch: expect.any(Function),
+				}),
+			)
+		})
+
+		it("should not pass custom fetch when timeout is undefined", async () => {
+			mockGetApiRequestTimeout.mockReturnValue(undefined)
+
+			const options: ApiHandlerOptions = {
+				apiModelId: "llama2",
+				ollamaModelId: "llama2",
+				ollamaBaseUrl: "http://localhost:11434",
+			}
+
+			const timeoutHandler = new NativeOllamaHandler(options)
+
+			mockChat.mockImplementation(async function* () {
+				yield { message: { content: "Response" } }
+			})
+
+			const stream = timeoutHandler.createMessage("System", [{ role: "user" as const, content: "Test" }])
+			for await (const _ of stream) {
+				// consume stream
+			}
+
+			// Verify Ollama constructor was called WITHOUT a fetch option
+			expect(MockOllama).toHaveBeenCalledWith(
+				expect.not.objectContaining({
+					fetch: expect.any(Function),
+				}),
+			)
 		})
 	})
 })

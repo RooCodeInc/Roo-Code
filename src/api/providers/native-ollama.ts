@@ -7,6 +7,7 @@ import { BaseProvider } from "./base-provider"
 import type { ApiHandlerOptions } from "../../shared/api"
 import { getOllamaModels } from "./fetchers/ollama"
 import { TagMatcher } from "../../utils/tag-matcher"
+import { getApiRequestTimeout } from "./utils/timeout-config"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 interface OllamaChatOptions {
@@ -160,7 +161,20 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 			try {
 				const clientOptions: OllamaOptions = {
 					host: this.options.ollamaBaseUrl || "http://localhost:11434",
-					// Note: The ollama npm package handles timeouts internally
+				}
+
+				// Apply configurable timeout via custom fetch wrapper.
+				// The ollama npm package uses Node.js native fetch (Undici) which
+				// defaults to a 300s (5 minute) timeout. This respects the user's
+				// apiRequestTimeout setting (default 600s) to support slow inference.
+				const timeoutMs = getApiRequestTimeout()
+				if (timeoutMs) {
+					clientOptions.fetch = ((url: RequestInfo | URL, init?: RequestInit) => {
+						return fetch(url, {
+							...init,
+							signal: init?.signal ?? AbortSignal.timeout(timeoutMs),
+						})
+					}) as typeof fetch
 				}
 
 				// Add API key if provided (for Ollama cloud or authenticated instances)
