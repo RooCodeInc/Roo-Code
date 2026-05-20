@@ -1,0 +1,69 @@
+{
+	"title": "Worktrees",
+	"done": "סיום",
+	"description": "Git worktrees מצוינים לקידוד עם סוכנים, כי הם מאפשרים לך לעבוד על מספר ענפים של מאגר בו-זמנית, על ידי שמירתם בתיקיות שונות. כל worktree מקבל חלון VSCode משלו עם Roo Code.",
+
+	"notGitRepo": "סביבת עבודה זו אינה מאגר Git. פתח סביבת עבודה עם מאגר Git כדי להגדיר worktrees.",
+	"multiRootNotSupported": "Worktrees אינם נתמכים בסביבות עבודה מרובות שורשים. אנא פתח תיקייה בודדת כדי להשתמש ב-worktrees.",
+	"subfolderNotSupported": "סביבת עבודה זו היא תת-תיקייה של מאגר Git. אנא פתח את שורש המאגר כדי להשתמש ב-worktrees.",
+	"gitRoot": "שורש Git",
+
+	"includeFileExists": "נמצא קובץ .worktreeinclude. קבצים יועתקו ל-worktrees חדשים.",
+	"noIncludeFile": "לא נמצא קובץ .worktreeinclude",
+	"createFromGitignore": "צור מ-.gitignore",
+
+	"primary": "ראשי",
+	"current": "נוכחי",
+	"locked": "נעול",
+	"detachedHead": "HEAD מנותק",
+	"noBranch": "ללא ענף",
+
+	"switchInThisWindow": "עבור ל-worktree",
+	"openInNewWindow": "פתח בחלון חדש",
+	"delete": "מחק",
+	"newWorktree": "צור worktree",
+
+	"createWorktree": "צור Worktree",
+	"branchName": "ענף חדש",
+	"createNewBranch": "צור ענף חדש",
+	"checkoutExisting": "עבור לענף קיים",
+	"baseBranch": "מענף בסיס",
+	"loadingBranches": "טוען ענפים...",
+	"selectBranch": "בחר ענף",
+	"searchBranch": "חפש ענפים...",
+	"noBranchFound": "לא נמצא ענף",
+	"localBranches": "ענפים מקומיים",
+	"remoteBranches": "ענפים מרוחקים",
+	"worktreePath": "ב-",
+	"selectWorktreeLocation": "בחר מיקום Worktree",
+	"selectFolderForWorktree": "בחר תיקייה עבור worktree חדש",
+	"noIncludeFileWarning": "אין קובץ .worktreeinclude",
+	"noIncludeFileHint": "Worktrees נוצרים רק עם הקבצים מהענף שלהם. אם ברצונך להעתיק קבצים מקומיים כמו .env ו-node_modules, כלול אותם בקובץ .worktreeinclude בשורש המאגר.",
+	"create": "צור",
+	"creating": "יוצר...",
+	"copyingFiles": "מעתיק קבצים...",
+	"copyingProgress": "{{item}} — {{copied}} הועתקו",
+	"cancel": "ביטול",
+
+	"deleteWorktree": "מחק Worktree",
+	"deleteWarning": "לא ניתן לבטל פעולה זו. היא תמחק:",
+	"deleteWarningBranch": "הענף וכל שינויים שלא בוצע להם commit",
+	"deleteWarningFiles": "כל הקבצים בתיקיית ה-worktree",
+	"deleteNoticeLarge": "אם זהו מאגר גדול, הפעולה עשויה לקחת זמן מה.",
+	"forceDelete": "מחיקה בכוח",
+	"worktreeIsLocked": "ה-worktree נעול",
+	"deleting": "מוחק...",
+
+	"close": "סגור",
+
+	"showInHomeScreen": "הצג worktrees במסך הבית",
+
+	"selector": {
+		"worktree": "Worktree",
+		"title": "Worktrees",
+		"tooltip": "עבור בין worktrees",
+		"description": "Git worktrees מאפשרים לך לעבוד על מספר ענפים בו-זמנית. לחץ למעבר בין סביבות עבודה.",
+		"settings": "נהל Worktrees",
+		"info": "Git worktrees מאפשרים לך להחזיק מספר תיקיות עבודה המחוברות לאותו מאגר."
+	}
+}

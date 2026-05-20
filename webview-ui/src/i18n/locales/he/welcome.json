@@ -1,0 +1,52 @@
+{
+	"routers": {
+		"requesty": {
+			"description": "הנתב המותאם שלך ל-LLM",
+			"incentive": "$1 קרדיט חינם"
+		},
+		"openrouter": {
+			"description": "ממשק אחיד ל-LLMs"
+		},
+		"roo": {
+			"description": "המודלים החינמיים הטובים ביותר להתחלה",
+			"incentive": "נסה את Roo בחינם"
+		}
+	},
+	"landing": {
+		"greeting": "ברוכים הבאים ל-Roo Code!",
+		"introduction": "עם מגוון מצבים מובנים וניתנים להרחבה, Roo Code מאפשר לך לתכנן, לתכנת ארכיטקטורה, לכתוב קוד, לדבג ולשפר את הפרודוקטיביות שלך כמו שלא היה קודם.",
+		"accountMention": "כדי להתחיל, צור חשבון Roo Code Cloud. קבל מודלים חזקים, שליטה מהאינטרנט, אנליטיקה, תמיכה ועוד.",
+		"getStarted": "צור חשבון Roo",
+		"noAccount": "או השתמש ללא חשבון"
+	},
+	"providerSignup": {
+		"heading": "בחר את הספק שלך",
+		"chooseProvider": "Roo צריך ספק LLM כדי לעבוד. בחר אחד להתחלה, תוכל להוסיף עוד מאוחר יותר.",
+		"rooCloudProvider": "Roo Code Router",
+		"rooCloudDescription": "הדרך הקלה ביותר להתחיל היא עם Roo Code Router: שילוב מותאם של מודלים חינמיים ובתשלום בעלות נמוכה.",
+		"learnMore": "למד עוד",
+		"useAnotherProvider": "ספק צד שלישי",
+		"useAnotherProviderDescription": "הזן מפתח API והתחל.",
+		"noApiKeys": "לא רוצה להתעסק עם מפתחות API וחשבונות נפרדים?",
+		"backToRoo": "לך עם Roo Code Router.",
+		"goBack": "חזרה",
+		"finish": "סיום"
+	},
+	"waitingForCloud": {
+		"heading": "מתחבר ל-Roo Code Cloud...",
+		"description": "ניקח אותך לדפדפן כדי להירשם ל-Roo Code Cloud. לאחר מכן נחזיר אותך לכאן לסיום.",
+		"noPrompt": "אם לא קיבלת בקשה לפתוח URL, <clickHere>לחץ כאן</clickHere>.",
+		"havingTrouble": "אם השלמת את ההרשמה אבל נתקלת בבעיה, <clickHere>לחץ כאן</clickHere>.",
+		"pasteUrl": "הדבק את כתובת ה-URL החוזרת המוצגת בדפדפן שלך:",
+		"docsLink": "לא עובד? <DocsLink>בדוק את התיעוד</DocsLink>.",
+		"invalidURL": "זה לא נראה כמו כתובת URL חוזרת תקינה. אנא העתק את מה ש-Roo Code Cloud מציג בדפדפן שלך.",
+		"goBack": "חזרה"
+	},
+	"startRouter": "אנו ממליצים להשתמש בנתב LLM:",
+	"startCustom": "או שתוכל להביא את מפתח ה-API של הספק שלך:",
+	"telemetry": {
+		"helpImprove": "עזור לשפר את Roo Code",
+		"helpImproveMessage": "Roo Code אוסף נתוני שגיאות ושימוש כדי לעזור לנו לתקן באגים ולשפר את התוסף. טלמטריה זו אינה אוספת קוד, הנחיות או מידע אישי. תוכל לכבות זאת ב<settingsLink>הגדרות</settingsLink>."
+	},
+	"importSettings": "ייבוא הגדרות"
+}

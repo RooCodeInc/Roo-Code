@@ -1,0 +1,114 @@
+{
+	"errorBoundary": {
+		"title": "משהו השתבש",
+		"reportText": "אנא עזרו לנו להשתפר על ידי דיווח על שגיאה זו ב-",
+		"githubText": "דף ה-Issues שלנו ב-GitHub",
+		"copyInstructions": "העתק והדבק את הודעת השגיאה הבאה כדי לכלול אותה כחלק מהדיווח:",
+		"errorStack": "מחסנית שגיאה:",
+		"componentStack": "מחסנית רכיבים:"
+	},
+	"answers": {
+		"yes": "כן",
+		"no": "לא",
+		"cancel": "ביטול",
+		"remove": "הסר",
+		"keep": "שמור"
+	},
+	"number_format": {
+		"thousand_suffix": "k",
+		"million_suffix": "m",
+		"billion_suffix": "b"
+	},
+	"ui": {
+		"search_placeholder": "חפש...",
+		"no_results": "לא נמצאו תוצאות"
+	},
+	"mermaid": {
+		"loading": "מייצר דיאגרמת mermaid...",
+		"render_error": "לא ניתן להציג דיאגרמה",
+		"buttons": {
+			"zoom": "זום",
+			"zoomIn": "הגדל",
+			"zoomOut": "הקטן",
+			"copy": "העתק",
+			"save": "שמור תמונה",
+			"viewCode": "צפה בקוד",
+			"viewDiagram": "צפה בדיאגרמה",
+			"close": "סגור"
+		},
+		"modal": {
+			"codeTitle": "קוד Mermaid"
+		},
+		"tabs": {
+			"diagram": "דיאגרמה",
+			"code": "קוד"
+		},
+		"feedback": {
+			"imageCopied": "התמונה הועתקה ללוח",
+			"copyError": "שגיאה בהעתקת תמונה"
+		}
+	},
+	"image": {
+		"tabs": {
+			"view": "תמונה"
+		},
+		"noData": "אין נתוני תמונה"
+	},
+	"file": {
+		"errors": {
+			"invalidDataUri": "פורמט URI נתונים לא תקין",
+			"copyingImage": "שגיאה בהעתקת תמונה: {{error}}",
+			"openingImage": "שגיאה בפתיחת תמונה: {{error}}",
+			"pathNotExists": "הנתיב אינו קיים: {{path}}",
+			"couldNotOpen": "לא ניתן לפתוח קובץ: {{error}}",
+			"couldNotOpenGeneric": "לא ניתן לפתוח קובץ!"
+		},
+		"success": {
+			"imageDataUriCopied": "URI נתוני תמונה הועתק ללוח"
+		}
+	},
+	"confirmation": {
+		"deleteMessage": "מחק הודעה",
+		"deleteWarning": "מחיקת הודעה זו תמחק את כל ההודעות שאחריה בשיחה. האם ברצונך להמשיך?",
+		"editMessage": "ערוך הודעה",
+		"editWarning": "עריכת הודעה זו תמחק את כל ההודעות שאחריה בשיחה. האם ברצונך להמשיך?",
+		"editQuestionWithCheckpoint": "עריכת הודעה זו תמחק את כל ההודעות המאוחרות בשיחה. האם ברצונך גם לבטל את כל השינויים חזרה לנקודת ביקורת זו?",
+		"deleteQuestionWithCheckpoint": "מחיקת הודעה זו תמחק את כל ההודעות המאוחרות בשיחה. האם ברצונך גם לבטל את כל השינויים חזרה לנקודת ביקורת זו?",
+		"editOnly": "לא, ערוך הודעה בלבד",
+		"deleteOnly": "לא, מחק הודעה בלבד",
+		"restoreToCheckpoint": "כן, שחזר את נקודת הביקורת",
+		"proceed": "המשך",
+		"dontShowAgain": "אל תציג זאת שוב"
+	},
+	"time_ago": {
+		"just_now": "הרגע",
+		"seconds_ago": "לפני {{count}} שניות",
+		"minute_ago": "לפני דקה",
+		"minutes_ago": "לפני {{count}} דקות",
+		"hour_ago": "לפני שעה",
+		"hours_ago": "לפני {{count}} שעות",
+		"day_ago": "לפני יום",
+		"days_ago": "לפני {{count}} ימים",
+		"week_ago": "לפני שבוע",
+		"weeks_ago": "לפני {{count}} שבועות",
+		"month_ago": "לפני חודש",
+		"months_ago": "לפני {{count}} חודשים",
+		"year_ago": "לפני שנה",
+		"years_ago": "לפני {{count}} שנים"
+	},
+	"errors": {
+		"wait_checkpoint_long_time": "המתנה של {{timeout}} שניות לאתחול נקודת ביקורת. אם אינך צריך את תכונת נקודות הביקורת, אנא כבה אותה ב<settingsLink>הגדרות נקודות הביקורת</settingsLink>.",
+		"init_checkpoint_fail_long_time": "אתחול נקודת הביקורת ארך יותר מ-{{timeout}} שניות, כך שנקודות ביקורת מושבתות למשימה זו. תוכל להשבית נקודות ביקורת או להאריך את זמן ההמתנה ב<settingsLink>הגדרות נקודות הביקורת</settingsLink>.",
+		"attempt_completion_tool_failed": "לא ניתן להריץ attempt_completion כי קריאת כלי קודמת נכשלה בתור זה. אנא טפל בכשל הכלי לפני ניסיון השלמה."
+	},
+	"tasks": {
+		"delegated": "הואצל לתת-משימה",
+		"delegated_to": "הואצל למשימה {{childId}}",
+		"delegation_completed": "תת-המשימה הושלמה, חוזר למשימת האב",
+		"awaiting_child": "ממתין למשימת ילד {{childId}}"
+	},
+	"costs": {
+		"own": "עצמי",
+		"subtasks": "תת-משימות"
+	}
+}

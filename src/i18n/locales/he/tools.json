@@ -1,0 +1,31 @@
+{
+	"readFile": {
+		"linesRange": " (שורות {{start}}-{{end}})",
+		"definitionsOnly": " (הגדרות בלבד)",
+		"maxLines": " (מקסימום {{max}} שורות)",
+		"imageTooLarge": "קובץ התמונה גדול מדי ({{size}} MB). הגודל המקסימלי המותר הוא {{max}} MB.",
+		"imageWithSize": "קובץ תמונה ({{size}} KB)"
+	},
+	"toolRepetitionLimitReached": "נראה ש-Roo תקוע בלולאה, מנסה את אותה פעולה ({{toolName}}) שוב ושוב. ייתכן שזה מצביע על בעיה באסטרטגיה הנוכחית. נסה לנסח מחדש את המשימה, לספק הוראות מדויקות יותר, או להנחות אותו לגישה אחרת.",
+	"unknownToolError": "Roo ניסה להשתמש בכלי לא מוכר: \"{{toolName}}\". מנסה שוב...",
+	"codebaseSearch": {
+		"approval": "מחפש '{{query}}' בבסיס הקוד..."
+	},
+	"newTask": {
+		"errors": {
+			"policy_restriction": "יצירת משימה חדשה נכשלה עקב הגבלות מדיניות."
+		}
+	},
+	"generateImage": {
+		"openRouterApiKeyRequired": "מפתח API של OpenRouter נדרש ליצירת תמונות עם מודלים של OpenRouter. אנא הגדר אותו בהגדרות הניסיוניות של יצירת תמונות.",
+		"failedWithStatus": "יצירת התמונה נכשלה: {{status}} {{statusText}}",
+		"failedWithMessage": "יצירת התמונה נכשלה: {{message}}",
+		"noImageGenerated": "לא נוצרה תמונה בתגובה",
+		"invalidImageData": "נתוני תמונה לא תקינים בתגובה",
+		"invalidImageFormat": "פורמט תמונה לא תקין התקבל",
+		"unknownError": "אירעה שגיאה לא ידועה",
+		"roo": {
+			"authRequired": "נדרש אימות Roo Code Cloud ליצירת תמונות. אנא התחבר ל-Roo Code Cloud."
+		}
+	}
+}

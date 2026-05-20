@@ -1,0 +1,69 @@
+{
+	"type-group": {
+		"modes": "מצבים",
+		"mcps": "שרתי MCP",
+		"match": "התאמה"
+	},
+	"item-card": {
+		"type-mode": "מצב",
+		"type-mcp": "שרת MCP",
+		"type-other": "אחר",
+		"by-author": "מאת {{author}}",
+		"authors-profile": "פרופיל המחבר",
+		"remove-tag-filter": "הסר מסנן תגית: {{tag}}",
+		"filter-by-tag": "סנן לפי תגית: {{tag}}",
+		"component-details": "פרטי רכיב",
+		"view": "צפה",
+		"source": "מקור"
+	},
+	"filters": {
+		"search": {
+			"placeholder": "חפש ב-Marketplace..."
+		},
+		"type": {
+			"label": "סוג",
+			"all": "כל הסוגים",
+			"mode": "מצב",
+			"mcpServer": "שרת MCP"
+		},
+		"sort": {
+			"label": "מיין לפי",
+			"name": "שם",
+			"lastUpdated": "עודכן לאחרונה"
+		},
+		"tags": {
+			"label": "תגיות",
+			"clear": "נקה תגיות",
+			"placeholder": "חפש תגיות...",
+			"noResults": "לא נמצאו תגיות.",
+			"selected": "מציג פריטים עם כל אחת מהתגיות שנבחרו"
+		},
+		"installed": {
+			"label": "סנן לפי סטטוס",
+			"all": "כל הפריטים",
+			"installed": "מותקנים",
+			"notInstalled": "לא מותקנים"
+		},
+		"title": "Marketplace"
+	},
+	"done": "סיום",
+	"tabs": {
+		"installed": "מותקנים",
+		"browse": "עיון",
+		"settings": "הגדרות"
+	},
+	"items": {
+		"empty": {
+			"noItems": "לא נמצאו פריטים ב-Marketplace.",
+			"emptyHint": "נסה להתאים את המסננים או מונחי החיפוש"
+		}
+	},
+	"installation": {
+		"installing": "מתקין פריט: \"{{itemName}}\"",
+		"installSuccess": "\"{{itemName}}\" הותקן בהצלחה",
+		"installError": "התקנת \"{{itemName}}\" נכשלה: {{errorMessage}}",
+		"removing": "מסיר פריט: \"{{itemName}}\"",
+		"removeSuccess": "\"{{itemName}}\" הוסר בהצלחה",
+		"removeError": "הסרת \"{{itemName}}\" נכשלה: {{errorMessage}}"
+	}
+}

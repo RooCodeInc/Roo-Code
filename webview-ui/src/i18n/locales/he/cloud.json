@@ -1,0 +1,33 @@
+{
+	"title": "ענן",
+	"profilePicture": "תמונת פרופיל",
+	"logOut": "התנתק",
+	"testApiAuthentication": "בדוק אימות API",
+	"signIn": "התחבר ל-Roo Code Cloud",
+	"connect": "התחל",
+	"cloudBenefitsTitle": "נסה את Roo Code Cloud",
+	"cloudBenefitProvider": "גישה למודלים חינמיים ובתשלום שעובדים מצוין עם Roo",
+	"cloudBenefitCloudAgents": "תן משימות לסוכני ענן אוטונומיים",
+	"cloudBenefitTriggers": "קבל ביקורות קוד ב-GitHub, התחל משימות מ-Slack ועוד",
+	"cloudBenefitWalkaway": "עקוב ושלוט במשימות מכל מקום (כולל הטלפון שלך)",
+	"cloudBenefitHistory": "גש להיסטוריית המשימות שלך מכל מקום ושתף אותן עם אחרים",
+	"cloudBenefitMetrics": "קבל תמונה מקיפה של צריכת ה-token שלך",
+	"visitCloudWebsite": "בקר ב-Roo Code Cloud",
+	"taskSync": "סנכרון משימות",
+	"taskSyncDescription": "סנכרן את המשימות שלך לצפייה ושיתוף ב-Roo Code Cloud",
+	"taskSyncManagedByOrganization": "סנכרון המשימות מנוהל על ידי הארגון שלך",
+	"usageMetricsAlwaysReported": "מידע על שימוש במודל מדווח תמיד כאשר מחוברים",
+	"cloudUrlPillLabel": "כתובת URL של Roo Code Cloud",
+	"authWaiting": "ממתין לאימות בדפדפן...",
+	"havingTrouble": "יש בעיה?",
+	"pasteCallbackUrl": "העתק את כתובת ה-URL החוזרת מהדפדפן שלך והדבק אותה כאן:",
+	"startOver": "התחל מחדש",
+	"personalAccount": "חשבון אישי",
+	"switchAccount": "החלף חשבון Roo Code Cloud",
+	"createTeamAccount": "צור חשבון צוות",
+	"upsell": {
+		"autoApprovePowerUser": "נותן ל-Roo קצת עצמאות? שלוט בו מכל מקום עם Roo Code Cloud. <learnMoreLink>למד עוד</learnMoreLink>.",
+		"longRunningTask": "זה עלול לקחת זמן. המשך מכל מקום עם Cloud.",
+		"taskList": "נהנה מ-Roo? בדוק את Roo Code Cloud: עקוב ושלוט במשימות שלך מכל מקום, הפעל סוכני ענן אוטונומיים, קבל סטטיסטיקות שימוש ועוד. <learnMoreLink>למד עוד</learnMoreLink>."
+	}
+}
