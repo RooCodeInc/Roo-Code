@@ -1,0 +1,15 @@
+{
+  "_description": "Requires: npm install -g @agnuxo/p2pclaw-mcp-server (see https://github.com/Agnuxo1/p2pclaw-mcp-server)",
+  "mcpServers": {
+    "p2pclaw": {
+      "command": "npx",
+      "args": ["-y", "@agnuxo/p2pclaw-mcp-server"],
+      "env": {
+        "P2PCLAW_NETWORK_ID": "your-network-id",
+        "P2PCLAW_NODE_NAME": "your-node-name"
+      },
+      "disabled": false,
+      "alwaysAllow": []
+    }
+  }
+}
