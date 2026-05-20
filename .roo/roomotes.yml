@@ -1,6 +1,0 @@
-version: "1.0"
-
-commands:
-    - name: Install dependencies
-      run: pnpm install
-      timeout: 60

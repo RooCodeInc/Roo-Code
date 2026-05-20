@@ -76,10 +76,16 @@ export function getErrorMessageForStatus(status: number | undefined, embedderTyp
 				? t("embeddings:validation.modelNotAvailable")
 				: t("embeddings:validation.invalidEndpoint")
 		case 429:
+			return t("embeddings:validation.rateLimitExceeded")
+		case 502:
+			return t("embeddings:validation.badGateway")
+		case 503:
 			return t("embeddings:validation.serviceUnavailable")
+		case 504:
+			return t("embeddings:validation.gatewayTimeout")
 		default:
 			if (status && status >= 400 && status < 600) {
-				return t("embeddings:validation.configurationError")
+				return t("embeddings:validation.serverError")
 			}
 			return undefined
 	}
