@@ -29,8 +29,10 @@ vi.mock("openai", () => {
 							}
 						}
 
-						// Check if this is a reasoning_content test by looking at model
-						const isReasonerModel = options.model?.includes("deepseek-reasoner")
+						// Check if this is a thinking model - matches models with preserveReasoning: true
+						// (deepseek-reasoner, deepseek-v4-pro, deepseek-v4-flash)
+						const isReasonerModel =
+							options.model?.includes("deepseek-reasoner") || options.model?.includes("deepseek-v4-")
 						const isToolCallTest = options.tools?.length > 0
 
 						// Return async iterator for streaming
@@ -122,7 +124,7 @@ vi.mock("openai", () => {
 import OpenAI from "openai"
 import type { Anthropic } from "@anthropic-ai/sdk"
 
-import { deepSeekDefaultModelId, DEEP_SEEK_DEFAULT_TEMPERATURE, type ModelInfo } from "@roo-code/types"
+import { deepSeekDefaultModelId, deepSeekModels, DEEP_SEEK_DEFAULT_TEMPERATURE, type ModelInfo } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../../shared/api"
 
@@ -245,6 +247,36 @@ describe("DeepSeekHandler", () => {
 			const model = handler.getModel()
 			// Cast to ModelInfo to access preserveReasoning which is an optional property
 			expect((model.info as ModelInfo).preserveReasoning).toBeUndefined()
+		})
+
+		it("should return correct model info for deepseek-v4-pro", () => {
+			const handlerWithV4Pro = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-pro",
+			})
+			const model = handlerWithV4Pro.getModel()
+			expect(model.id).toBe("deepseek-v4-pro")
+			expect(model.info).toBeDefined()
+			expect(model.info.maxTokens).toBe(16_384)
+			expect(model.info.contextWindow).toBe(128_000)
+			expect(model.info.supportsImages).toBe(true)
+			expect(model.info.supportsPromptCache).toBe(true)
+			expect((model.info as ModelInfo).preserveReasoning).toBe(true)
+		})
+
+		it("should return correct model info for deepseek-v4-flash", () => {
+			const handlerWithV4Flash = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-flash",
+			})
+			const model = handlerWithV4Flash.getModel()
+			expect(model.id).toBe("deepseek-v4-flash")
+			expect(model.info).toBeDefined()
+			expect(model.info.maxTokens).toBe(16_384)
+			expect(model.info.contextWindow).toBe(128_000)
+			expect(model.info.supportsImages).toBe(true)
+			expect(model.info.supportsPromptCache).toBe(true)
+			expect((model.info as ModelInfo).preserveReasoning).toBe(true)
 		})
 
 		it("should return provided model ID with default model info if model does not exist", () => {
@@ -473,6 +505,61 @@ describe("DeepSeekHandler", () => {
 			// Verify that the thinking parameter was NOT passed to the API
 			const callArgs = mockCreate.mock.calls[0][0]
 			expect(callArgs.thinking).toBeUndefined()
+		})
+
+		it("should pass thinking parameter for deepseek-v4-pro model", async () => {
+			const v4ProHandler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-pro",
+			})
+
+			const stream = v4ProHandler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// Consume the stream
+			}
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					thinking: { type: "enabled" },
+				}),
+				{},
+			)
+		})
+
+		it("should pass thinking parameter for deepseek-v4-flash model", async () => {
+			const v4FlashHandler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-flash",
+			})
+
+			const stream = v4FlashHandler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// Consume the stream
+			}
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					thinking: { type: "enabled" },
+				}),
+				{},
+			)
+		})
+
+		it("should handle reasoning_content in streaming responses for deepseek-v4-pro", async () => {
+			const v4ProHandler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-pro",
+			})
+
+			const stream = v4ProHandler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const reasoningChunks = chunks.filter((chunk) => chunk.type === "reasoning")
+			expect(reasoningChunks.length).toBeGreaterThan(0)
+			expect(reasoningChunks[0].text).toBe("Let me think about this...")
 		})
 
 		it("should handle tool calls with reasoning_content", async () => {
