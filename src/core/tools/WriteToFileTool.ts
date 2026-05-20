@@ -6,6 +6,7 @@ import { type ClineSayTool, DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
+import { getApiMetrics } from "../../shared/getApiMetrics"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { fileExistsAtPath, createDirectoriesForFile } from "../../utils/fs"
 import { stripLineNumbers, everyLineHasLineNumbers } from "../../integrations/misc/extract-text"
@@ -42,7 +43,29 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		if (newContent === undefined) {
 			task.consecutiveMistakeCount++
 			task.recordToolError("write_to_file")
-			pushToolResult(await task.sayAndCreateMissingParamError("write_to_file", "content"))
+
+			// Use progressive error with context window awareness to break retry loops
+			const contextWindow = task.api.getModel().info.contextWindow ?? 128_000
+			const tokenUsage = getApiMetrics(task.combineMessages(task.clineMessages.slice(1)))
+			const totalTokens = (tokenUsage.totalTokensIn ?? 0) + (tokenUsage.totalTokensOut ?? 0)
+			const contextUsagePercent = contextWindow > 0 ? Math.round((totalTokens / contextWindow) * 100) : undefined
+
+			const errorMessage = formatResponse.writeToFileMissingContentError(
+				relPath || "unknown",
+				task.consecutiveMistakeCount,
+				contextUsagePercent,
+			)
+
+			await task.say(
+				"error",
+				`Roo tried to use write_to_file for '${relPath || "unknown"}' without value for required parameter 'content'. ${
+					task.consecutiveMistakeCount >= 2
+						? "This has happened multiple times -- Roo will try a different approach."
+						: "Retrying..."
+				}`,
+			)
+
+			pushToolResult(formatResponse.toolError(errorMessage))
 			await task.diffViewProvider.reset()
 			return
 		}

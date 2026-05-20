@@ -36,6 +36,10 @@ vi.mock("../../prompts/responses", () => ({
 		toolError: vi.fn((msg) => `Error: ${msg}`),
 		rooIgnoreError: vi.fn((path) => `Access denied: ${path}`),
 		createPrettyPatch: vi.fn(() => "mock-diff"),
+		writeToFileMissingContentError: vi.fn(
+			(relPath: string, failureCount: number, contextUsagePercent?: number) =>
+				`Progressive error for ${relPath} (attempt ${failureCount})`,
+		),
 	},
 }))
 
@@ -60,6 +64,16 @@ vi.mock("../../../integrations/misc/extract-text", () => ({
 			.map((line: string, i: number) => `${i + 1} | ${line}`)
 			.join("\n"),
 	),
+}))
+
+vi.mock("../../../shared/getApiMetrics", () => ({
+	getApiMetrics: vi.fn().mockReturnValue({
+		totalTokensIn: 50000,
+		totalTokensOut: 10000,
+		totalCacheWrites: 0,
+		totalCacheReads: 0,
+		totalCost: 0,
+	}),
 }))
 
 vi.mock("vscode", () => ({
@@ -171,8 +185,10 @@ describe("writeToFileTool", () => {
 			}),
 		}
 		mockCline.api = {
-			getModel: vi.fn().mockReturnValue({ id: "claude-3" }),
+			getModel: vi.fn().mockReturnValue({ id: "claude-3", info: { contextWindow: 200_000 } }),
 		}
+		mockCline.clineMessages = []
+		mockCline.combineMessages = vi.fn().mockReturnValue([])
 		mockCline.fileContextTracker = {
 			trackFileContext: vi.fn().mockResolvedValue(undefined),
 		}
@@ -328,7 +344,7 @@ describe("writeToFileTool", () => {
 		})
 
 		it("unescapes HTML entities for non-Claude models", async () => {
-			mockCline.api.getModel.mockReturnValue({ id: "gpt-4" })
+			mockCline.api.getModel.mockReturnValue({ id: "gpt-4", info: { contextWindow: 128_000 } })
 
 			await executeWriteFileTool({ content: "&lt;test&gt;" })
 
