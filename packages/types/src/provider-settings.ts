@@ -20,6 +20,7 @@ import {
 	xaiModels,
 	internationalZAiModels,
 	minimaxModels,
+	kymaModels,
 } from "./providers/index.js"
 
 /**
@@ -116,6 +117,7 @@ export const providerNames = [
 	"openai-native",
 	"qwen-code",
 	"sambanova",
+	"kyma",
 	"vertex",
 	"xai",
 	"zai",
@@ -355,6 +357,10 @@ const sambaNovaSchema = apiModelIdProviderModelSchema.extend({
 	sambaNovaApiKey: z.string().optional(),
 })
 
+const kymaSchema = apiModelIdProviderModelSchema.extend({
+	kymaApiKey: z.string().optional(),
+})
+
 export const zaiApiLineSchema = z.enum(["international_coding", "china_coding", "international_api", "china_api"])
 
 export type ZaiApiLine = z.infer<typeof zaiApiLineSchema>
@@ -410,6 +416,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	basetenSchema.merge(z.object({ apiProvider: z.literal("baseten") })),
 	litellmSchema.merge(z.object({ apiProvider: z.literal("litellm") })),
 	sambaNovaSchema.merge(z.object({ apiProvider: z.literal("sambanova") })),
+	kymaSchema.merge(z.object({ apiProvider: z.literal("kyma") })),
 	zaiSchema.merge(z.object({ apiProvider: z.literal("zai") })),
 	fireworksSchema.merge(z.object({ apiProvider: z.literal("fireworks") })),
 	qwenCodeSchema.merge(z.object({ apiProvider: z.literal("qwen-code") })),
@@ -443,6 +450,7 @@ export const providerSettingsSchema = z.object({
 	...basetenSchema.shape,
 	...litellmSchema.shape,
 	...sambaNovaSchema.shape,
+	...kymaSchema.shape,
 	...zaiSchema.shape,
 	...fireworksSchema.shape,
 	...qwenCodeSchema.shape,
@@ -518,6 +526,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	baseten: "apiModelId",
 	litellm: "litellmModelId",
 	sambanova: "apiModelId",
+	kyma: "apiModelId",
 	zai: "apiModelId",
 	fireworks: "apiModelId",
 	"vercel-ai-gateway": "vercelAiGatewayModelId",
@@ -610,6 +619,11 @@ export const MODELS_BY_PROVIDER: Record<
 		id: "sambanova",
 		label: "SambaNova",
 		models: Object.keys(sambaNovaModels),
+	},
+	kyma: {
+		id: "kyma",
+		label: "Kyma API",
+		models: Object.keys(kymaModels),
 	},
 	vertex: {
 		id: "vertex",
