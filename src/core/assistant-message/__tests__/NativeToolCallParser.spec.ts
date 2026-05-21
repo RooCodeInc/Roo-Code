@@ -343,4 +343,148 @@ describe("NativeToolCallParser", () => {
 			})
 		})
 	})
+
+	describe("Ollama single-chunk tool call pattern", () => {
+		// Ollama sends the entire tool call (id + name + full arguments) in a single chunk,
+		// unlike OpenAI which streams them incrementally across multiple chunks.
+		// Ollama also uses non-standard tool call IDs like "functions.read_file:0"
+		// instead of OpenAI's "call_abc123" format.
+
+		it("should handle Ollama-style single-chunk tool call with non-standard ID", () => {
+			// Simulate exactly what Ollama sends through the proxy:
+			// One chunk with id, name, and complete arguments all at once
+			const events = NativeToolCallParser.processRawChunk({
+				index: 0,
+				id: "functions.read_file:0",
+				name: "read_file",
+				arguments: '{"path":"/etc/hostname"}',
+			})
+
+			// Should emit tool_call_start followed by tool_call_delta
+			expect(events.length).toBeGreaterThanOrEqual(2)
+			expect(events[0].type).toBe("tool_call_start")
+			expect(events[0]).toEqual({
+				type: "tool_call_start",
+				id: "functions.read_file:0",
+				name: "read_file",
+			})
+			expect(events[1].type).toBe("tool_call_delta")
+			expect(events[1]).toEqual({
+				type: "tool_call_delta",
+				id: "functions.read_file:0",
+				delta: '{"path":"/etc/hostname"}',
+			})
+		})
+
+		it("should finalize Ollama tool call via finalizeRawChunks", () => {
+			// Step 1: Process the single chunk (simulating what Task.ts does)
+			const rawEvents = NativeToolCallParser.processRawChunk({
+				index: 0,
+				id: "functions.read_file:0",
+				name: "read_file",
+				arguments: '{"path":"/etc/hostname"}',
+			})
+
+			// Step 2: Start streaming tool call (simulating Task.ts tool_call_start handler)
+			const startEvent = rawEvents.find((e) => e.type === "tool_call_start")
+			expect(startEvent).toBeDefined()
+			NativeToolCallParser.startStreamingToolCall(
+				startEvent!.id,
+				startEvent!.type === "tool_call_start" ? (startEvent as any).name : "",
+			)
+
+			// Step 3: Process delta (simulating Task.ts tool_call_delta handler)
+			const deltaEvent = rawEvents.find((e) => e.type === "tool_call_delta")
+			expect(deltaEvent).toBeDefined()
+			if (deltaEvent?.type === "tool_call_delta") {
+				NativeToolCallParser.processStreamingChunk(deltaEvent.id, deltaEvent.delta)
+			}
+
+			// Step 4: Finalize via finalizeRawChunks (simulating end of stream in Task.ts)
+			// This is what happens when the stream ends — Task.ts calls finalizeRawChunks()
+			const finalEvents = NativeToolCallParser.finalizeRawChunks()
+			expect(finalEvents.length).toBe(1)
+			expect(finalEvents[0].type).toBe("tool_call_end")
+			expect(finalEvents[0].id).toBe("functions.read_file:0")
+
+			// Step 5: Finalize the streaming tool call (simulating Task.ts handling tool_call_end)
+			const finalToolUse = NativeToolCallParser.finalizeStreamingToolCall("functions.read_file:0")
+			expect(finalToolUse).not.toBeNull()
+			expect(finalToolUse?.type).toBe("tool_use")
+			if (finalToolUse?.type === "tool_use") {
+				expect(finalToolUse.name).toBe("read_file")
+				const nativeArgs = finalToolUse.nativeArgs as { path: string }
+				expect(nativeArgs.path).toBe("/etc/hostname")
+			}
+		})
+
+		it("should finalize Ollama tool call via processFinishReason", () => {
+			// Step 1: Process the single chunk
+			NativeToolCallParser.processRawChunk({
+				index: 0,
+				id: "functions.read_file:0",
+				name: "read_file",
+				arguments: '{"path":"/etc/hostname"}',
+			})
+
+			// Step 2: Process finish_reason (Ollama sends finish_reason: "tool_calls")
+			const endEvents = NativeToolCallParser.processFinishReason("tool_calls")
+			expect(endEvents.length).toBe(1)
+			expect(endEvents[0].type).toBe("tool_call_end")
+			expect(endEvents[0].id).toBe("functions.read_file:0")
+		})
+
+		it("should handle Ollama execute_command tool call", () => {
+			const rawEvents = NativeToolCallParser.processRawChunk({
+				index: 0,
+				id: "functions.execute_command:0",
+				name: "execute_command",
+				arguments: '{"command":"ls -la","cwd":"/tmp"}',
+			})
+
+			expect(rawEvents.length).toBeGreaterThanOrEqual(2)
+
+			// Start and process streaming
+			NativeToolCallParser.startStreamingToolCall("functions.execute_command:0", "execute_command")
+			const deltaEvent = rawEvents.find((e) => e.type === "tool_call_delta")
+			if (deltaEvent?.type === "tool_call_delta") {
+				NativeToolCallParser.processStreamingChunk(deltaEvent.id, deltaEvent.delta)
+			}
+
+			// Finalize
+			const finalToolUse = NativeToolCallParser.finalizeStreamingToolCall("functions.execute_command:0")
+			expect(finalToolUse).not.toBeNull()
+			expect(finalToolUse?.type).toBe("tool_use")
+			if (finalToolUse?.type === "tool_use") {
+				expect(finalToolUse.name).toBe("execute_command")
+				const nativeArgs = finalToolUse.nativeArgs as { command: string; cwd?: string }
+				expect(nativeArgs.command).toBe("ls -la")
+				expect(nativeArgs.cwd).toBe("/tmp")
+			}
+		})
+
+		it("should handle multiple Ollama tool calls in sequence", () => {
+			// First tool call
+			const events1 = NativeToolCallParser.processRawChunk({
+				index: 0,
+				id: "functions.read_file:0",
+				name: "read_file",
+				arguments: '{"path":"/etc/hostname"}',
+			})
+			expect(events1[0].type).toBe("tool_call_start")
+
+			// Second tool call
+			const events2 = NativeToolCallParser.processRawChunk({
+				index: 1,
+				id: "functions.read_file:1",
+				name: "read_file",
+				arguments: '{"path":"/etc/hosts"}',
+			})
+			expect(events2[0].type).toBe("tool_call_start")
+
+			// Finish both via processFinishReason
+			const endEvents = NativeToolCallParser.processFinishReason("tool_calls")
+			expect(endEvents.length).toBe(2)
+		})
+	})
 })

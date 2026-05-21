@@ -1280,3 +1280,256 @@ describe("getOpenAiModels", () => {
 		expect(result).toEqual(["gpt-4", "gpt-3.5-turbo"])
 	})
 })
+
+describe("Ollama streaming patterns", () => {
+	// These tests verify that the OpenAI handler correctly processes
+	// Ollama's non-standard streaming format for thinking models like kimi-k2.5.
+	// Ollama differs from OpenAI in several ways:
+	// 1. Tool call IDs use "functions.tool_name:N" format (not "call_xxx")
+	// 2. Entire tool calls arrive in a single chunk (not incrementally)
+	// 3. reasoning_content field for thinking tokens
+	// 4. role: "assistant" on every delta (not just first)
+	// 5. content: "" (empty string) on deltas
+
+	let handler: OpenAiHandler
+	const systemPrompt = "You are a helpful assistant."
+	const messages: Anthropic.Messages.MessageParam[] = [
+		{ role: "user", content: [{ type: "text" as const, text: "Read /etc/hostname" }] },
+	]
+
+	beforeEach(() => {
+		handler = new OpenAiHandler({
+			openAiApiKey: "test-key",
+			openAiModelId: "kimi-k2.5:cloud",
+			openAiBaseUrl: "http://localhost:4141/v1",
+		})
+		mockCreate.mockClear()
+	})
+
+	it("should yield reasoning chunks from reasoning_content field", async () => {
+		mockCreate.mockImplementation(async () => ({
+			[Symbol.asyncIterator]: async function* () {
+				yield {
+					choices: [
+						{
+							delta: { role: "assistant", reasoning_content: "Let me think about " },
+							finish_reason: null,
+						},
+					],
+				}
+				yield {
+					choices: [
+						{
+							delta: { role: "assistant", reasoning_content: "this request." },
+							finish_reason: null,
+						},
+					],
+				}
+				yield {
+					choices: [
+						{
+							delta: { role: "assistant", content: "Here is the result." },
+							finish_reason: null,
+						},
+					],
+				}
+				yield {
+					choices: [
+						{
+							delta: {},
+							finish_reason: "stop",
+						},
+					],
+					usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 },
+				}
+			},
+		}))
+
+		const stream = handler.createMessage(systemPrompt, messages)
+		const chunks: any[] = []
+		for await (const chunk of stream) {
+			chunks.push(chunk)
+		}
+
+		const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+		expect(reasoningChunks).toHaveLength(2)
+		expect(reasoningChunks[0].text).toBe("Let me think about ")
+		expect(reasoningChunks[1].text).toBe("this request.")
+
+		const textChunks = chunks.filter((c) => c.type === "text")
+		expect(textChunks).toHaveLength(1)
+		expect(textChunks[0].text).toBe("Here is the result.")
+	})
+
+	it("should yield reasoning chunks from non-standard 'reasoning' field (Ollama)", async () => {
+		mockCreate.mockImplementation(async () => ({
+			[Symbol.asyncIterator]: async function* () {
+				yield {
+					choices: [
+						{
+							delta: { role: "assistant", reasoning: "Thinking via Ollama field" },
+							finish_reason: null,
+						},
+					],
+				}
+				yield {
+					choices: [
+						{
+							delta: { role: "assistant", content: "Done." },
+							finish_reason: null,
+						},
+					],
+				}
+				yield {
+					choices: [{ delta: {}, finish_reason: "stop" }],
+					usage: { prompt_tokens: 5, completion_tokens: 10, total_tokens: 15 },
+				}
+			},
+		}))
+
+		const stream = handler.createMessage(systemPrompt, messages)
+		const chunks: any[] = []
+		for await (const chunk of stream) {
+			chunks.push(chunk)
+		}
+
+		const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+		expect(reasoningChunks).toHaveLength(1)
+		expect(reasoningChunks[0].text).toBe("Thinking via Ollama field")
+	})
+
+	it("should handle Ollama single-chunk tool call with non-standard ID", async () => {
+		// This is the exact pattern Ollama sends for kimi-k2.5 tool calls:
+		// reasoning chunks → single tool call chunk → finish_reason: "tool_calls"
+		mockCreate.mockImplementation(async () => ({
+			[Symbol.asyncIterator]: async function* () {
+				// Reasoning chunks
+				yield {
+					choices: [
+						{
+							delta: { role: "assistant", reasoning_content: "I should read the file." },
+							finish_reason: null,
+						},
+					],
+				}
+				// Single chunk with complete tool call (Ollama style)
+				yield {
+					choices: [
+						{
+							delta: {
+								role: "assistant",
+								tool_calls: [
+									{
+										index: 0,
+										id: "functions.read_file:0",
+										type: "function",
+										function: {
+											name: "read_file",
+											arguments: '{"path":"/etc/hostname"}',
+										},
+									},
+								],
+							},
+							finish_reason: null,
+						},
+					],
+				}
+				// Empty delta then finish
+				yield {
+					choices: [
+						{
+							delta: { role: "assistant" },
+							finish_reason: "tool_calls",
+						},
+					],
+				}
+				// Usage
+				yield {
+					choices: [],
+					usage: { prompt_tokens: 57, completion_tokens: 44, total_tokens: 101 },
+				}
+			},
+		}))
+
+		const stream = handler.createMessage(systemPrompt, messages)
+		const chunks: any[] = []
+		for await (const chunk of stream) {
+			chunks.push(chunk)
+		}
+
+		// Should have reasoning chunk
+		const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+		expect(reasoningChunks).toHaveLength(1)
+		expect(reasoningChunks[0].text).toBe("I should read the file.")
+
+		// Should have tool_call_partial with Ollama-style ID
+		const toolPartials = chunks.filter((c) => c.type === "tool_call_partial")
+		expect(toolPartials).toHaveLength(1)
+		expect(toolPartials[0]).toEqual({
+			type: "tool_call_partial",
+			index: 0,
+			id: "functions.read_file:0",
+			name: "read_file",
+			arguments: '{"path":"/etc/hostname"}',
+		})
+
+		// Should have tool_call_end when finish_reason is "tool_calls"
+		const toolEnds = chunks.filter((c) => c.type === "tool_call_end")
+		expect(toolEnds).toHaveLength(1)
+		expect(toolEnds[0].id).toBe("functions.read_file:0")
+
+		// Should have usage
+		const usageChunks = chunks.filter((c) => c.type === "usage")
+		expect(usageChunks).toHaveLength(1)
+	})
+
+	it("should handle non-streaming Ollama response with reasoning and tool calls", async () => {
+		mockCreate.mockResolvedValueOnce({
+			choices: [
+				{
+					message: {
+						role: "assistant",
+						content: null,
+						reasoning_content: "Let me read the file.",
+						tool_calls: [
+							{
+								id: "functions.read_file:0",
+								type: "function",
+								function: {
+									name: "read_file",
+									arguments: '{"path":"/etc/hostname"}',
+								},
+							},
+						],
+					},
+					finish_reason: "tool_calls",
+				},
+			],
+			usage: { prompt_tokens: 50, completion_tokens: 40, total_tokens: 90 },
+		})
+
+		const nonStreamHandler = new OpenAiHandler({
+			openAiApiKey: "test-key",
+			openAiModelId: "kimi-k2.5:cloud",
+			openAiBaseUrl: "http://localhost:4141/v1",
+			openAiStreamingEnabled: false,
+		})
+
+		const stream = nonStreamHandler.createMessage(systemPrompt, messages)
+		const chunks: any[] = []
+		for await (const chunk of stream) {
+			chunks.push(chunk)
+		}
+
+		// Should have tool_call
+		const toolCalls = chunks.filter((c) => c.type === "tool_call")
+		expect(toolCalls).toHaveLength(1)
+		expect(toolCalls[0].id).toBe("functions.read_file:0")
+		expect(toolCalls[0].name).toBe("read_file")
+
+		// Should have reasoning
+		const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+		expect(reasoningChunks).toHaveLength(1)
+		expect(reasoningChunks[0].text).toBe("Let me read the file.")
+	})
+})
