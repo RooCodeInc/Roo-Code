@@ -637,6 +637,20 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "subagent":
+				if (
+					partialArgs.description !== undefined ||
+					partialArgs.prompt !== undefined ||
+					partialArgs.subagent_type !== undefined
+				) {
+					nativeArgs = {
+						description: partialArgs.description,
+						prompt: partialArgs.prompt,
+						subagent_type: partialArgs.subagent_type,
+					}
+				}
+				break
+
 			default:
 				break
 		}
@@ -907,6 +921,21 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							path: args.path,
 							content: args.content,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "subagent":
+					if (
+						args.description !== undefined &&
+						args.prompt !== undefined &&
+						args.subagent_type !== undefined &&
+						(args.subagent_type === "general" || args.subagent_type === "explore")
+					) {
+						nativeArgs = {
+							description: args.description,
+							prompt: args.prompt,
+							subagent_type: args.subagent_type,
 						} as NativeArgsFor<TName>
 					}
 					break
