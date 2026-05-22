@@ -57,6 +57,25 @@ describe("embeddingModels", () => {
 			expect(getModelDimension("openai", "text-embedding-3-large")).toBe(3072)
 			expect(getModelDimension("openai", "text-embedding-ada-002")).toBe(1536)
 		})
+
+		it("should return correct dimensions for openai-compatible third-party models", () => {
+			// Qwen models (commonly available on Featherless AI, Together AI, etc.)
+			expect(getModelDimension("openai-compatible", "Qwen/Qwen3-Embedding-0.6B")).toBe(1024)
+			expect(getModelDimension("openai-compatible", "Qwen/Qwen3-Embedding-4B")).toBe(2560)
+			expect(getModelDimension("openai-compatible", "Qwen/Qwen3-Embedding-8B")).toBe(4096)
+			// BAAI BGE models
+			expect(getModelDimension("openai-compatible", "BAAI/bge-large-en-v1.5")).toBe(1024)
+			expect(getModelDimension("openai-compatible", "BAAI/bge-base-en-v1.5")).toBe(768)
+			expect(getModelDimension("openai-compatible", "BAAI/bge-small-en-v1.5")).toBe(384)
+			// Nomic models
+			expect(getModelDimension("openai-compatible", "nomic-embed-text")).toBe(768)
+			// Mixedbread models
+			expect(getModelDimension("openai-compatible", "mixedbread-ai/mxbai-embed-large-v1")).toBe(1024)
+		})
+
+		it("should still return undefined for unknown models on openai-compatible", () => {
+			expect(getModelDimension("openai-compatible", "some-unknown-model")).toBeUndefined()
+		})
 	})
 
 	describe("getModelScoreThreshold", () => {

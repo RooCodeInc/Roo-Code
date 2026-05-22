@@ -539,6 +539,15 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		// Prepare settings to save
 		const settingsToSave: any = {}
 
+		// Keys whose string values should be trimmed before saving
+		const trimKeys = new Set([
+			"codebaseIndexQdrantUrl",
+			"codebaseIndexEmbedderBaseUrl",
+			"codebaseIndexOpenAiCompatibleBaseUrl",
+			"codebaseIndexEmbedderModelId",
+			"codebaseIndexQdrantApiKey",
+		])
+
 		// Iterate through all current settings
 		for (const [key, value] of Object.entries(currentSettings)) {
 			// For secret fields with placeholder, don't send the placeholder
@@ -549,8 +558,13 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 				continue
 			}
 
-			// Include all other fields, including empty strings (which clear secrets)
-			settingsToSave[key] = value
+			// Trim whitespace from URL and identifier fields to prevent silent failures
+			if (trimKeys.has(key) && typeof value === "string") {
+				settingsToSave[key] = value.trim()
+			} else {
+				// Include all other fields, including empty strings (which clear secrets)
+				settingsToSave[key] = value
+			}
 		}
 
 		// Always include codebaseIndexEnabled to ensure it's persisted

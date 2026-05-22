@@ -32,6 +32,19 @@ export const EMBEDDING_MODEL_PROFILES: EmbeddingModelProfiles = {
 			scoreThreshold: 0.15,
 			queryPrefix: "Represent this query for searching relevant code: ",
 		},
+		// Nomic models (commonly available on third-party providers)
+		"nomic-embed-text": { dimension: 768, scoreThreshold: 0.4 },
+		"nomic-ai/nomic-embed-text-v1.5": { dimension: 768, scoreThreshold: 0.4 },
+		// Qwen embedding models (Featherless AI, Together AI, etc.)
+		"Qwen/Qwen3-Embedding-0.6B": { dimension: 1024, scoreThreshold: 0.4 },
+		"Qwen/Qwen3-Embedding-4B": { dimension: 2560, scoreThreshold: 0.4 },
+		"Qwen/Qwen3-Embedding-8B": { dimension: 4096, scoreThreshold: 0.4 },
+		// BAAI BGE models (commonly self-hosted)
+		"BAAI/bge-large-en-v1.5": { dimension: 1024, scoreThreshold: 0.4 },
+		"BAAI/bge-base-en-v1.5": { dimension: 768, scoreThreshold: 0.4 },
+		"BAAI/bge-small-en-v1.5": { dimension: 384, scoreThreshold: 0.4 },
+		// Mixedbread models
+		"mixedbread-ai/mxbai-embed-large-v1": { dimension: 1024, scoreThreshold: 0.4 },
 	},
 	gemini: {
 		"gemini-embedding-001": { dimension: 3072, scoreThreshold: 0.4 },
