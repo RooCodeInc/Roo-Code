@@ -177,7 +177,10 @@ function normalizeStatus(status: string | undefined): TodoStatus {
 
 export function parseMarkdownChecklist(md: string): TodoItem[] {
 	if (typeof md !== "string") return []
-	const lines = md
+	// Normalize literal escape sequences (e.g. "\\n", "\\r\\n") that some
+	// models/providers send instead of actual newline characters.
+	const normalized = md.replace(/\\r\\n|\\n/g, "\n")
+	const lines = normalized
 		.split(/\r?\n/)
 		.map((l) => l.trim())
 		.filter(Boolean)
