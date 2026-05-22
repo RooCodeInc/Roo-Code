@@ -29,6 +29,8 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	autoCondenseContext: boolean
 	autoCondenseContextPercent: number
 	listApiConfigMeta: any[]
+	condensingApiConfigId?: string
+	setCondensingApiConfigId: (value: string) => void
 	maxOpenTabsContext: number
 	maxWorkspaceFiles: number
 	showRooIgnoredFiles?: boolean
@@ -67,6 +69,8 @@ export const ContextManagementSettings = ({
 	autoCondenseContext,
 	autoCondenseContextPercent,
 	listApiConfigMeta,
+	condensingApiConfigId,
+	setCondensingApiConfigId,
 	maxOpenTabsContext,
 	maxWorkspaceFiles,
 	showRooIgnoredFiles,
@@ -470,6 +474,52 @@ export const ContextManagementSettings = ({
 						className="w-full"
 						data-testid="condense-prompt-textarea"
 					/>
+				</SearchableSetting>
+
+				{/* Condensing API Configuration */}
+				<SearchableSetting
+					settingId="context-condensing-api-config"
+					section="contextManagement"
+					label={t("settings:contextManagement.condensingApiConfiguration.label")}>
+					<div>
+						<label className="block font-medium mb-1">
+							{t("settings:contextManagement.condensingApiConfiguration.label")}
+						</label>
+						<div className="text-sm text-vscode-descriptionForeground mb-2">
+							{t("settings:contextManagement.condensingApiConfiguration.description")}
+						</div>
+						<Select
+							value={condensingApiConfigId || "-"}
+							onValueChange={(value) => {
+								const newConfigId = value === "-" ? "" : value
+								setCondensingApiConfigId(newConfigId)
+								vscode.postMessage({
+									type: "condensingApiConfigId",
+									text: value === "-" ? "" : value,
+								})
+							}}>
+							<SelectTrigger data-testid="condensing-api-config-select" className="w-full">
+								<SelectValue
+									placeholder={t(
+										"settings:contextManagement.condensingApiConfiguration.useCurrentConfig",
+									)}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="-">
+									{t("settings:contextManagement.condensingApiConfiguration.useCurrentConfig")}
+								</SelectItem>
+								{(listApiConfigMeta || []).map((config: any) => (
+									<SelectItem
+										key={config.id}
+										value={config.id}
+										data-testid={`condensing-${config.id}-option`}>
+										{config.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
 				</SearchableSetting>
 
 				{/* Auto Condense Context */}

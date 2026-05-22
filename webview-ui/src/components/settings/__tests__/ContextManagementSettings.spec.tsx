@@ -89,6 +89,8 @@ describe("ContextManagementSettings", () => {
 		autoCondenseContext: false,
 		autoCondenseContextPercent: 80,
 		listApiConfigMeta: [],
+		condensingApiConfigId: undefined as string | undefined,
+		setCondensingApiConfigId: vi.fn(),
 		maxOpenTabsContext: 20,
 		maxWorkspaceFiles: 200,
 		showRooIgnoredFiles: false,
@@ -333,9 +335,9 @@ describe("ContextManagementSettings", () => {
 		const slider = screen.getByTestId("condense-threshold-slider")
 		expect(slider).toBeInTheDocument()
 
-		// Should render the profile select dropdown
+		// Should render the profile select dropdown and condensing API config dropdown
 		const selects = screen.getAllByRole("combobox")
-		expect(selects).toHaveLength(1)
+		expect(selects).toHaveLength(2)
 	})
 
 	describe("Auto Condense Context functionality", () => {
@@ -368,8 +370,8 @@ describe("ContextManagementSettings", () => {
 
 			// Threshold settings should be visible
 			expect(screen.getByTestId("condense-threshold-slider")).toBeInTheDocument()
-			// One combobox for profile selection
-			expect(screen.getAllByRole("combobox")).toHaveLength(1)
+			// Two comboboxes: condensing API config + profile selection
+			expect(screen.getAllByRole("combobox")).toHaveLength(2)
 		})
 
 		it("updates auto condense context percent", () => {

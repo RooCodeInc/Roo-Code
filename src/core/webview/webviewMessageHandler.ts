@@ -1511,6 +1511,10 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 			await updateGlobalState("enhancementApiConfigId", message.text)
 			await provider.postStateToWebview()
 			break
+		case "condensingApiConfigId":
+			await updateGlobalState("condensingApiConfigId", message.text)
+			await provider.postStateToWebview()
+			break
 
 		case "autoApprovalEnabled":
 			await updateGlobalState("autoApprovalEnabled", message.bool ?? false)
