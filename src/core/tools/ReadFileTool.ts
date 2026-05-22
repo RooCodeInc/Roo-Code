@@ -66,6 +66,27 @@ interface FileResult {
 	entry?: InternalFileEntry
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Resolve the effective line limit from the maxReadFileLine user setting.
+ *
+ * @param maxReadFileLine - The user setting value:
+ *   - `-1` or `undefined`: use DEFAULT_LINE_LIMIT (2000)
+ *   - `0`: no limit (read entire file) — returns `Infinity`
+ *   - positive number: use that value as the limit
+ * @returns The resolved line limit
+ */
+export function resolveLineLimit(maxReadFileLine?: number): number {
+	if (maxReadFileLine === undefined || maxReadFileLine === null || maxReadFileLine === -1) {
+		return DEFAULT_LINE_LIMIT
+	}
+	if (maxReadFileLine === 0) {
+		return Infinity
+	}
+	return maxReadFileLine > 0 ? maxReadFileLine : DEFAULT_LINE_LIMIT
+}
+
 // ─── Tool Implementation ──────────────────────────────────────────────────────
 
 export class ReadFileTool extends BaseTool<"read_file"> {
@@ -169,9 +190,16 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			const imageMemoryTracker = new ImageMemoryTracker()
 			const state = await task.providerRef.deref()?.getState()
 			const {
+				maxReadFileLine,
 				maxImageFileSize = DEFAULT_MAX_IMAGE_FILE_SIZE_MB,
 				maxTotalImageSize = DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB,
 			} = state ?? {}
+
+			// Resolve the effective line limit from the maxReadFileLine setting.
+			// -1 (default): use DEFAULT_LINE_LIMIT (2000)
+			// 0: no limit (read entire file)
+			// positive number: use that as the limit
+			const effectiveLineLimit = resolveLineLimit(maxReadFileLine)
 
 			for (const fileResult of fileResults) {
 				if (fileResult.status !== "approved") continue
@@ -216,7 +244,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					// (they become U+FFFD replacement characters instead of throwing)
 					const buffer = await fs.readFile(fullPath)
 					const fileContent = buffer.toString("utf-8")
-					const result = this.processTextFile(fileContent, entry)
+					const result = this.processTextFile(fileContent, entry, effectiveLineLimit)
 
 					await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
 
@@ -266,7 +294,11 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 	/**
 	 * Process a text file according to the requested mode.
 	 */
-	private processTextFile(content: string, entry: InternalFileEntry): string {
+	private processTextFile(
+		content: string,
+		entry: InternalFileEntry,
+		effectiveLineLimit: number = DEFAULT_LINE_LIMIT,
+	): string {
 		const mode = entry.mode || "slice"
 
 		if (mode === "indentation") {
@@ -278,7 +310,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				maxLevels: entry.max_levels,
 				includeSiblings: entry.include_siblings,
 				includeHeader: entry.include_header,
-				limit: entry.limit ?? DEFAULT_LINE_LIMIT,
+				limit: entry.limit ?? effectiveLineLimit,
 				maxLines: entry.max_lines,
 			})
 
@@ -287,7 +319,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			if (result.wasTruncated && result.includedRanges.length > 0) {
 				const [start, end] = result.includedRanges[0]
 				const nextOffset = end + 1
-				const effectiveLimit = entry.limit ?? DEFAULT_LINE_LIMIT
+				const effectiveLimit = entry.limit ?? effectiveLineLimit
 				// Put truncation warning at TOP (before content) to match @ mention format
 				output = `IMPORTANT: File content truncated.
 	Status: Showing lines ${start}-${end} of ${result.totalLines} total lines.
@@ -306,7 +338,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 		// NOTE: read_file offset is 1-based externally; convert to 0-based for readWithSlice.
 		const offset1 = entry.offset ?? 1
 		const offset0 = Math.max(0, offset1 - 1)
-		const limit = entry.limit ?? DEFAULT_LINE_LIMIT
+		const limit = entry.limit ?? effectiveLineLimit
 
 		const result = readWithSlice(content, offset0, limit)
 
@@ -786,8 +818,10 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					}
 					content = selectedLines.join("\n")
 				} else {
-					// Read with default limits using slice mode
-					const result = readWithSlice(rawContent, 0, DEFAULT_LINE_LIMIT)
+					// Read with effective limits using slice mode
+					const legacyState = await task.providerRef.deref()?.getState()
+					const legacyLineLimit = resolveLineLimit(legacyState?.maxReadFileLine)
+					const result = readWithSlice(rawContent, 0, legacyLineLimit)
 					content = result.content
 					if (result.wasTruncated) {
 						content += `\n\n[File truncated: showing ${result.returnedLines} of ${result.totalLines} total lines]`
