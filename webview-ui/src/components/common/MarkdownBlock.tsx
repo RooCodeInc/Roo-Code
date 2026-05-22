@@ -7,6 +7,7 @@ import remarkMath from "remark-math"
 import remarkGfm from "remark-gfm"
 
 import { vscode } from "@src/utils/vscode"
+import remarkGithubAlerts, { ALERT_LABELS, type AlertType } from "@src/utils/remarkGithubAlerts"
 
 import CodeBlock from "./CodeBlock"
 import MermaidBlock from "./MermaidBlock"
@@ -201,11 +202,94 @@ const StyledMarkdown = styled.div`
 	tr:hover {
 		background-color: var(--vscode-list-hoverBackground);
 	}
+
+	/* GitHub-style Markdown alert styles */
+	.markdown-alert {
+		padding: 8px 16px;
+		margin: 1em 0;
+		border-left: 4px solid;
+		border-radius: 2px;
+		background-color: var(--vscode-textBlockQuote-background, rgba(127, 127, 127, 0.1));
+
+		> p:first-child {
+			margin-top: 0.25em;
+		}
+
+		> p:last-child {
+			margin-bottom: 0.25em;
+		}
+	}
+
+	.markdown-alert-title {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		font-weight: 600;
+		margin-bottom: 4px;
+	}
+
+	.markdown-alert-title svg {
+		flex-shrink: 0;
+	}
+
+	.markdown-alert-note {
+		border-left-color: var(--vscode-textLink-foreground, #3794ff);
+	}
+
+	.markdown-alert-note .markdown-alert-title {
+		color: var(--vscode-textLink-foreground, #3794ff);
+	}
+
+	.markdown-alert-tip {
+		border-left-color: var(--vscode-testing-iconPassed, #73c991);
+	}
+
+	.markdown-alert-tip .markdown-alert-title {
+		color: var(--vscode-testing-iconPassed, #73c991);
+	}
+
+	.markdown-alert-important {
+		border-left-color: var(--vscode-editorInfo-foreground, #a371f7);
+	}
+
+	.markdown-alert-important .markdown-alert-title {
+		color: var(--vscode-editorInfo-foreground, #a371f7);
+	}
+
+	.markdown-alert-warning {
+		border-left-color: var(--vscode-editorWarning-foreground, #cca700);
+	}
+
+	.markdown-alert-warning .markdown-alert-title {
+		color: var(--vscode-editorWarning-foreground, #cca700);
+	}
+
+	.markdown-alert-caution {
+		border-left-color: var(--vscode-editorError-foreground, #f85149);
+	}
+
+	.markdown-alert-caution .markdown-alert-title {
+		color: var(--vscode-editorError-foreground, #f85149);
+	}
 `
 
 const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 	const components = useMemo(
 		() => ({
+			blockquote: ({ children, className, ...props }: any) => {
+				const alertType = props["data-alert-type"] as string | undefined
+				if (!alertType) {
+					return <blockquote {...props}>{children}</blockquote>
+				}
+
+				const label = ALERT_LABELS[alertType.toUpperCase() as AlertType] || alertType
+				return (
+					<div className={className} {...props}>
+						<p className="markdown-alert-title">{label}</p>
+						{children}
+					</div>
+				)
+			},
 			table: ({ children, ...props }: any) => {
 				return (
 					<div className="table-wrapper">
@@ -309,6 +393,7 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 				remarkPlugins={[
 					remarkGfm,
 					remarkMath,
+					remarkGithubAlerts,
 					() => {
 						return (tree: any) => {
 							visit(tree, "code", (node: any) => {
