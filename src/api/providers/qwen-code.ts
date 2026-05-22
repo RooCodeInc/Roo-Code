@@ -340,6 +340,9 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 
 		const response = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))
 
-		return response.choices[0]?.message.content || ""
+		const content = response.choices[0]?.message.content || ""
+
+		// Strip <think>...</think> blocks that qwen3-coder thinking models include
+		return content.replace(/<think>[\s\S]*?<\/think>/g, "").trim()
 	}
 }
