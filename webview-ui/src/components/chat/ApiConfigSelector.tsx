@@ -167,11 +167,11 @@ export const ApiConfigSelector = ({
 				align="start"
 				sideOffset={4}
 				container={portalContainer}
-				className="p-0 overflow-hidden w-[300px]">
-				<div className="flex flex-col w-full">
+				className="p-0 overflow-hidden w-[300px] max-h-[var(--radix-popover-content-available-height,80vh)]">
+				<div className="flex flex-col w-full max-h-[inherit]">
 					{/* Search input or info blurb */}
 					{listApiConfigMeta.length > 6 ? (
-						<div className="relative p-2 border-b border-vscode-dropdown-border">
+						<div className="relative p-2 border-b border-vscode-dropdown-border flex-shrink-0">
 							<input
 								aria-label={t("common:ui.search_placeholder")}
 								value={searchValue}
@@ -190,7 +190,7 @@ export const ApiConfigSelector = ({
 							)}
 						</div>
 					) : (
-						<div className="p-3 border-b border-vscode-dropdown-border">
+						<div className="p-3 border-b border-vscode-dropdown-border flex-shrink-0">
 							<p className="text-xs text-vscode-descriptionForeground m-0">
 								{t("prompts:apiConfiguration.select")}
 							</p>
@@ -201,7 +201,7 @@ export const ApiConfigSelector = ({
 					{filteredConfigs.length === 0 && searchValue ? (
 						<div className="py-2 px-3 text-sm text-vscode-foreground/70">{t("common:ui.no_results")}</div>
 					) : (
-						<div className="max-h-[300px] overflow-y-auto">
+						<div className="min-h-0 flex-1 overflow-y-auto max-h-[300px]">
 							{/* Pinned configs - sticky header */}
 							{pinnedConfigs.length > 0 && (
 								<div
@@ -224,7 +224,7 @@ export const ApiConfigSelector = ({
 					)}
 
 					{/* Bottom bar with buttons on left and title on right */}
-					<div className="flex flex-row items-center justify-between px-2 py-2 border-t border-vscode-dropdown-border">
+					<div className="flex flex-row items-center justify-between px-2 py-2 border-t border-vscode-dropdown-border flex-shrink-0">
 						<div className="flex flex-row gap-1">
 							<IconButton
 								iconClass="codicon-settings-gear"
