@@ -866,7 +866,7 @@ describe("ClineProvider", () => {
 		expect(mockContext.globalState.update).toHaveBeenCalledWith("currentApiConfigName", "test-config")
 	})
 
-	it("saves current config when switching to mode without config", async () => {
+	it("does not auto-save current config when switching to mode without config", async () => {
 		await provider.resolveWebviewView(mockWebviewView)
 		const messageHandler = (mockWebviewView.webview.onDidReceiveMessage as any).mock.calls[0][0]
 
@@ -883,8 +883,8 @@ describe("ClineProvider", () => {
 		// Switch to architect mode
 		await messageHandler({ type: "mode", text: "architect" })
 
-		// Should save current config as default for architect mode
-		expect(provider.providerSettingsManager.setModeConfig).toHaveBeenCalledWith("architect", "current-id")
+		// Should NOT auto-save current config as default for the new mode
+		expect(provider.providerSettingsManager.setModeConfig).not.toHaveBeenCalled()
 	})
 
 	it("saves config as default for current mode when loading config", async () => {
@@ -1459,7 +1459,7 @@ describe("ClineProvider", () => {
 			expect(mockPostMessage).toHaveBeenCalledWith(expect.objectContaining({ type: "state" }))
 		})
 
-		test("saves current config when switching to mode without config", async () => {
+		test("does not auto-save current config when switching to mode without config", async () => {
 			;(provider as any).providerSettingsManager = {
 				getModeConfigId: vi.fn().mockResolvedValue(undefined),
 				listConfig: vi
@@ -1482,8 +1482,8 @@ describe("ClineProvider", () => {
 			// Verify mode was updated
 			expect(mockContext.globalState.update).toHaveBeenCalledWith("mode", "architect")
 
-			// Verify current config was saved as default for new mode
-			expect(provider.providerSettingsManager.setModeConfig).toHaveBeenCalledWith("architect", "current-id")
+			// Should NOT auto-save current config as default for the new mode
+			expect(provider.providerSettingsManager.setModeConfig).not.toHaveBeenCalled()
 
 			// Verify state was posted to webview
 			expect(mockPostMessage).toHaveBeenCalledWith(expect.objectContaining({ type: "state" }))

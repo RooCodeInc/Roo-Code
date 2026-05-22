@@ -63,7 +63,11 @@ function getGroupName(group: GroupEntry): ToolGroup {
 	return Array.isArray(group) ? group[0] : group
 }
 
-const ModesView = () => {
+interface ModesViewProps {
+	checkUnsaveChanges?: (then: () => void) => void
+}
+
+const ModesView = ({ checkUnsaveChanges }: ModesViewProps) => {
 	const { t } = useAppTranslation()
 
 	const {
@@ -895,10 +899,16 @@ const ModesView = () => {
 							<Select
 								value={currentApiConfigName}
 								onValueChange={(value) => {
-									vscode.postMessage({
-										type: "loadApiConfiguration",
-										text: value,
-									})
+									const doSwitch = () =>
+										vscode.postMessage({
+											type: "loadApiConfiguration",
+											text: value,
+										})
+									if (checkUnsaveChanges) {
+										checkUnsaveChanges(doSwitch)
+									} else {
+										doSwitch()
+									}
 								}}>
 								<SelectTrigger className="w-full">
 									<SelectValue placeholder={t("settings:common.select")} />

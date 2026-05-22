@@ -853,7 +853,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						)}
 
 						{/* Modes Section */}
-						{renderTab === "modes" && <ModesView />}
+						{renderTab === "modes" && <ModesView checkUnsaveChanges={checkUnsaveChanges} />}
 
 						{/* MCP Section */}
 						{renderTab === "mcp" && <McpView />}

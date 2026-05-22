@@ -1322,16 +1322,10 @@ export class ClineProvider
 				// The task will continue with the current/default configuration.
 			}
 		} else {
-			// If no saved config for this mode, save current config as default.
-			const currentApiConfigNameAfter = this.getGlobalState("currentApiConfigName")
-
-			if (currentApiConfigNameAfter) {
-				const config = listApiConfig.find((c) => c.name === currentApiConfigNameAfter)
-
-				if (config?.id) {
-					await this.providerSettingsManager.setModeConfig(newMode, config.id)
-				}
-			}
+			// No saved config for this mode — leave the current config active
+			// without persisting it as the mode's default. This prevents config
+			// "bleed" where switching modes silently inherits and saves the
+			// previous mode's API configuration.
 		}
 
 		await this.postStateToWebview()
