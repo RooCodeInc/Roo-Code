@@ -60,5 +60,20 @@
 		"running": "Running",
 		"completed": "Completed",
 		"error": "Error"
+	},
+	"marketplace": {
+		"title": "Quick Add Servers",
+		"description": "Install popular free MCP servers with one click. No API keys required (unless noted).",
+		"install": "Add",
+		"installed": "Server \"{{serverName}}\" has been added to your MCP settings.",
+		"alreadyInstalled": "Server \"{{serverName}}\" already exists in your MCP settings.",
+		"requiresSetup": "Requires setup",
+		"requiresSetupHint": "This server requires you to configure {{keys}} in the MCP settings file after installation.",
+		"category": {
+			"search": "Search",
+			"tools": "Tools",
+			"data": "Data"
+		},
+		"learnMore": "Learn more"
 	}
 }

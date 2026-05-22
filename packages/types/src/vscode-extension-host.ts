@@ -451,6 +451,7 @@ export interface WebviewMessage {
 		| "checkpointDiff"
 		| "checkpointRestore"
 		| "deleteMcpServer"
+		| "installMcpServer"
 		| "codebaseIndexEnabled"
 		| "searchFiles"
 		| "toggleApiConfigPin"

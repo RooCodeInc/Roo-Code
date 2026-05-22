@@ -26,6 +26,7 @@ import McpToolRow from "./McpToolRow"
 import McpResourceRow from "./McpResourceRow"
 import McpEnabledToggle from "./McpEnabledToggle"
 import { McpErrorRow } from "./McpErrorRow"
+import McpMarketplace from "./McpMarketplace"
 
 const McpView = () => {
 	const { mcpServers: servers, alwaysAllowMcp, mcpEnabled } = useExtensionState()
@@ -133,6 +134,7 @@ const McpView = () => {
 								{t("mcp:refreshMCP")}
 							</Button>
 						</div>
+						<McpMarketplace />
 						<div
 							style={{
 								marginTop: "15px",

@@ -1299,6 +1299,24 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 			}
 			break
 		}
+		case "installMcpServer": {
+			if (!message.serverName || !message.config) {
+				break
+			}
+
+			try {
+				provider.log(`Attempting to install MCP server from marketplace: ${message.serverName}`)
+				await provider.getMcpHub()?.addServer(message.serverName, message.config)
+				provider.log(`Successfully installed MCP server: ${message.serverName}`)
+
+				// Refresh the webview state
+				await provider.postStateToWebview()
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Failed to install MCP server: ${errorMessage}`)
+			}
+			break
+		}
 		case "restartMcpServer": {
 			try {
 				await provider.getMcpHub()?.restartConnection(message.text!, message.source as "global" | "project")

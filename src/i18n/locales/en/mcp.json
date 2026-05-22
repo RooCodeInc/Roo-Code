@@ -24,5 +24,9 @@
 		"refreshing_all": "Refreshing all MCP servers...",
 		"all_refreshed": "All MCP servers have been refreshed.",
 		"project_config_deleted": "Project MCP configuration file deleted. All project MCP servers have been disconnected."
+	},
+	"marketplace": {
+		"installed": "Added MCP server: {{serverName}}",
+		"alreadyInstalled": "Server \"{{serverName}}\" already exists in your MCP settings."
 	}
 }

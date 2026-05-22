@@ -1708,6 +1708,56 @@ export class McpHub {
 		}
 	}
 
+	/**
+	 * Add a new MCP server to the global settings file.
+	 * Used by the MCP Marketplace to install pre-configured servers.
+	 */
+	public async addServer(serverName: string, serverConfig: Record<string, unknown>): Promise<void> {
+		try {
+			const configPath = await this.getMcpSettingsFilePath()
+
+			// Ensure the settings file exists and is accessible
+			try {
+				await fs.access(configPath)
+			} catch {
+				throw new Error("Settings file not accessible")
+			}
+
+			const content = await fs.readFile(configPath, "utf-8")
+			const config = JSON.parse(content)
+
+			if (!config || typeof config !== "object") {
+				throw new Error("Invalid config structure")
+			}
+
+			if (!config.mcpServers || typeof config.mcpServers !== "object") {
+				config.mcpServers = {}
+			}
+
+			// Check if server already exists
+			if (config.mcpServers[serverName]) {
+				vscode.window.showWarningMessage(t("mcp:marketplace.alreadyInstalled", { serverName }))
+				return
+			}
+
+			config.mcpServers[serverName] = serverConfig
+
+			const updatedConfig = {
+				mcpServers: config.mcpServers,
+			}
+
+			await safeWriteJson(configPath, updatedConfig, { prettyPrint: true })
+
+			// Trigger server connections update
+			await this.updateServerConnections(config.mcpServers, "global")
+
+			vscode.window.showInformationMessage(t("mcp:marketplace.installed", { serverName }))
+		} catch (error) {
+			this.showErrorMessage(`Failed to add MCP server ${serverName}`, error)
+			throw error
+		}
+	}
+
 	async readResource(serverName: string, uri: string, source?: "global" | "project"): Promise<McpResourceResponse> {
 		const connection = this.findConnection(serverName, source)
 		if (!connection || connection.type !== "connected") {
