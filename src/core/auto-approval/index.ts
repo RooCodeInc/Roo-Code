@@ -59,6 +59,19 @@ export async function checkAutoApproval({
 		return { decision: "approve" }
 	}
 
+	// Denied commands check runs regardless of auto-approval settings.
+	// This ensures denied commands act as an absolute safety net that
+	// cannot be bypassed by disabling auto-approval or auto-execute.
+	if (ask === "command" && text) {
+		const deniedCommands = state?.deniedCommands
+		if (deniedCommands?.length) {
+			const decision = getCommandDecision(text, state?.allowedCommands || [], deniedCommands)
+			if (decision === "auto_deny") {
+				return { decision: "deny" }
+			}
+		}
+	}
+
 	if (!state || !state.autoApprovalEnabled) {
 		return { decision: "ask" }
 	}
