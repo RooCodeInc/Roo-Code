@@ -43,6 +43,7 @@ vi.mock("vscode", () => ({
 		createTextEditorDecorationType: vi.fn(),
 		showTextDocument: vi.fn(),
 		onDidChangeVisibleTextEditors: vi.fn(() => ({ dispose: vi.fn() })),
+		onDidChangeActiveTextEditor: vi.fn(() => ({ dispose: vi.fn() })),
 		tabGroups: {
 			all: [],
 			close: vi.fn(),
@@ -88,6 +89,11 @@ vi.mock("vscode", () => ({
 	Uri: {
 		file: vi.fn((path) => ({ fsPath: path })),
 		parse: vi.fn((uri) => ({ with: vi.fn(() => ({})) })),
+		from: vi.fn((options) => ({
+			scheme: options.scheme,
+			path: options.path,
+			query: options.query,
+		})),
 	},
 }))
 
@@ -207,6 +213,17 @@ describe("DiffViewProvider", () => {
 				callOrder.push("showTextDocument")
 				expect(options).toEqual({ preview: false, viewColumn: vscode.ViewColumn.Active, preserveFocus: true })
 				return mockEditor as any
+			})
+
+			// Mock onDidChangeActiveTextEditor so that the diff editor "opens"
+			// immediately in our test environment and resolves the promise in openDiffEditor.
+			vi.mocked(vscode.window.onDidChangeActiveTextEditor).mockImplementation((callback: any) => {
+				// Simulate VS Code activating the diff editor (using our mock editor)
+				// Use a timeout to ensure the disposable is initialized before callback runs
+				setTimeout(() => {
+					callback(mockEditor as any)
+				}, 0)
+				return { dispose: vi.fn() }
 			})
 
 			// Mock executeCommand to track when it's called
