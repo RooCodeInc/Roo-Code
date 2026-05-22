@@ -55,8 +55,9 @@ export class DeepSeekHandler extends OpenAiHandler {
 		const modelId = this.options.apiModelId ?? deepSeekDefaultModelId
 		const { info: modelInfo } = this.getModel()
 
-		// Check if this is a thinking-enabled model (deepseek-reasoner)
-		const isThinkingModel = modelId.includes("deepseek-reasoner")
+		// Check if this is a thinking-enabled model using the preserveReasoning flag
+		// This covers deepseek-reasoner, deepseek-v4-pro, deepseek-v4-flash, and future thinking models
+		const isThinkingModel = "preserveReasoning" in modelInfo && modelInfo.preserveReasoning === true
 
 		// Convert messages to R1 format (merges consecutive same-role messages)
 		// This is required for DeepSeek which does not support successive messages with the same role
