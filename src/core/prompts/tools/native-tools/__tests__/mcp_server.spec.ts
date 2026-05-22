@@ -170,6 +170,66 @@ describe("getMcpServerTools", () => {
 		})
 	})
 
+	describe("allowedMcpServers filtering", () => {
+		it("should return all server tools when allowedMcpServers is undefined", () => {
+			const server1 = createMockServer("postgres-mcp", [createMockTool("query")])
+			const server2 = createMockServer("redis-mcp", [createMockTool("get")])
+			const server3 = createMockServer("filesystem-mcp", [createMockTool("read")])
+			const mockHub = createMockMcpHub([server1, server2, server3])
+
+			const result = getMcpServerTools(mockHub as McpHub, undefined)
+
+			expect(result).toHaveLength(3)
+		})
+
+		it("should return all server tools when allowedMcpServers is empty array", () => {
+			const server1 = createMockServer("postgres-mcp", [createMockTool("query")])
+			const server2 = createMockServer("redis-mcp", [createMockTool("get")])
+			const mockHub = createMockMcpHub([server1, server2])
+
+			const result = getMcpServerTools(mockHub as McpHub, [])
+
+			expect(result).toHaveLength(2)
+		})
+
+		it("should filter to only allowed servers", () => {
+			const server1 = createMockServer("postgres-mcp", [createMockTool("query")])
+			const server2 = createMockServer("redis-mcp", [createMockTool("get")])
+			const server3 = createMockServer("filesystem-mcp", [createMockTool("read")])
+			const mockHub = createMockMcpHub([server1, server2, server3])
+
+			const result = getMcpServerTools(mockHub as McpHub, ["postgres-mcp", "redis-mcp"])
+
+			expect(result).toHaveLength(2)
+			const toolNames = result.map((t) => getFunction(t).name)
+			expect(toolNames).toContain("mcp--postgres-mcp--query")
+			expect(toolNames).toContain("mcp--redis-mcp--get")
+			expect(toolNames).not.toContain("mcp--filesystem-mcp--read")
+		})
+
+		it("should return empty array when no servers match the allowlist", () => {
+			const server1 = createMockServer("postgres-mcp", [createMockTool("query")])
+			const mockHub = createMockMcpHub([server1])
+
+			const result = getMcpServerTools(mockHub as McpHub, ["nonexistent-server"])
+
+			expect(result).toEqual([])
+		})
+
+		it("should handle allowedMcpServers with a single server", () => {
+			const server1 = createMockServer("postgres-mcp", [createMockTool("query"), createMockTool("execute")])
+			const server2 = createMockServer("redis-mcp", [createMockTool("get")])
+			const mockHub = createMockMcpHub([server1, server2])
+
+			const result = getMcpServerTools(mockHub as McpHub, ["postgres-mcp"])
+
+			expect(result).toHaveLength(2)
+			const toolNames = result.map((t) => getFunction(t).name)
+			expect(toolNames).toContain("mcp--postgres-mcp--query")
+			expect(toolNames).toContain("mcp--postgres-mcp--execute")
+		})
+	})
+
 	it("should not include required field when schema has no required fields", () => {
 		const toolWithoutRequired: McpTool = {
 			name: "toolWithoutRequired",
