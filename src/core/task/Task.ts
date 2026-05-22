@@ -2498,6 +2498,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 
 				this.consecutiveMistakeCount = 0
+				// Also reset grace-retry counters so the model gets a fresh start
+				// after user provides guidance. Without this, the counters remain
+				// elevated and the very next no-tool-use or empty response would
+				// immediately show an error and re-increment consecutiveMistakeCount.
+				this.consecutiveNoToolUseCount = 0
+				this.consecutiveNoAssistantMessagesCount = 0
 			}
 
 			// Getting verbose details is an expensive operation, it uses ripgrep to
@@ -3584,10 +3590,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							await this.say("api_req_retried")
 
 							// Push the same content back to retry
+							// Mark that user message was removed so it gets re-added on retry
 							stack.push({
 								userContent: currentUserContent,
 								includeFileDetails: false,
 								retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
+								userMessageWasRemoved: true,
 							})
 
 							// Continue to retry the request

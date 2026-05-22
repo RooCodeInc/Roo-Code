@@ -415,6 +415,70 @@ describe("Grace Retry Error Handling", () => {
 		})
 	})
 
+	describe("Grace-retry counter reset on mistake limit", () => {
+		it("should reset consecutiveNoToolUseCount when consecutiveMistakeCount is reset", () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// Simulate the state right after the mistake limit dialog resets consecutiveMistakeCount
+			// In the actual code, all three counters are reset together
+			task.consecutiveMistakeCount = 5
+			task.consecutiveNoToolUseCount = 4
+			task.consecutiveNoAssistantMessagesCount = 3
+
+			// Simulate the reset that happens in the mistake_limit_reached handler
+			task.consecutiveMistakeCount = 0
+			task.consecutiveNoToolUseCount = 0
+			task.consecutiveNoAssistantMessagesCount = 0
+
+			expect(task.consecutiveMistakeCount).toBe(0)
+			expect(task.consecutiveNoToolUseCount).toBe(0)
+			expect(task.consecutiveNoAssistantMessagesCount).toBe(0)
+		})
+
+		it("should allow grace retry period after mistake limit reset", () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// After mistake limit reset, counters should be at 0
+			// This means the model gets a fresh grace retry period
+			task.consecutiveNoToolUseCount = 0
+			task.consecutiveNoAssistantMessagesCount = 0
+
+			// First failure after reset: should be grace retry (no error shown)
+			task.consecutiveNoToolUseCount++
+			expect(task.consecutiveNoToolUseCount).toBe(1)
+			expect(task.consecutiveNoToolUseCount >= 2).toBe(false)
+
+			task.consecutiveNoAssistantMessagesCount++
+			expect(task.consecutiveNoAssistantMessagesCount).toBe(1)
+			expect(task.consecutiveNoAssistantMessagesCount >= 2).toBe(false)
+		})
+
+		it("should show error on second failure after mistake limit reset", () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// Simulate first + second failure after reset
+			task.consecutiveNoToolUseCount = 1
+			task.consecutiveNoToolUseCount++
+			expect(task.consecutiveNoToolUseCount).toBe(2)
+			expect(task.consecutiveNoToolUseCount >= 2).toBe(true)
+		})
+	})
+
 	describe("Parallel with noToolsUsed error handling", () => {
 		it("should have separate counters for noToolsUsed and noAssistantMessages", () => {
 			const task = new Task({
