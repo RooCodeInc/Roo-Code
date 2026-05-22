@@ -1,4 +1,3 @@
-import os from "os"
 import * as path from "path"
 import * as fs from "fs"
 import * as childProcess from "child_process"
@@ -158,7 +157,10 @@ function ensureFirstLevelDirectoriesIncluded(
 }
 
 /**
- * Handle special directories (root, home) that should not be fully listed
+ * Handle special directories (root) that should not be fully listed.
+ * Note: The home directory is no longer blocked here. Instead, the home
+ * directory is handled in getEnvironmentDetails() to skip automatic listing
+ * while still allowing explicit list_files tool calls to work correctly.
  */
 async function handleSpecialDirectories(dirPath: string): Promise<[string[], boolean] | null> {
 	const absolutePath = path.resolve(dirPath)
@@ -168,13 +170,6 @@ async function handleSpecialDirectories(dirPath: string): Promise<[string[], boo
 	const isRoot = arePathsEqual(absolutePath, root)
 	if (isRoot) {
 		return [[root], false]
-	}
-
-	// Do not allow listing files in home directory
-	const homeDir = os.homedir()
-	const isHomeDir = arePathsEqual(absolutePath, homeDir)
-	if (isHomeDir) {
-		return [[homeDir], false]
 	}
 
 	return null

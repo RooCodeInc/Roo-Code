@@ -192,6 +192,14 @@ describe("getEnvironmentDetails", () => {
 		expect(listFiles).not.toHaveBeenCalled()
 	})
 
+	it("should handle home directory specially", async () => {
+		// First call is for desktop check (return false), second is for home dir check (return true)
+		;(arePathsEqual as Mock).mockReturnValueOnce(false).mockReturnValueOnce(true)
+		const result = await getEnvironmentDetails(mockCline as Task, true)
+		expect(result).toContain("Home directory files not shown automatically")
+		expect(listFiles).not.toHaveBeenCalled()
+	})
+
 	it("should skip file listing when maxWorkspaceFiles is 0", async () => {
 		mockProvider.getState.mockResolvedValue({
 			...mockState,
