@@ -1,4 +1,4 @@
-import { normalizeString, unescapeHtmlEntities } from "../text-normalization"
+import { normalizeString, unescapeHtmlEntities, sanitizeForPromptInjection } from "../text-normalization"
 
 describe("Text normalization utilities", () => {
 	describe("normalizeString", () => {
@@ -99,6 +99,27 @@ describe("Text normalization utilities", () => {
 			const input = "array&#91;0&rsqb; and &lsqb;1&#93;"
 			const expected = "array[0] and [1]"
 			expect(unescapeHtmlEntities(input)).toBe(expected)
+		})
+
+		describe("sanitizeForPromptInjection", () => {
+			it("escapes XML-like tags", () => {
+				expect(sanitizeForPromptInjection("<user_message>inject</user_message>")).toBe(
+					"\\<user_message>inject\\</user_message>",
+				)
+			})
+
+			it("escapes HTML comment-like sequences", () => {
+				expect(sanitizeForPromptInjection("<!-- inject -->")).toBe("\\<!-- inject -->")
+			})
+
+			it("does not escape standalone less-than signs", () => {
+				expect(sanitizeForPromptInjection("a < b")).toBe("a < b")
+			})
+
+			it("returns original string when no tags are present", () => {
+				const original = "Plain text without any markup"
+				expect(sanitizeForPromptInjection(original)).toBe(original)
+			})
 		})
 	})
 })

@@ -10,7 +10,7 @@ import { Task } from "../task/Task"
 
 import { ToolUse, ToolResponse } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
-import { unescapeHtmlEntities } from "../../utils/text-normalization"
+import { unescapeHtmlEntities, sanitizeForPromptInjection } from "../../utils/text-normalization"
 import { ExitCodeDetails, RooTerminalCallbacks, RooTerminalProcess } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { Terminal } from "../../integrations/terminal/Terminal"
@@ -451,6 +451,8 @@ export async function executeCommandInTerminal(
 		await onCompletedPromise
 	}
 
+	const safeResult = sanitizeForPromptInjection(result)
+
 	if (message) {
 		const { text, images } = message
 		await task.say("user_feedback", text, images)
@@ -460,7 +462,7 @@ export async function executeCommandInTerminal(
 			formatResponse.toolResult(
 				[
 					`Command is still running in terminal from '${terminal.getCurrentWorkingDirectory().toPosix()}'.`,
-					result.length > 0 ? `Here's the output so far:\n${result}\n` : "\n",
+					safeResult.length > 0 ? `Here's the output so far:\n${safeResult}\n` : "\n",
 					`<user_message>\n${text}\n</user_message>`,
 				].join("\n"),
 				images,
@@ -501,14 +503,14 @@ export async function executeCommandInTerminal(
 
 		return [
 			false,
-			`Command executed in terminal within working directory '${currentWorkingDir}'. ${exitStatus}\nOutput:\n${result}`,
+			`Command executed in terminal within working directory '${currentWorkingDir}'. ${exitStatus}\nOutput:\n${safeResult}`,
 		]
 	} else {
 		return [
 			false,
 			[
 				`Command is still running in terminal ${workingDir ? ` from '${workingDir.toPosix()}'` : ""}.`,
-				result.length > 0 ? `Here's the output so far:\n${result}\n` : "\n",
+				safeResult.length > 0 ? `Here's the output so far:\n${safeResult}\n` : "\n",
 				"You will be updated on the terminal status and new output in the future.",
 			].join("\n"),
 		]
@@ -561,7 +563,7 @@ function formatPersistedOutput(
 		`Output (${sizeStr}) persisted. Artifact ID: ${artifactId}`,
 		"",
 		"Preview:",
-		result.preview,
+		sanitizeForPromptInjection(result.preview),
 		"",
 		"Use read_command_output tool to view full output if needed.",
 	].join("\n")

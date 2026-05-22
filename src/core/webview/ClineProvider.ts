@@ -83,6 +83,7 @@ import { Task } from "../task/Task"
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem } from "@roo-code/types"
+import { isSecretStateKey } from "@roo-code/types"
 import { readApiMessages, saveApiMessages, saveTaskMessages, TaskHistoryStore } from "../task-persistence"
 import { readTaskMessages } from "../task-persistence/taskMessages"
 import { getNonce } from "./getNonce"
@@ -2151,9 +2152,17 @@ export class ClineProvider
 
 		const organizationAllowList = ORGANIZATION_ALLOW_ALL
 
+		// Redact secrets before sending to webview to prevent API key exposure.
+		const redactedApiConfiguration = { ...providerSettings }
+		for (const key of Object.keys(redactedApiConfiguration)) {
+			if (isSecretStateKey(key) && typeof (redactedApiConfiguration as any)[key] === "string") {
+				;(redactedApiConfiguration as any)[key] = "__ROO_REDACTED__"
+			}
+		}
+
 		// Return the same structure as before.
 		return {
-			apiConfiguration: providerSettings,
+			apiConfiguration: redactedApiConfiguration,
 			lastShownAnnouncementId: stateValues.lastShownAnnouncementId,
 			customInstructions: stateValues.customInstructions,
 			apiModelId: stateValues.apiModelId,
@@ -2247,7 +2256,7 @@ export class ClineProvider
 			includeCurrentCost: stateValues.includeCurrentCost ?? true,
 			maxGitStatusFiles: stateValues.maxGitStatusFiles ?? 0,
 			imageGenerationProvider: stateValues.imageGenerationProvider,
-			openRouterImageApiKey: stateValues.openRouterImageApiKey,
+			openRouterImageApiKey: stateValues.openRouterImageApiKey ? "__ROO_REDACTED__" : undefined,
 			openRouterImageGenerationSelectedModel: stateValues.openRouterImageGenerationSelectedModel,
 		}
 	}

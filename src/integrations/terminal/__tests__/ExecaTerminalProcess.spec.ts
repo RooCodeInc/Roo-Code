@@ -63,7 +63,7 @@ describe("ExecaTerminalProcess", () => {
 			const execaMock = vitest.mocked(execa)
 			expect(execaMock).toHaveBeenCalledWith(
 				expect.objectContaining({
-					shell: true,
+					shell: false,
 					cwd: "/test/cwd",
 					all: true,
 					env: expect.objectContaining({
@@ -105,13 +105,13 @@ describe("ExecaTerminalProcess", () => {
 			)
 		})
 
-		it("should fall back to shell=true when execaShellPath is undefined", async () => {
+		it("should fall back to shell=false when execaShellPath is undefined", async () => {
 			BaseTerminal.setExecaShellPath(undefined)
 			await terminalProcess.run("echo test")
 			const execaMock = vitest.mocked(execa)
 			expect(execaMock).toHaveBeenCalledWith(
 				expect.objectContaining({
-					shell: true,
+					shell: false,
 				}),
 			)
 		})
