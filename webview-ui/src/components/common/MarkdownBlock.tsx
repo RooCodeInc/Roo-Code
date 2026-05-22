@@ -166,11 +166,8 @@ const StyledMarkdown = styled.div`
 	/* Table styles for remark-gfm */
 	table {
 		border-collapse: collapse;
-		margin: 1em 0;
 		width: auto;
 		min-width: 50%;
-		max-width: 100%;
-		table-layout: fixed;
 	}
 
 	/* Table wrapper for horizontal scrolling */
@@ -184,8 +181,7 @@ const StyledMarkdown = styled.div`
 		border: 1px solid var(--vscode-panel-border);
 		padding: 8px 12px;
 		text-align: left;
-		word-wrap: break-word;
-		overflow-wrap: break-word;
+		white-space: nowrap;
 	}
 
 	th {
