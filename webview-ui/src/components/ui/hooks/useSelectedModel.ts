@@ -349,7 +349,8 @@ function getSelectedModel({
 				(id === "claude-sonnet-4-20250514" ||
 					id === "claude-sonnet-4-5" ||
 					id === "claude-sonnet-4-6" ||
-					id === "claude-opus-4-6") &&
+					id === "claude-opus-4-6" ||
+					id === "claude-opus-4-7") &&
 				apiConfiguration.anthropicBeta1MContext &&
 				baseInfo
 			) {
