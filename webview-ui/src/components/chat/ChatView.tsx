@@ -277,6 +277,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSecondaryButtonText(t("chat:startNewTask.title"))
 							break
 						case "followup":
+							if (!isPartial) {
+								playSound("notification")
+							}
 							setSendingDisabled(isPartial)
 							setClineAsk("followup")
 							// setting enable buttons to `false` would trigger a focus grab when
