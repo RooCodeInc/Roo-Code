@@ -199,10 +199,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					}
 				}
 
-				if ("reasoning_content" in delta && delta.reasoning_content) {
-					yield {
-						type: "reasoning",
-						text: (delta.reasoning_content as string | undefined) || "",
+				for (const key of ["reasoning_content", "reasoning"] as const) {
+					if (key in delta) {
+						const reasoning = ((delta as any)[key] as string | undefined) || ""
+						if (reasoning?.trim()) {
+							yield { type: "reasoning", text: reasoning }
+						}
+						break
 					}
 				}
 
@@ -257,6 +260,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 							arguments: toolCall.function.arguments,
 						}
 					}
+				}
+			}
+
+			for (const key of ["reasoning_content", "reasoning"] as const) {
+				if (message && key in message && (message as any)[key]) {
+					yield { type: "reasoning", text: (message as any)[key] as string }
+					break
 				}
 			}
 
