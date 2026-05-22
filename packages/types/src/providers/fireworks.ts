@@ -22,6 +22,7 @@ export type FireworksModelId =
 	| "accounts/fireworks/models/llama-v3p3-70b-instruct"
 	| "accounts/fireworks/models/llama4-maverick-instruct-basic"
 	| "accounts/fireworks/models/llama4-scout-instruct-basic"
+	| "accounts/fireworks/routers/kimi-k2p5-turbo"
 
 export const fireworksDefaultModelId: FireworksModelId = "accounts/fireworks/models/kimi-k2-instruct-0905"
 
@@ -71,6 +72,16 @@ export const fireworksModels = {
 		cacheReadsPrice: 0.1,
 		description:
 			"Kimi K2.5 is Moonshot AI's flagship agentic model and a new SOTA open model. It unifies vision and text, thinking and non-thinking modes, and single-agent and multi-agent execution into one model. Fireworks enables users to control the reasoning behavior and inspect its reasoning history for greater transparency.",
+	},
+	"accounts/fireworks/routers/kimi-k2p5-turbo": {
+		maxTokens: 16384,
+		contextWindow: 262144,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+		description:
+			"Kimi K2.5 Turbo router - same configuration as kimi-k2p5 but with improved performance through Fireworks routing (FirePass - https://docs.fireworks.ai/firepass).",
 	},
 	"accounts/fireworks/models/minimax-m2": {
 		maxTokens: 4096,
