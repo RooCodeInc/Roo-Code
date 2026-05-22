@@ -165,6 +165,12 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
 
+		// Build provider options for reasoning_effort (supported by @ai-sdk/openai-compatible)
+		const modelReasoning = (model as any).reasoning as { reasoning_effort?: string } | undefined
+		const openaiCompatibleOptions = modelReasoning?.reasoning_effort
+			? { reasoningEffort: modelReasoning.reasoning_effort }
+			: undefined
+
 		// Build the request options
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
@@ -174,6 +180,9 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 			maxOutputTokens: this.getMaxOutputTokens(),
 			tools: aiSdkTools,
 			toolChoice: this.mapToolChoice(metadata?.tool_choice),
+			...(openaiCompatibleOptions
+				? { providerOptions: { openaiCompatible: openaiCompatibleOptions } as any }
+				: {}),
 		}
 
 		// Use streamText for streaming responses
@@ -199,12 +208,22 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 	 */
 	async completePrompt(prompt: string): Promise<string> {
 		const languageModel = this.getLanguageModel()
+		const model = this.getModel()
+
+		// Build provider options for reasoning_effort
+		const modelReasoning = (model as any).reasoning as { reasoning_effort?: string } | undefined
+		const openaiCompatibleOptions = modelReasoning?.reasoning_effort
+			? { reasoningEffort: modelReasoning.reasoning_effort }
+			: undefined
 
 		const { text } = await generateText({
 			model: languageModel,
 			prompt,
 			maxOutputTokens: this.getMaxOutputTokens(),
 			temperature: this.config.temperature ?? 0,
+			...(openaiCompatibleOptions
+				? { providerOptions: { openaiCompatible: openaiCompatibleOptions } as any }
+				: {}),
 		})
 
 		return text
