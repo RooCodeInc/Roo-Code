@@ -1252,7 +1252,7 @@ export class ClineProvider
 	 * Handle switching to a new mode, including updating the associated API configuration
 	 * @param newMode The mode to switch to
 	 */
-	public async handleModeSwitch(newMode: Mode) {
+	public async handleModeSwitch(newMode: Mode, options?: { preserveApiConfig?: boolean }) {
 		const task = this.getCurrentTask()
 
 		if (task) {
@@ -1285,9 +1285,11 @@ export class ClineProvider
 
 		this.emit(RooCodeEventName.ModeChanged, newMode)
 
-		// If workspace lock is on, keep the current API config — don't load mode-specific config
+		// If workspace lock is on, or the caller explicitly requested preserving the current
+		// API config (e.g. AI-initiated mode switches via the switch_mode tool), keep the
+		// current API config — don't load mode-specific config.
 		const lockApiConfigAcrossModes = this.context.workspaceState.get("lockApiConfigAcrossModes", false)
-		if (lockApiConfigAcrossModes) {
+		if (lockApiConfigAcrossModes || options?.preserveApiConfig) {
 			await this.postStateToWebview()
 			return
 		}

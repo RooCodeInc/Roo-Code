@@ -310,6 +310,28 @@ describe("ClineProvider - Lock API Config Across Modes", () => {
 			expect(activateProviderProfileSpy).not.toHaveBeenCalled()
 		})
 
+		it("skips mode-specific config lookup/load when preserveApiConfig option is true", async () => {
+			await mockContext.workspaceState.update("lockApiConfigAcrossModes", false)
+
+			const getModeConfigIdSpy = vi
+				.spyOn(provider.providerSettingsManager, "getModeConfigId")
+				.mockResolvedValue("architect-profile-id")
+			const listConfigSpy = vi
+				.spyOn(provider.providerSettingsManager, "listConfig")
+				.mockResolvedValue([
+					{ name: "architect-profile", id: "architect-profile-id", apiProvider: "anthropic" },
+				])
+			const activateProviderProfileSpy = vi
+				.spyOn(provider, "activateProviderProfile")
+				.mockResolvedValue(undefined)
+
+			await provider.handleModeSwitch("architect", { preserveApiConfig: true })
+
+			expect(getModeConfigIdSpy).not.toHaveBeenCalled()
+			expect(listConfigSpy).not.toHaveBeenCalled()
+			expect(activateProviderProfileSpy).not.toHaveBeenCalled()
+		})
+
 		it("keeps normal mode-specific lookup/load behavior when lockApiConfigAcrossModes is false", async () => {
 			await mockContext.workspaceState.update("lockApiConfigAcrossModes", false)
 

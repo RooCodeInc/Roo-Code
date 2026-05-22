@@ -55,8 +55,9 @@ export class SwitchModeTool extends BaseTool<"switch_mode"> {
 				return
 			}
 
-			// Switch the mode using shared handler
-			await task.providerRef.deref()?.handleModeSwitch(mode_slug)
+			// Switch the mode using shared handler, preserving the current API config
+			// so the user's selected model doesn't change during AI-initiated switches.
+			await task.providerRef.deref()?.handleModeSwitch(mode_slug, { preserveApiConfig: true })
 
 			pushToolResult(
 				`Successfully switched from ${getModeBySlug(currentMode)?.name ?? currentMode} mode to ${
