@@ -274,7 +274,8 @@
 		"expandOutput": "Expand output",
 		"collapseOutput": "Collapse output",
 		"expandManagement": "Expand command management section",
-		"collapseManagement": "Collapse command management section"
+		"collapseManagement": "Collapse command management section",
+		"deniedCommandDetected": "Denied command detected"
 	},
 	"response": "Response",
 	"arguments": "Arguments",

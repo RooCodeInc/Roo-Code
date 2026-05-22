@@ -605,4 +605,55 @@ Output:
 			expect(terminalOutput).toHaveTextContent("0 total")
 		})
 	})
+
+	describe("denied commands banner", () => {
+		it("should show denied commands banner when command matches deny list", () => {
+			render(
+				<ExtensionStateWrapper>
+					<CommandExecution executionId="test-denied-1" text="rm -rf /" />
+				</ExtensionStateWrapper>,
+			)
+
+			const banner = screen.getByTestId("denied-commands-banner")
+			expect(banner).toBeInTheDocument()
+			expect(banner.textContent).toContain("rm -rf /")
+		})
+
+		it("should not show denied commands banner when command is allowed", () => {
+			render(
+				<ExtensionStateWrapper>
+					<CommandExecution executionId="test-denied-2" text="npm install" />
+				</ExtensionStateWrapper>,
+			)
+
+			expect(screen.queryByTestId("denied-commands-banner")).not.toBeInTheDocument()
+		})
+
+		it("should show denied commands in chained commands", () => {
+			render(
+				<ExtensionStateWrapper>
+					<CommandExecution executionId="test-denied-3" text="npm install && rm -rf /" />
+				</ExtensionStateWrapper>,
+			)
+
+			const banner = screen.getByTestId("denied-commands-banner")
+			expect(banner).toBeInTheDocument()
+			expect(banner.textContent).toContain("rm -rf /")
+		})
+
+		it("should not show banner when deniedCommands list is empty", () => {
+			const stateWithNoDenied = {
+				...mockExtensionState,
+				deniedCommands: [],
+			}
+
+			render(
+				<ExtensionStateContext.Provider value={stateWithNoDenied as any}>
+					<CommandExecution executionId="test-denied-4" text="rm -rf /" />
+				</ExtensionStateContext.Provider>,
+			)
+
+			expect(screen.queryByTestId("denied-commands-banner")).not.toBeInTheDocument()
+		})
+	})
 })

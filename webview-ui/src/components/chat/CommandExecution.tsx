@@ -1,7 +1,7 @@
 import { useCallback, useState, memo, useMemo } from "react"
 import { useEvent } from "react-use"
 import { t } from "i18next"
-import { ChevronDown, OctagonX } from "lucide-react"
+import { ChevronDown, OctagonX, ShieldAlert } from "lucide-react"
 
 import { type ExtensionMessage, type CommandExecutionStatus, commandExecutionStatusSchema } from "@roo-code/types"
 
@@ -11,6 +11,7 @@ import { parseCommand } from "@roo/parse-command"
 
 import { vscode } from "@src/utils/vscode"
 import { extractPatternsFromCommand } from "@src/utils/command-parser"
+import { getDeniedSubcommands } from "@src/utils/command-denied"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { cn } from "@src/lib/utils"
 
@@ -53,6 +54,12 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 	// task message (this is the case for completed commands) or from the
 	// streaming output (this is the case for running commands).
 	const output = streamingOutput || parsedOutput
+
+	// Identify denied sub-commands within the full command
+	const deniedSubcommands = useMemo(
+		() => getDeniedSubcommands(command, allowedCommands, deniedCommands),
+		[command, allowedCommands, deniedCommands],
+	)
 
 	// Extract command patterns from the actual command that was executed
 	const commandPatterns = useMemo<CommandPattern[]>(() => {
@@ -202,6 +209,7 @@ export const CommandExecution = ({ executionId, text, icon, title }: CommandExec
 			<div className="bg-vscode-editor-background border border-vscode-border rounded-xs ml-6 mt-2">
 				<div className="p-2">
 					<CodeBlock source={command} language="shell" />
+					{deniedSubcommands.length > 0 && <DeniedCommandsBanner deniedSubcommands={deniedSubcommands} />}
 					<OutputContainer isExpanded={isExpanded} output={output} />
 				</div>
 				{command && command.trim() && (
@@ -231,6 +239,36 @@ const OutputContainerInternal = ({ isExpanded, output }: { isExpanded: boolean; 
 )
 
 const OutputContainer = memo(OutputContainerInternal)
+
+const DeniedCommandsBanner = ({ deniedSubcommands }: { deniedSubcommands: string[] }) => (
+	<div
+		className="flex items-start gap-1.5 mt-2 px-2 py-1.5 rounded text-xs border"
+		style={{
+			backgroundColor: "var(--vscode-inputValidation-warningBackground, rgba(255, 204, 0, 0.1))",
+			borderColor: "var(--vscode-inputValidation-warningBorder, #cca700)",
+			color: "var(--vscode-inputValidation-warningForeground, var(--vscode-foreground))",
+		}}
+		data-testid="denied-commands-banner">
+		<ShieldAlert
+			className="size-3.5 shrink-0 mt-0.5"
+			style={{ color: "var(--vscode-inputValidation-warningBorder, #cca700)" }}
+		/>
+		<div>
+			<span>{t("chat:commandExecution.deniedCommandDetected")}: </span>
+			{deniedSubcommands.map((cmd, i) => (
+				<code
+					key={i}
+					className="px-1 py-0.5 rounded font-mono"
+					style={{
+						backgroundColor: "rgba(255, 204, 0, 0.15)",
+						color: "var(--vscode-inputValidation-warningBorder, #cca700)",
+					}}>
+					{cmd}
+				</code>
+			))}
+		</div>
+	</div>
+)
 
 const parseCommandAndOutput = (text: string | undefined) => {
 	if (!text) {
