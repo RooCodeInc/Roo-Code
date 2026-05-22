@@ -93,6 +93,32 @@ export const groupEntryArraySchema = z.preprocess((val) => {
 	return val.filter((entry) => !isDeprecatedGroupEntry(entry))
 }, rawGroupEntryArraySchema) as z.ZodType<GroupEntry[], z.ZodTypeDef, GroupEntry[]>
 
+/**
+ * PersonalityTrait
+ */
+
+export const personalityTraitSchema = z.object({
+	id: z.string().min(1, "Trait ID is required"),
+	emoji: z.string().min(1, "Emoji is required"),
+	label: z.string().min(1, "Label is required"),
+	prompt: z.string().min(1, "Prompt is required"),
+	isBuiltIn: z.boolean(),
+})
+
+export type PersonalityTrait = z.infer<typeof personalityTraitSchema>
+
+/**
+ * PersonalityConfig
+ */
+
+export const personalityConfigSchema = z.object({
+	activeTraitIds: z.array(z.string()),
+	customTraits: z.array(personalityTraitSchema),
+	deletedBuiltInTraitIds: z.array(z.string()).optional(),
+})
+
+export type PersonalityConfig = z.infer<typeof personalityConfigSchema>
+
 export const modeConfigSchema = z.object({
 	slug: z.string().regex(/^[a-zA-Z0-9-]+$/, "Slug must contain only letters numbers and dashes"),
 	name: z.string().min(1, "Name is required"),
@@ -102,6 +128,7 @@ export const modeConfigSchema = z.object({
 	customInstructions: z.string().optional(),
 	groups: groupEntryArraySchema,
 	source: z.enum(["global", "project"]).optional(),
+	personalityConfig: personalityConfigSchema.optional(),
 })
 
 export type ModeConfig = z.infer<typeof modeConfigSchema>

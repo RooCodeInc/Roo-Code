@@ -388,6 +388,7 @@ export async function addCustomInstructions(
 		language?: string
 		rooIgnoreInstructions?: string
 		settings?: SystemPromptSettings
+		personalityPrompt?: string
 	} = {},
 ): Promise<string> {
 	const sections = []
@@ -489,6 +490,13 @@ export async function addCustomInstructions(
 
 	if (rules.length > 0) {
 		sections.push(`Rules:\n\n${rules.join("\n\n")}`)
+	}
+
+	// Inject personality prompt LAST for maximum recency effect.
+	// This is the last thing the model reads before generating,
+	// which research shows produces the strongest behavioral adherence.
+	if (options.personalityPrompt && options.personalityPrompt.trim()) {
+		sections.push(options.personalityPrompt.trim())
 	}
 
 	const joinedSections = sections.join("\n\n")
