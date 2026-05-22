@@ -97,8 +97,8 @@ export class TerminalProcess extends BaseTerminalProcess {
 
 		// Execute command
 		const defaultWindowsShellProfile = vscode.workspace
-			.getConfiguration("terminal.integrated.defaultProfile")
-			.get("windows")
+			.getConfiguration("terminal.integrated")
+			.get<string>("defaultProfile.windows")
 
 		const isPowerShell =
 			process.platform === "win32" &&
