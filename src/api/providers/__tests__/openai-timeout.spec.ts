@@ -8,7 +8,14 @@ vitest.mock("../utils/timeout-config", () => ({
 	getApiRequestTimeout: vitest.fn(),
 }))
 
+// Mock the undici-fetch utility
+const mockFetchFn = vitest.fn()
+vitest.mock("../utils/undici-fetch", () => ({
+	createFetchWithUndiciTimeout: vitest.fn(() => mockFetchFn),
+}))
+
 import { getApiRequestTimeout } from "../utils/timeout-config"
+import { createFetchWithUndiciTimeout } from "../utils/undici-fetch"
 
 // Mock OpenAI and AzureOpenAI
 const mockOpenAIConstructor = vitest.fn()
@@ -57,11 +64,13 @@ describe("OpenAiHandler timeout configuration", () => {
 		new OpenAiHandler(options)
 
 		expect(getApiRequestTimeout).toHaveBeenCalled()
+		expect(createFetchWithUndiciTimeout).toHaveBeenCalled()
 		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
 			expect.objectContaining({
 				baseURL: "https://api.openai.com/v1",
 				apiKey: "test-key",
 				timeout: 600000, // 600 seconds in milliseconds
+				fetch: mockFetchFn,
 			}),
 		)
 	})
@@ -102,6 +111,7 @@ describe("OpenAiHandler timeout configuration", () => {
 		expect(mockAzureOpenAIConstructor).toHaveBeenCalledWith(
 			expect.objectContaining({
 				timeout: 900000, // 900 seconds in milliseconds
+				fetch: mockFetchFn,
 			}),
 		)
 	})

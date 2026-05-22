@@ -16,6 +16,7 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getModelsFromCache } from "./fetchers/modelCache"
 import { getApiRequestTimeout } from "./utils/timeout-config"
+import { createFetchWithUndiciTimeout } from "./utils/undici-fetch"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 
 export class LmStudioHandler extends BaseProvider implements SingleCompletionHandler {
@@ -34,6 +35,7 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 			baseURL: (this.options.lmStudioBaseUrl || "http://localhost:1234") + "/v1",
 			apiKey: apiKey,
 			timeout: getApiRequestTimeout(),
+			fetch: createFetchWithUndiciTimeout(),
 		})
 	}
 
