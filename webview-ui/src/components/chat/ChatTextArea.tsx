@@ -53,6 +53,7 @@ interface ChatTextAreaProps {
 	onCancel?: () => void
 	// Stop/Queue functionality
 	isStreaming?: boolean
+	canStopTask?: boolean
 	onStop?: () => void
 	onEnqueueMessage?: () => void
 }
@@ -76,6 +77,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			isEditMode = false,
 			onCancel,
 			isStreaming = false,
+			canStopTask = false,
 			onStop,
 			onEnqueueMessage,
 		},
@@ -1214,6 +1216,30 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 												"cursor-pointer",
 											)}>
 											<ListEnd className="w-4 h-4" />
+										</button>
+									</StandardTooltip>
+								)}
+								{/* Stop button - shown when task is active (e.g. during follow-up questions) but not streaming */}
+								{!isEditMode && !isStreaming && canStopTask && (
+									<StandardTooltip content={t("chat:stop.title")}>
+										<button
+											aria-label={t("chat:stop.title")}
+											disabled={false}
+											onClick={onStop}
+											className={cn(
+												"relative inline-flex items-center justify-center",
+												"bg-transparent border-none p-1.5",
+												"rounded-full min-w-[28px] min-h-[28px]",
+												"text-vscode-descriptionForeground hover:text-vscode-foreground",
+												"transition-all duration-200",
+												"opacity-100 hover:opacity-100 pointer-events-auto",
+												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+												"active:bg-[rgba(255,255,255,0.1)]",
+												"cursor-pointer",
+												"bg-vscode-button-background hover:bg-vscode-button-background",
+											)}>
+											<Square className="size-4 stroke-none fill-vscode-button-foreground" />
 										</button>
 									</StandardTooltip>
 								)}

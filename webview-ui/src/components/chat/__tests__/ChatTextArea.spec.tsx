@@ -1205,4 +1205,59 @@ describe("ChatTextArea", () => {
 			expect(sendButton).toHaveClass("pointer-events-auto")
 		})
 	})
+
+	describe("stop button during follow-up questions", () => {
+		it("should show a stop button when canStopTask is true and not streaming", () => {
+			const onStop = vi.fn()
+			const { container } = render(
+				<ChatTextArea {...defaultProps} canStopTask={true} isStreaming={false} onStop={onStop} />,
+			)
+
+			// Find the stop button by looking for the button with the Square icon (fill style)
+			const buttons = container.querySelectorAll("button")
+			const stopButton = Array.from(buttons).find((button) => button.querySelector(".lucide-square") !== null)
+
+			expect(stopButton).toBeInTheDocument()
+		})
+
+		it("should not show the separate stop button when canStopTask is false", () => {
+			const onStop = vi.fn()
+			const { container } = render(
+				<ChatTextArea {...defaultProps} canStopTask={false} isStreaming={false} onStop={onStop} />,
+			)
+
+			// Should not find any button with Square icon when not streaming and canStopTask is false
+			const buttons = container.querySelectorAll("button")
+			const stopButton = Array.from(buttons).find((button) => button.querySelector(".lucide-square") !== null)
+
+			expect(stopButton).not.toBeDefined()
+		})
+
+		it("should not show the separate stop button when isStreaming is true (morphed button handles it)", () => {
+			const onStop = vi.fn()
+			const { container } = render(
+				<ChatTextArea {...defaultProps} canStopTask={true} isStreaming={true} onStop={onStop} />,
+			)
+
+			// When streaming, the morphed send/stop button shows the Square icon
+			// but the separate stop button should NOT be rendered
+			const buttons = container.querySelectorAll("button")
+			const squareButtons = Array.from(buttons).filter(
+				(button) => button.querySelector(".lucide-square") !== null,
+			)
+
+			// Only 1 square button (the morphed send/stop), not 2
+			expect(squareButtons.length).toBe(1)
+		})
+
+		it("should call onStop when the stop button is clicked during a follow-up question", () => {
+			const onStop = vi.fn()
+			render(<ChatTextArea {...defaultProps} canStopTask={true} isStreaming={false} onStop={onStop} />)
+
+			const stopButton = screen.getByRole("button", { name: /stop/i })
+			fireEvent.click(stopButton)
+
+			expect(onStop).toHaveBeenCalledTimes(1)
+		})
+	})
 })

@@ -1782,6 +1782,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				setMode={setMode}
 				modeShortcutText={modeShortcutText}
 				isStreaming={isStreaming}
+				canStopTask={!!task && !isStreaming && clineAsk === "followup"}
 				onStop={handleStopTask}
 				onEnqueueMessage={handleEnqueueCurrentMessage}
 			/>
