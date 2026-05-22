@@ -115,6 +115,14 @@ export async function getOpenRouterModels(options?: ApiHandlerOptions): Promise<
 				continue
 			}
 
+			// Skip models that don't support tool calling. Models without tool
+			// capability produce broken output (e.g. wrapping code in [{...}]
+			// formatting) because Roo Code relies on native tool calling.
+			// This matches the filtering behavior used by the Ollama provider.
+			if (!supported_parameters.includes("tools")) {
+				continue
+			}
+
 			const parsedModel = parseOpenRouterModel({
 				id,
 				model,
@@ -155,10 +163,15 @@ export async function getOpenRouterModelEndpoints(
 			console.error("OpenRouter model endpoints response is invalid", result.error.format())
 		}
 
-		const { id, architecture, endpoints } = data
+		const { id, architecture, supported_parameters, endpoints } = data
 
 		// Skip image generation models (models that output images)
 		if (architecture?.output_modalities?.includes("image")) {
+			return models
+		}
+
+		// Skip models that don't support tool calling (same rationale as getOpenRouterModels)
+		if (!supported_parameters?.includes("tools")) {
 			return models
 		}
 
