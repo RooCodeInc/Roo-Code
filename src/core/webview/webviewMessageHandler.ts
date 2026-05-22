@@ -1718,7 +1718,7 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 			}
 			break
 		case "renameApiConfiguration":
-			if (message.values && message.apiConfiguration) {
+			if (message.values) {
 				try {
 					const { oldName, newName } = message.values
 
@@ -1726,11 +1726,15 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 						break
 					}
 
-					// Load the old configuration to get its ID.
-					const { id } = await provider.providerSettingsManager.getProfile({ name: oldName })
+					// Load the full stored configuration (including its ID) so the
+					// rename is self-contained on the backend and doesn't depend on
+					// potentially stale webview cached state.
+					const { name: _name, ...storedConfig } = await provider.providerSettingsManager.getProfile({
+						name: oldName,
+					})
 
-					// Create a new configuration with the new name and old ID.
-					await provider.providerSettingsManager.saveConfig(newName, { ...message.apiConfiguration, id })
+					// Create a new configuration with the new name and stored settings.
+					await provider.providerSettingsManager.saveConfig(newName, storedConfig)
 
 					// Delete the old configuration.
 					await provider.providerSettingsManager.deleteConfig(oldName)

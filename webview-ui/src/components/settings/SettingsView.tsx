@@ -740,9 +740,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 											vscode.postMessage({
 												type: "renameApiConfiguration",
 												values: { oldName, newName },
-												apiConfiguration,
 											})
-											prevApiConfigName.current = newName
 										}}
 										onUpsertConfig={(configName: string) =>
 											vscode.postMessage({
