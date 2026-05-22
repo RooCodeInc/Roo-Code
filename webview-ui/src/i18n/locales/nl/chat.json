@@ -254,7 +254,11 @@
 		"resultContent": "Subtaakresultaten",
 		"defaultResult": "Ga verder met de volgende taak.",
 		"completionInstructions": "Subtaak voltooid! Je kunt de resultaten bekijken en eventuele correcties of volgende stappen voorstellen. Als alles goed is, bevestig dan om het resultaat terug te sturen naar de hoofdtaak.",
-		"goToSubtask": "Taak weergeven"
+		"goToSubtask": "Taak weergeven",
+		"filesModified": "Gewijzigde bestanden",
+		"filesRead": "Gelezen bestanden",
+		"commandsExecuted": "Uitgevoerde opdrachten",
+		"todoStats": "Taken: {{completed}}/{{total}} voltooid"
 	},
 	"questions": {
 		"hasQuestion": "Roo heeft een vraag"

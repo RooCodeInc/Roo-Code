@@ -259,7 +259,11 @@
 		"resultContent": "Risultati sottoattività",
 		"defaultResult": "Per favore continua con la prossima attività.",
 		"completionInstructions": "Sottoattività completata! Puoi rivedere i risultati e suggerire correzioni o prossimi passi. Se tutto sembra a posto, conferma per restituire il risultato all'attività principale.",
-		"goToSubtask": "Visualizza attività"
+		"goToSubtask": "Visualizza attività",
+		"filesModified": "File modificati",
+		"filesRead": "File letti",
+		"commandsExecuted": "Comandi eseguiti",
+		"todoStats": "Attività: {{completed}}/{{total}} completate"
 	},
 	"questions": {
 		"hasQuestion": "Roo ha una domanda"

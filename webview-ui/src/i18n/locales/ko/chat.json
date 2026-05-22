@@ -259,7 +259,11 @@
 		"resultContent": "하위 작업 결과",
 		"defaultResult": "다음 작업을 계속 진행해주세요.",
 		"completionInstructions": "하위 작업 완료! 결과를 검토하고 수정 사항이나 다음 단계를 제안할 수 있습니다. 모든 것이 괜찮아 보이면, 부모 작업에 결과를 반환하기 위해 확인해주세요.",
-		"goToSubtask": "작업 보기"
+		"goToSubtask": "작업 보기",
+		"filesModified": "수정된 파일",
+		"filesRead": "읽은 파일",
+		"commandsExecuted": "실행된 명령어",
+		"todoStats": "할 일: {{completed}}/{{total}} 완료"
 	},
 	"questions": {
 		"hasQuestion": "Roo에게 질문이 있습니다"

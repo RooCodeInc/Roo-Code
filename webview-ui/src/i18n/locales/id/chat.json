@@ -310,7 +310,11 @@
 		"resultContent": "Hasil Subtugas",
 		"defaultResult": "Silakan lanjutkan ke tugas berikutnya.",
 		"completionInstructions": "Subtugas selesai! Kamu bisa meninjau hasilnya dan menyarankan koreksi atau langkah selanjutnya. Jika semuanya terlihat baik, konfirmasi untuk mengembalikan hasil ke tugas induk.",
-		"goToSubtask": "Lihat tugas"
+		"goToSubtask": "Lihat tugas",
+		"filesModified": "File yang Diubah",
+		"filesRead": "File yang Dibaca",
+		"commandsExecuted": "Perintah yang Dijalankan",
+		"todoStats": "Tugas: {{completed}}/{{total}} selesai"
 	},
 	"questions": {
 		"hasQuestion": "Roo punya pertanyaan"

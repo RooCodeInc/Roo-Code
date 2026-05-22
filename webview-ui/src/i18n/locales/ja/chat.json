@@ -259,7 +259,11 @@
 		"resultContent": "サブタスク結果",
 		"defaultResult": "次のタスクに進んでください。",
 		"completionInstructions": "サブタスク完了！結果を確認し、修正や次のステップを提案できます。問題なければ、親タスクに結果を返すために確認してください。",
-		"goToSubtask": "タスクを表示"
+		"goToSubtask": "タスクを表示",
+		"filesModified": "変更されたファイル",
+		"filesRead": "読み取ったファイル",
+		"commandsExecuted": "実行されたコマンド",
+		"todoStats": "タスク: {{completed}}/{{total}} 完了"
 	},
 	"questions": {
 		"hasQuestion": "Rooは質問があります"

@@ -259,7 +259,11 @@
 		"resultContent": "Resultados da subtarefa",
 		"defaultResult": "Por favor, continue com a próxima tarefa.",
 		"completionInstructions": "Subtarefa concluída! Você pode revisar os resultados e sugerir correções ou próximos passos. Se tudo parecer bom, confirme para retornar o resultado à tarefa principal.",
-		"goToSubtask": "Ver tarefa"
+		"goToSubtask": "Ver tarefa",
+		"filesModified": "Arquivos modificados",
+		"filesRead": "Arquivos lidos",
+		"commandsExecuted": "Comandos executados",
+		"todoStats": "Tarefas: {{completed}}/{{total}} concluídas"
 	},
 	"questions": {
 		"hasQuestion": "Roo tem uma pergunta"

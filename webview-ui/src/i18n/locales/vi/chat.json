@@ -260,7 +260,11 @@
 		"resultContent": "Kết quả nhiệm vụ phụ",
 		"defaultResult": "Vui lòng tiếp tục với nhiệm vụ tiếp theo.",
 		"completionInstructions": "Nhiệm vụ phụ đã hoàn thành! Bạn có thể xem lại kết quả và đề xuất các sửa đổi hoặc bước tiếp theo. Nếu mọi thứ có vẻ tốt, hãy xác nhận để trả kết quả về nhiệm vụ chính.",
-		"goToSubtask": "Xem nhiệm vụ"
+		"goToSubtask": "Xem nhiệm vụ",
+		"filesModified": "Tệp đã sửa đổi",
+		"filesRead": "Tệp đã đọc",
+		"commandsExecuted": "Lệnh đã thực thi",
+		"todoStats": "Việc cần làm: {{completed}}/{{total}} hoàn thành"
 	},
 	"questions": {
 		"hasQuestion": "Roo có một câu hỏi"

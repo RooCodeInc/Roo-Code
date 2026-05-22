@@ -259,7 +259,11 @@
 		"resultContent": "Wyniki podzadania",
 		"defaultResult": "Proszę kontynuować następne zadanie.",
 		"completionInstructions": "Podzadanie zakończone! Możesz przejrzeć wyniki i zasugerować poprawki lub następne kroki. Jeśli wszystko wygląda dobrze, potwierdź, aby zwrócić wynik do zadania nadrzędnego.",
-		"goToSubtask": "Wyświetl zadanie"
+		"goToSubtask": "Wyświetl zadanie",
+		"filesModified": "Zmodyfikowane pliki",
+		"filesRead": "Odczytane pliki",
+		"commandsExecuted": "Wykonane polecenia",
+		"todoStats": "Zadania: {{completed}}/{{total}} ukończonych"
 	},
 	"questions": {
 		"hasQuestion": "Roo ma pytanie"

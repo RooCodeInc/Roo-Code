@@ -7,6 +7,7 @@ import { formatResponse } from "../prompts/responses"
 import { Package } from "../../shared/package"
 import type { ToolUse } from "../../shared/tools"
 import { t } from "../../i18n"
+import { buildSubtaskSummary } from "../task/buildSubtaskSummary"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -168,10 +169,31 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 
 		pushToolResult("")
 
+		// Build a structured summary of what this subtask accomplished.
+		// This enriches the handoff with files changed, tools used, etc.
+		// Wrapped in try/catch: if summary building fails (e.g. mode not initialized),
+		// we fall back to the plain result string for backward compatibility.
+		let completionResultSummary: string
+		try {
+			const summary = buildSubtaskSummary(
+				{
+					apiConversationHistory: task.apiConversationHistory,
+					toolUsage: task.toolUsage,
+					todoList: task.todoList ?? undefined,
+					taskMode: task.taskMode,
+				},
+				result,
+			)
+			completionResultSummary = JSON.stringify(summary)
+		} catch {
+			// Fallback: use plain result text if structured summary cannot be built
+			completionResultSummary = result
+		}
+
 		await provider.reopenParentFromDelegation({
 			parentTaskId: task.parentTaskId!,
 			childTaskId: task.taskId,
-			completionResultSummary: result,
+			completionResultSummary,
 		})
 
 		return "delegated"

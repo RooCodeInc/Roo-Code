@@ -260,7 +260,11 @@
 		"resultContent": "Alt Görev Sonuçları",
 		"defaultResult": "Lütfen sonraki göreve devam edin.",
 		"completionInstructions": "Alt görev tamamlandı! Sonuçları inceleyebilir ve düzeltmeler veya sonraki adımlar önerebilirsiniz. Her şey iyi görünüyorsa, sonucu üst göreve döndürmek için onaylayın.",
-		"goToSubtask": "Görevi görüntüle"
+		"goToSubtask": "Görevi görüntüle",
+		"filesModified": "Değiştirilen Dosyalar",
+		"filesRead": "Okunan Dosyalar",
+		"commandsExecuted": "Çalıştırılan Komutlar",
+		"todoStats": "Görevler: {{completed}}/{{total}} tamamlandı"
 	},
 	"questions": {
 		"hasQuestion": "Roo'nun bir sorusu var"

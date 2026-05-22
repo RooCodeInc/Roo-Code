@@ -89,6 +89,8 @@ import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
 import { REQUESTY_BASE_URL } from "../../shared/utils/requesty"
 import { validateAndFixToolResultIds } from "../task/validateToolResultIds"
+import { formatSubtaskSummaryForApi } from "../task/buildSubtaskSummary"
+import type { SubtaskSummary } from "@roo-code/types"
 
 /**
  * https://github.com/microsoft/vscode-webview-ui-toolkit-samples/blob/main/default/weather-webview/src/providers/WeatherViewProvider.ts
@@ -2953,6 +2955,21 @@ export class ClineProvider
 		if (!Array.isArray(parentClineMessages)) parentClineMessages = []
 		if (!Array.isArray(parentApiMessages)) parentApiMessages = []
 
+		// Try to parse completionResultSummary as a structured SubtaskSummary (JSON).
+		// If it's not valid JSON, treat it as a plain-text result for backward compatibility.
+		let parsedSummary: SubtaskSummary | undefined
+		let apiResultText: string
+		try {
+			parsedSummary = JSON.parse(completionResultSummary) as SubtaskSummary
+			// Use the enriched format for API history so the parent LLM gets structured context
+			apiResultText = `Subtask ${childTaskId} completed.\n\n${formatSubtaskSummaryForApi(parsedSummary)}`
+		} catch {
+			// Not JSON - plain text result (backward compatible path)
+			apiResultText = `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`
+		}
+
+		// For the UI message, pass the raw completionResultSummary (JSON or plain text).
+		// The webview ChatRow component will detect JSON and render structured data.
 		const subtaskUiMessage: ClineMessage = {
 			type: "say",
 			say: "subtask_result",
@@ -2988,8 +3005,8 @@ export class ClineProvider
 			if (lastMsg?.role === "user" && Array.isArray(lastMsg.content)) {
 				for (const block of lastMsg.content) {
 					if (block.type === "tool_result" && block.tool_use_id === toolUseId) {
-						// Update the existing tool_result content
-						block.content = `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`
+						// Update the existing tool_result content with enriched summary
+						block.content = apiResultText
 						alreadyHasToolResult = true
 						break
 					}
@@ -3004,7 +3021,7 @@ export class ClineProvider
 						{
 							type: "tool_result" as const,
 							tool_use_id: toolUseId,
-							content: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
+							content: apiResultText,
 						},
 					],
 					ts,
@@ -3027,7 +3044,7 @@ export class ClineProvider
 				content: [
 					{
 						type: "text" as const,
-						text: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
+						text: apiResultText,
 					},
 				],
 				ts,
