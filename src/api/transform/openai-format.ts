@@ -467,8 +467,13 @@ export function convertToOpenAiMessages(
 					type: "function",
 					function: {
 						name: toolMessage.name,
-						// json string
-						arguments: JSON.stringify(toolMessage.input),
+						// Serialize as JSON, stripping null values to prevent Jinja template
+						// errors on local models (e.g. "Cannot convert value of type
+						// Optional<Any> to Jinja Value"). Null in tool args typically means
+						// "not provided" and should be omitted instead.
+						arguments: JSON.stringify(toolMessage.input, (_key, value) =>
+							value === null ? undefined : value,
+						),
 					},
 				}))
 

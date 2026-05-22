@@ -7,7 +7,7 @@ Parameters:
 - follow_up: (required) A list of 2-4 suggested answers. Suggestions must be complete, actionable answers without placeholders. Optionally include mode to switch modes (code/architect/etc.)
 
 Example: Asking for file path
-{ "question": "What is the path to the frontend-config.json file?", "follow_up": [{ "text": "./src/frontend-config.json", "mode": null }, { "text": "./config/frontend-config.json", "mode": null }, { "text": "./frontend-config.json", "mode": null }] }
+{ "question": "What is the path to the frontend-config.json file?", "follow_up": [{ "text": "./src/frontend-config.json" }, { "text": "./config/frontend-config.json" }, { "text": "./frontend-config.json" }] }
 
 Example: Asking with mode switch
 { "question": "Would you like me to implement this feature?", "follow_up": [{ "text": "Yes, implement it now", "mode": "code" }, { "text": "No, just plan it out", "mode": "architect" }] }`
@@ -25,7 +25,12 @@ export default {
 	function: {
 		name: "ask_followup_question",
 		description: ASK_FOLLOWUP_QUESTION_DESCRIPTION,
-		strict: true,
+		// Note: strict mode is intentionally disabled for this tool.
+		// With strict: true, OpenAI requires ALL properties to be in the 'required' array,
+		// which forces the LLM to always provide explicit values (even null) for optional params.
+		// Local models using Jinja chat templates cannot handle null values in tool call arguments,
+		// causing "Cannot convert value of type Optional<Any> to Jinja Value" errors.
+		// By disabling strict mode, the LLM can omit the optional `mode` parameter entirely.
 		parameters: {
 			type: "object",
 			properties: {
@@ -44,11 +49,11 @@ export default {
 								description: FOLLOW_UP_TEXT_DESCRIPTION,
 							},
 							mode: {
-								type: ["string", "null"],
+								type: "string",
 								description: FOLLOW_UP_MODE_DESCRIPTION,
 							},
 						},
-						required: ["text", "mode"],
+						required: ["text"],
 						additionalProperties: false,
 					},
 					minItems: 1,

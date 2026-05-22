@@ -82,6 +82,37 @@ describe("askFollowupQuestionTool", () => {
 		)
 	})
 
+	it("should strip null mode values from suggestions to prevent Jinja template errors", async () => {
+		const block: ToolUse = {
+			type: "tool_use",
+			name: "ask_followup_question",
+			params: {
+				question: "What would you like to do?",
+			},
+			nativeArgs: {
+				question: "What would you like to do?",
+				follow_up: [
+					{ text: "Option A", mode: null as any },
+					{ text: "Option B", mode: "code" },
+				],
+			},
+			partial: false,
+		}
+
+		await askFollowupQuestionTool.handle(mockCline, block as ToolUse<"ask_followup_question">, {
+			askApproval: vi.fn(),
+			handleError: vi.fn(),
+			pushToolResult: mockPushToolResult,
+		})
+
+		// mode: null should be stripped, mode: "code" should be preserved
+		expect(mockCline.ask).toHaveBeenCalledWith(
+			"followup",
+			expect.stringContaining('"suggest":[{"answer":"Option A"},{"answer":"Option B","mode":"code"}]'),
+			false,
+		)
+	})
+
 	it("should handle mixed suggestions with and without mode attributes", async () => {
 		const block: ToolUse = {
 			type: "tool_use",

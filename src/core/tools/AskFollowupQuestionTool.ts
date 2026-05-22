@@ -39,10 +39,18 @@ export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
 				return
 			}
 
-			// Transform follow_up suggestions to the format expected by task.ask
+			// Transform follow_up suggestions to the format expected by task.ask.
+			// Omit `mode` when it's null/undefined to avoid Jinja template errors
+			// on local models that can't handle null values in tool call arguments.
 			const follow_up_json = {
 				question,
-				suggest: follow_up.map((s) => ({ answer: s.text, mode: s.mode })),
+				suggest: follow_up.map((s) => {
+					const suggestion: { answer: string; mode?: string } = { answer: s.text }
+					if (s.mode != null) {
+						suggestion.mode = s.mode
+					}
+					return suggestion
+				}),
 			}
 
 			task.consecutiveMistakeCount = 0

@@ -112,6 +112,39 @@ describe("convertToOpenAiMessages", () => {
 		})
 	})
 
+	it("should strip null values from tool call arguments to prevent Jinja template errors", () => {
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "assistant",
+				content: [
+					{
+						type: "tool_use",
+						id: "followup-123",
+						name: "ask_followup_question",
+						input: {
+							question: "Pick one",
+							follow_up: [
+								{ text: "Option A", mode: null },
+								{ text: "Option B", mode: "code" },
+							],
+						},
+					},
+				],
+			},
+		]
+
+		const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+		const assistantMessage = openAiMessages[0] as OpenAI.Chat.ChatCompletionAssistantMessageParam
+		const toolCall = assistantMessage.tool_calls![0] as any
+		const args = JSON.parse(toolCall.function.arguments)
+
+		// null mode should be stripped (becomes undefined, omitted from JSON)
+		expect(args.follow_up[0]).toEqual({ text: "Option A" })
+		expect(args.follow_up[0].mode).toBeUndefined()
+		// non-null mode should be preserved
+		expect(args.follow_up[1]).toEqual({ text: "Option B", mode: "code" })
+	})
+
 	it("should handle user messages with tool results (no normalization without normalizeToolCallId)", () => {
 		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 			{
