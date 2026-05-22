@@ -135,6 +135,18 @@ export const internationalZAiModels = {
 		description:
 			"GLM-5 is Zhipu's next-generation model with a 202k context window and built-in thinking capabilities. It delivers state-of-the-art reasoning, coding, and agentic performance.",
 	},
+	"glm-5-turbo": {
+		maxTokens: 128_000,
+		contextWindow: 200_000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		inputPrice: 1.2,
+		outputPrice: 4.0,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.24,
+		description:
+			"GLM-5-Turbo is a high-throughput variant of GLM-5 with a 200k context window and 128k max output tokens, optimized for fast, cost-effective reasoning and coding tasks.",
+	},
 	"glm-4.7-flash": {
 		maxTokens: 16_384,
 		contextWindow: 200_000,
@@ -310,6 +322,18 @@ export const mainlandZAiModels = {
 		cacheReadsPrice: 0.057,
 		description:
 			"GLM-5 is Zhipu's next-generation model with a 202k context window and built-in thinking capabilities. It delivers state-of-the-art reasoning, coding, and agentic performance.",
+	},
+	"glm-5-turbo": {
+		maxTokens: 128_000,
+		contextWindow: 200_000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		inputPrice: 0.58,
+		outputPrice: 2.07,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.124,
+		description:
+			"GLM-5-Turbo is a high-throughput variant of GLM-5 with a 200k context window and 128k max output tokens, optimized for fast, cost-effective reasoning and coding tasks.",
 	},
 	"glm-4.7-flash": {
 		maxTokens: 16_384,
