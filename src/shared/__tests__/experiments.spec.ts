@@ -14,6 +14,37 @@ describe("experiments", () => {
 		})
 	})
 
+	describe("RE_ANCHOR_BEFORE_EDIT", () => {
+		it("is configured correctly", () => {
+			expect(EXPERIMENT_IDS.RE_ANCHOR_BEFORE_EDIT).toBe("reAnchorBeforeEdit")
+			expect(experimentConfigsMap.RE_ANCHOR_BEFORE_EDIT).toMatchObject({
+				enabled: false,
+			})
+		})
+
+		it("returns false when not enabled", () => {
+			const experiments: Record<ExperimentId, boolean> = {
+				preventFocusDisruption: false,
+				imageGeneration: false,
+				runSlashCommand: false,
+				customTools: false,
+				reAnchorBeforeEdit: false,
+			}
+			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.RE_ANCHOR_BEFORE_EDIT)).toBe(false)
+		})
+
+		it("returns true when enabled", () => {
+			const experiments: Record<ExperimentId, boolean> = {
+				preventFocusDisruption: false,
+				imageGeneration: false,
+				runSlashCommand: false,
+				customTools: false,
+				reAnchorBeforeEdit: true,
+			}
+			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.RE_ANCHOR_BEFORE_EDIT)).toBe(true)
+		})
+	})
+
 	describe("isEnabled", () => {
 		it("returns false when experiment is not enabled", () => {
 			const experiments: Record<ExperimentId, boolean> = {
@@ -21,6 +52,7 @@ describe("experiments", () => {
 				imageGeneration: false,
 				runSlashCommand: false,
 				customTools: false,
+				reAnchorBeforeEdit: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION)).toBe(false)
 		})
@@ -31,6 +63,7 @@ describe("experiments", () => {
 				imageGeneration: false,
 				runSlashCommand: false,
 				customTools: false,
+				reAnchorBeforeEdit: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION)).toBe(true)
 		})
@@ -41,6 +74,7 @@ describe("experiments", () => {
 				imageGeneration: false,
 				runSlashCommand: false,
 				customTools: false,
+				reAnchorBeforeEdit: false,
 			}
 			expect(Experiments.isEnabled(experiments, EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION)).toBe(false)
 		})

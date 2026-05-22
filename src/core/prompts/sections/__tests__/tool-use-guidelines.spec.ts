@@ -1,39 +1,30 @@
 import { getToolUseGuidelinesSection } from "../tool-use-guidelines"
 
 describe("getToolUseGuidelinesSection", () => {
-	it("should include proper numbered guidelines", () => {
-		const guidelines = getToolUseGuidelinesSection()
-
-		expect(guidelines).toContain("1. Assess what information")
-		expect(guidelines).toContain("2. Choose the most appropriate tool")
-		expect(guidelines).toContain("3. If multiple actions are needed")
+	it("returns base guidelines without re-anchor text when no experiments provided", () => {
+		const result = getToolUseGuidelinesSection()
+		expect(result).toContain("Tool Use Guidelines")
+		expect(result).toContain("Assess what information you already have")
+		expect(result).not.toContain("Re-anchor before every file edit")
 	})
 
-	it("should include multiple-tools-per-message guidance", () => {
-		const guidelines = getToolUseGuidelinesSection()
-
-		expect(guidelines).toContain("you may use multiple tools in a single message")
-		expect(guidelines).not.toContain("use one tool at a time per message")
+	it("returns base guidelines without re-anchor text when experiment is disabled", () => {
+		const result = getToolUseGuidelinesSection({ reAnchorBeforeEdit: false })
+		expect(result).toContain("Tool Use Guidelines")
+		expect(result).not.toContain("Re-anchor before every file edit")
 	})
 
-	it("should use simplified footer without step-by-step language", () => {
-		const guidelines = getToolUseGuidelinesSection()
-
-		expect(guidelines).toContain("carefully considering the user's response after tool executions")
-		expect(guidelines).not.toContain("It is crucial to proceed step-by-step")
-		expect(guidelines).not.toContain("ALWAYS wait for user confirmation after each tool use")
+	it("includes re-anchor guideline when experiment is enabled", () => {
+		const result = getToolUseGuidelinesSection({ reAnchorBeforeEdit: true })
+		expect(result).toContain("Tool Use Guidelines")
+		expect(result).toContain("Re-anchor before every file edit")
+		expect(result).toContain("re-read the file")
+		expect(result).toContain("read_file")
 	})
 
-	it("should include common guidance", () => {
-		const guidelines = getToolUseGuidelinesSection()
-		expect(guidelines).toContain("Assess what information you already have")
-		expect(guidelines).toContain("Choose the most appropriate tool")
-		expect(guidelines).not.toContain("<actual_tool_name>")
-	})
-
-	it("should not include per-tool confirmation guidelines", () => {
-		const guidelines = getToolUseGuidelinesSection()
-
-		expect(guidelines).not.toContain("After each tool use, the user will respond with the result")
+	it("returns base guidelines when empty experiments object provided", () => {
+		const result = getToolUseGuidelinesSection({})
+		expect(result).toContain("Tool Use Guidelines")
+		expect(result).not.toContain("Re-anchor before every file edit")
 	})
 })

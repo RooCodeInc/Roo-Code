@@ -434,11 +434,11 @@ describe("editFileTool", () => {
 	})
 
 	describe("consecutive error display behavior", () => {
-		it("does NOT show diff_error to user on first no_match failure", async () => {
+		it("shows diff_error to user on first no_match failure", async () => {
 			await executeEditFileTool({ old_string: "NonExistent" }, { fileContent: "Line 1\nLine 2\nLine 3" })
 
 			expect(mockTask.consecutiveMistakeCountForEditFile.get(testFilePath)).toBe(1)
-			expect(mockTask.say).not.toHaveBeenCalledWith("diff_error", expect.any(String))
+			expect(mockTask.say).toHaveBeenCalledWith("diff_error", expect.stringContaining("No match found"))
 			expect(mockTask.recordToolError).toHaveBeenCalledWith(
 				"edit_file",
 				expect.stringContaining("No match found"),
@@ -456,14 +456,17 @@ describe("editFileTool", () => {
 			expect(mockTask.say).toHaveBeenCalledWith("diff_error", expect.stringContaining("No match found"))
 		})
 
-		it("does NOT show diff_error to user on first occurrence_mismatch failure", async () => {
+		it("shows diff_error to user on first occurrence_mismatch failure", async () => {
 			await executeEditFileTool(
 				{ old_string: "Line", expected_replacements: "1" },
 				{ fileContent: "Line 1\nLine 2\nLine 3" },
 			)
 
 			expect(mockTask.consecutiveMistakeCountForEditFile.get(testFilePath)).toBe(1)
-			expect(mockTask.say).not.toHaveBeenCalledWith("diff_error", expect.any(String))
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"diff_error",
+				expect.stringContaining("Occurrence count mismatch"),
+			)
 			expect(mockTask.recordToolError).toHaveBeenCalledWith(
 				"edit_file",
 				expect.stringContaining("Occurrence count mismatch"),
@@ -522,8 +525,8 @@ describe("editFileTool", () => {
 			expect(mockTask.consecutiveMistakeCountForEditFile.get(testFilePath)).toBe(1)
 			expect(mockTask.consecutiveMistakeCountForEditFile.get(otherFilePath)).toBe(1)
 
-			// Neither should have triggered diff_error display
-			expect(mockTask.say).not.toHaveBeenCalledWith("diff_error", expect.any(String))
+			// Both should have triggered diff_error display (errors are shown on every failure now)
+			expect(mockTask.say).toHaveBeenCalledWith("diff_error", expect.any(String))
 		})
 	})
 
