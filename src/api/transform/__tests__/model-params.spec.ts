@@ -123,6 +123,17 @@ describe("getModelParams", () => {
 			expect(result.temperature).toBe(0.3)
 		})
 
+		it("should return undefined temperature when defaultTemperature is undefined and no user/model temperature", () => {
+			const result = getModelParams({
+				...openaiParams,
+				settings: {},
+				model: baseModel,
+				defaultTemperature: undefined,
+			})
+
+			expect(result.temperature).toBeUndefined()
+		})
+
 		it("should use model maxTokens when available", () => {
 			const model: ModelInfo = {
 				...baseModel,
