@@ -10,7 +10,6 @@ import { Task } from "../task/Task"
 
 import { ToolUse, ToolResponse } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
-import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { ExitCodeDetails, RooTerminalCallbacks, RooTerminalProcess } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { Terminal } from "../../integrations/terminal/Terminal"
@@ -52,9 +51,7 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 				return
 			}
 
-			const canonicalCommand = unescapeHtmlEntities(command)
-
-			const ignoredFileAttemptedToAccess = task.rooIgnoreController?.validateCommand(canonicalCommand)
+			const ignoredFileAttemptedToAccess = task.rooIgnoreController?.validateCommand(command)
 
 			if (ignoredFileAttemptedToAccess) {
 				await task.say("rooignore_error", ignoredFileAttemptedToAccess)
@@ -64,7 +61,7 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 
 			task.consecutiveMistakeCount = 0
 
-			const didApprove = await askApproval("command", canonicalCommand)
+			const didApprove = await askApproval("command", command)
 
 			if (!didApprove) {
 				return
@@ -87,9 +84,7 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 				.get<string[]>("commandTimeoutAllowlist", [])
 
 			// Check if command matches any prefix in the allowlist
-			const isCommandAllowlisted = commandTimeoutAllowlist.some((prefix) =>
-				canonicalCommand.startsWith(prefix.trim()),
-			)
+			const isCommandAllowlisted = commandTimeoutAllowlist.some((prefix) => command.startsWith(prefix.trim()))
 
 			// Convert seconds to milliseconds for internal use, but skip timeout if command is allowlisted
 			const commandExecutionTimeout = isCommandAllowlisted ? 0 : commandExecutionTimeoutSeconds * 1000
@@ -99,7 +94,7 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 
 			const options: ExecuteCommandOptions = {
 				executionId,
-				command: canonicalCommand,
+				command: command,
 				customCwd,
 				terminalShellIntegrationDisabled,
 				commandExecutionTimeout,
