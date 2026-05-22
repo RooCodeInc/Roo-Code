@@ -30,7 +30,8 @@ vi.mock("openai", () => {
 						}
 
 						// Check if this is a reasoning_content test by looking at model
-						const isReasonerModel = options.model?.includes("deepseek-reasoner")
+						const isReasonerModel =
+							options.model?.includes("deepseek-reasoner") || options.model?.includes("deepseek-v4")
 						const isToolCallTest = options.tools?.length > 0
 
 						// Return async iterator for streaming
@@ -245,6 +246,29 @@ describe("DeepSeekHandler", () => {
 			const model = handler.getModel()
 			// Cast to ModelInfo to access preserveReasoning which is an optional property
 			expect((model.info as ModelInfo).preserveReasoning).toBeUndefined()
+		})
+
+		it("should return correct model info for deepseek-v4-0324", () => {
+			const handlerWithV4 = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-0324",
+			})
+			const model = handlerWithV4.getModel()
+			expect(model.id).toBe("deepseek-v4-0324")
+			expect(model.info).toBeDefined()
+			expect(model.info.maxTokens).toBe(16_384)
+			expect(model.info.contextWindow).toBe(128_000)
+			expect(model.info.supportsImages).toBe(true)
+			expect(model.info.supportsPromptCache).toBe(true)
+		})
+
+		it("should have preserveReasoning enabled for deepseek-v4-0324", () => {
+			const handlerWithV4 = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-0324",
+			})
+			const model = handlerWithV4.getModel()
+			expect((model.info as ModelInfo).preserveReasoning).toBe(true)
 		})
 
 		it("should return provided model ID with default model info if model does not exist", () => {
@@ -473,6 +497,44 @@ describe("DeepSeekHandler", () => {
 			// Verify that the thinking parameter was NOT passed to the API
 			const callArgs = mockCreate.mock.calls[0][0]
 			expect(callArgs.thinking).toBeUndefined()
+		})
+
+		it("should pass thinking parameter for deepseek-v4-0324 model", async () => {
+			const v4Handler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-0324",
+			})
+
+			const stream = v4Handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// Consume the stream
+			}
+
+			// Verify that the thinking parameter was passed to the API for v4 model
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					thinking: { type: "enabled" },
+				}),
+				{},
+			)
+		})
+
+		it("should handle reasoning_content in streaming responses for deepseek-v4-0324", async () => {
+			const v4Handler = new DeepSeekHandler({
+				...mockOptions,
+				apiModelId: "deepseek-v4-0324",
+			})
+
+			const stream = v4Handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should have reasoning chunks since v4 model has preserveReasoning
+			const reasoningChunks = chunks.filter((chunk) => chunk.type === "reasoning")
+			expect(reasoningChunks.length).toBeGreaterThan(0)
+			expect(reasoningChunks[0].text).toBe("Let me think about this...")
 		})
 
 		it("should handle tool calls with reasoning_content", async () => {

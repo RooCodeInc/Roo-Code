@@ -32,6 +32,19 @@ export const deepSeekModels = {
 		cacheReadsPrice: 0.028, // $0.028 per million tokens (cache hit) - Updated Dec 9, 2025
 		description: `DeepSeek-V3.2 (Thinking Mode) achieves performance comparable to OpenAI-o1 across math, code, and reasoning tasks. Supports Chain of Thought reasoning with up to 8K output tokens. Supports JSON output, tool calls, and chat prefix completion (beta).`,
 	},
+	// DeepSeek V4 models - https://api-docs.deepseek.com/quick_start/pricing
+	"deepseek-v4-0324": {
+		maxTokens: 16_384, // 16K max output
+		contextWindow: 128_000,
+		supportsImages: true,
+		supportsPromptCache: true,
+		preserveReasoning: true,
+		inputPrice: 2.19, // $2.19 per million tokens (cache miss)
+		outputPrice: 8.87, // $8.87 per million tokens
+		cacheWritesPrice: 2.19, // $2.19 per million tokens (cache miss)
+		cacheReadsPrice: 0.219, // $0.219 per million tokens (cache hit)
+		description: `DeepSeek-V4-0324 is the latest flagship reasoning model with significantly improved performance across math, code, and complex reasoning tasks. Features enhanced thinking mode with interleaved reasoning and supports vision, JSON output, tool calls, and extended context.`,
+	},
 } as const satisfies Record<string, ModelInfo>
 
 // https://api-docs.deepseek.com/quick_start/parameter_settings
