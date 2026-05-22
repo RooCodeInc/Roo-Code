@@ -31,7 +31,7 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		const apiKey = "noop"
 
 		this.client = new OpenAI({
-			baseURL: (this.options.lmStudioBaseUrl || "http://localhost:1234") + "/v1",
+			baseURL: (this.options.lmStudioBaseUrl || "http://localhost:1234") + "/api/v1",
 			apiKey: apiKey,
 			timeout: getApiRequestTimeout(),
 		})
@@ -221,7 +221,7 @@ export async function getLmStudioModels(baseUrl = "http://localhost:1234") {
 			return []
 		}
 
-		const response = await axios.get(`${baseUrl}/v1/models`)
+		const response = await axios.get(`${baseUrl}/api/v1/models`)
 		const modelsArray = response.data?.data?.map((model: any) => model.id) || []
 		return [...new Set<string>(modelsArray)]
 	} catch (error) {

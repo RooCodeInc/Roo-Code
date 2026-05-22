@@ -13,7 +13,7 @@ export const forceFullModelDetailsLoad = async (baseUrl: string, modelId: string
 	try {
 		// Test the connection to LM Studio first
 		// Crrors will be caught further down.
-		await axios.get(`${baseUrl}/v1/models`)
+		await axios.get(`${baseUrl}/api/v1/models`)
 		const lmsUrl = baseUrl.replace(/^http:\/\//, "ws://").replace(/^https:\/\//, "wss://")
 
 		const client = new LMStudioClient({ baseUrl: lmsUrl })
@@ -66,7 +66,7 @@ export async function getLMStudioModels(baseUrl = "http://localhost:1234"): Prom
 
 		// test the connection to LM Studio first
 		// errors will be caught further down
-		await axios.get(`${baseUrl}/v1/models`)
+		await axios.get(`${baseUrl}/api/v1/models`)
 
 		const client = new LMStudioClient({ baseUrl: lmsUrl })
 

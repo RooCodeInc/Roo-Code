@@ -47,7 +47,7 @@ describe("LmStudioHandler timeout configuration", () => {
 		expect(getApiRequestTimeout).toHaveBeenCalled()
 		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
 			expect.objectContaining({
-				baseURL: "http://localhost:1234/v1",
+				baseURL: "http://localhost:1234/api/v1",
 				apiKey: "noop",
 				timeout: 600000, // 600 seconds in milliseconds
 			}),
