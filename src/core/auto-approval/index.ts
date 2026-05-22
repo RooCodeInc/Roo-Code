@@ -59,6 +59,17 @@ export async function checkAutoApproval({
 		return { decision: "approve" }
 	}
 
+	// Always enforce denied commands regardless of auto-approval settings.
+	// This prevents agents from bypassing the deny list by wrapping denied
+	// commands inside chains (&&, ||, ;) or multi-line scripts.
+	if (ask === "command" && text && state?.deniedCommands?.length) {
+		const decision = getCommandDecision(text, state.allowedCommands || [], state.deniedCommands)
+
+		if (decision === "auto_deny") {
+			return { decision: "deny" }
+		}
+	}
+
 	if (!state || !state.autoApprovalEnabled) {
 		return { decision: "ask" }
 	}

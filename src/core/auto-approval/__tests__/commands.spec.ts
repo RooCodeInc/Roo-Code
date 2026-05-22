@@ -82,6 +82,46 @@ describe("containsDangerousSubstitution — true positives still caught", () => 
 	})
 })
 
+describe("getCommandDecision — denied commands in chained/wrapped commands", () => {
+	it("should auto_deny when denied command appears after && in a chain", () => {
+		expect(getCommandDecision("cat file.txt && rm file.txt", [], ["rm"])).toBe("auto_deny")
+	})
+
+	it("should auto_deny when denied command appears after || in a chain", () => {
+		expect(getCommandDecision("test -f file || rm file", [], ["rm"])).toBe("auto_deny")
+	})
+
+	it("should auto_deny when denied command appears after ; in a chain", () => {
+		expect(getCommandDecision("echo done; rm -rf /tmp/test", [], ["rm"])).toBe("auto_deny")
+	})
+
+	it("should auto_deny when denied command appears after pipe", () => {
+		expect(getCommandDecision("ls | rm file", [], ["rm"])).toBe("auto_deny")
+	})
+
+	it("should auto_deny for heredoc-style bypass with rm at end (multi-line)", () => {
+		const command = `cat > script.sh << 'HEREDOC'\necho hello\nHEREDOC\nnu script.sh && rm script.sh`
+		expect(getCommandDecision(command, [], ["rm"])).toBe("auto_deny")
+	})
+
+	it("should auto_deny when denied command is the first in a chain", () => {
+		expect(getCommandDecision("rm file && echo done", [], ["rm"])).toBe("auto_deny")
+	})
+
+	it("should auto_deny for the exact issue scenario", () => {
+		const command = `cat > verify-hook-install.nu << 'HEREDOC'\nuse scripts/development/modules/nu/install_hooks.nu [install-git-hooks]\nlet project_root = ($env | get -o FILE_PWD | default (pwd))\ninstall-git-hooks $project_root\nHEREDOC\nnu verify-hook-install.nu && rm verify-hook-install.nu`
+		expect(getCommandDecision(command, [], ["rm"])).toBe("auto_deny")
+	})
+
+	it("should not deny when denied command is not present", () => {
+		expect(getCommandDecision("git status && echo done", [], ["rm"])).toBe("ask_user")
+	})
+
+	it("should respect longest prefix match: allowed 'rm -i' overrides denied 'rm'", () => {
+		expect(getCommandDecision("rm -i file.txt", ["rm -i"], ["rm"])).toBe("auto_approve")
+	})
+})
+
 describe("getCommandDecision — integration with dangerous substitution checks", () => {
 	const allowedCommands = ["node", "echo"]
 
