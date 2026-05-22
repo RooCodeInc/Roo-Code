@@ -282,6 +282,66 @@ describe("AwsBedrockHandler - Extended Thinking", () => {
 			expect(reasoningChunks[1].text).toBe(" about this problem.")
 		})
 
+		it("should use adaptive thinking for Opus 4.7 instead of enabled with budget_tokens", async () => {
+			handler = new AwsBedrockHandler({
+				apiProvider: "bedrock",
+				apiModelId: "anthropic.claude-opus-4-7",
+				awsRegion: "us-east-1",
+				enableReasoningEffort: true,
+				modelMaxTokens: 8192,
+				modelMaxThinkingTokens: 4096,
+			})
+
+			mockSend.mockResolvedValue({
+				stream: (async function* () {
+					yield { messageStart: { role: "assistant" } }
+					yield {
+						contentBlockStart: {
+							content_block: { type: "thinking", thinking: "Adaptive thinking..." },
+							contentBlockIndex: 0,
+						},
+					}
+					yield {
+						contentBlockDelta: {
+							delta: { type: "thinking_delta", thinking: " reasoning complete." },
+						},
+					}
+					yield {
+						contentBlockStart: {
+							start: { text: "Here is the answer." },
+							contentBlockIndex: 1,
+						},
+					}
+					yield { metadata: { usage: { inputTokens: 100, outputTokens: 50 } } }
+				})(),
+			})
+
+			const messages = [{ role: "user" as const, content: "Test message" }]
+			const stream = handler.createMessage("System prompt", messages)
+
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Verify Opus 4.7 uses adaptive thinking (not enabled with budget_tokens)
+			expect(mockSend).toHaveBeenCalledTimes(1)
+			expect(capturedPayload).toBeDefined()
+			expect(capturedPayload.additionalModelRequestFields).toBeDefined()
+			expect(capturedPayload.additionalModelRequestFields.thinking).toEqual({
+				type: "adaptive",
+			})
+			expect(capturedPayload.additionalModelRequestFields.output_config).toEqual({
+				effort: "high",
+			})
+
+			// Verify reasoning chunks were yielded
+			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+			expect(reasoningChunks).toHaveLength(2)
+			expect((reasoningChunks[0] as any).text).toBe("Adaptive thinking...")
+			expect((reasoningChunks[1] as any).text).toBe(" reasoning complete.")
+		})
+
 		it("should support API key authentication", async () => {
 			handler = new AwsBedrockHandler({
 				apiProvider: "bedrock",

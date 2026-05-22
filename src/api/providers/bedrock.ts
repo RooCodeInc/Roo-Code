@@ -59,13 +59,25 @@ interface BedrockInferenceConfig {
 // Define interface for Bedrock additional model request fields
 // This includes thinking configuration, 1M context beta, and other model-specific parameters
 interface BedrockAdditionalModelFields {
-	thinking?: {
-		type: "enabled"
-		budget_tokens: number
+	thinking?:
+		| {
+				type: "enabled"
+				budget_tokens: number
+		  }
+		| {
+				type: "adaptive"
+		  }
+	output_config?: {
+		effort?: "low" | "medium" | "high"
 	}
 	anthropic_beta?: string[]
 	[key: string]: any // Add index signature to be compatible with DocumentType
 }
+
+// Models that only support thinking.type: "adaptive" (not "enabled" with budget_tokens)
+const BEDROCK_ADAPTIVE_THINKING_ONLY_MODEL_IDS = [
+	"anthropic.claude-opus-4-7",
+] as const
 
 // Define interface for Bedrock payload
 interface BedrockPayload {
@@ -390,12 +402,28 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 		if ((isThinkingExplicitlyEnabled || isThinkingEnabledBySettings) && modelConfig.info.supportsReasoningBudget) {
 			thinkingEnabled = true
-			additionalModelRequestFields = {
-				thinking: {
-					type: "enabled",
-					budget_tokens: metadata?.thinking?.maxThinkingTokens || modelConfig.reasoningBudget || 4096,
-				},
+
+			// Opus 4.7 only supports thinking.type: "adaptive" with output_config.effort
+			// (NOT "enabled" with budget_tokens which returns a 400 error)
+			const baseId = this.parseBaseModelId(modelConfig.id)
+			if (BEDROCK_ADAPTIVE_THINKING_ONLY_MODEL_IDS.includes(baseId as any)) {
+				additionalModelRequestFields = {
+					thinking: {
+						type: "adaptive",
+					},
+					output_config: {
+						effort: "high",
+					},
+				}
+			} else {
+				additionalModelRequestFields = {
+					thinking: {
+						type: "enabled",
+						budget_tokens: metadata?.thinking?.maxThinkingTokens || modelConfig.reasoningBudget || 4096,
+					},
+				}
 			}
+
 			logger.info("Extended thinking enabled for Bedrock request", {
 				ctx: "bedrock",
 				modelId: modelConfig.id,
