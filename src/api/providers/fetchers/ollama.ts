@@ -37,6 +37,46 @@ type OllamaModelsResponse = z.infer<typeof OllamaModelsResponseSchema>
 
 type OllamaModelInfoResponse = z.infer<typeof OllamaModelInfoResponseSchema>
 
+/**
+ * Known vision-related family names that appear in `details.families` for
+ * multimodal models in Ollama.  When a model's `capabilities` array omits
+ * "vision" (as happens with some third-party quants like unsloth), we fall
+ * back to checking these families.
+ */
+const VISION_FAMILIES = new Set(["clip", "siglip", "mmproj", "mllama"])
+
+/**
+ * Regex patterns matched against `model_info` keys to detect a vision
+ * encoder even when `capabilities` and `details.families` are both silent.
+ */
+const VISION_MODEL_INFO_PATTERN = /vision|clip|siglip|mmproj|image_encoder/i
+
+/**
+ * Determines whether the model supports images by checking:
+ *   1. The authoritative `capabilities` array (preferred).
+ *   2. `details.families` for known vision encoder families.
+ *   3. `model_info` keys for vision-related architecture indicators.
+ */
+const detectVisionSupport = (rawModel: OllamaModelInfoResponse): boolean => {
+	// 1. Authoritative check
+	if (rawModel.capabilities?.includes("vision")) {
+		return true
+	}
+
+	// 2. Families check
+	const families = rawModel.details.families
+	if (families?.some((f) => VISION_FAMILIES.has(f.toLowerCase()))) {
+		return true
+	}
+
+	// 3. model_info key check
+	if (Object.keys(rawModel.model_info).some((k) => VISION_MODEL_INFO_PATTERN.test(k))) {
+		return true
+	}
+
+	return false
+}
+
 export const parseOllamaModel = (rawModel: OllamaModelInfoResponse): ModelInfo | null => {
 	const contextKey = Object.keys(rawModel.model_info).find((k) => k.includes("context_length"))
 	const contextWindow =
@@ -52,7 +92,7 @@ export const parseOllamaModel = (rawModel: OllamaModelInfoResponse): ModelInfo |
 		description: `Family: ${rawModel.details.family}, Context: ${contextWindow}, Size: ${rawModel.details.parameter_size}`,
 		contextWindow: contextWindow || ollamaDefaultModelInfo.contextWindow,
 		supportsPromptCache: true,
-		supportsImages: rawModel.capabilities?.includes("vision"),
+		supportsImages: detectVisionSupport(rawModel),
 		maxTokens: contextWindow || ollamaDefaultModelInfo.contextWindow,
 	})
 

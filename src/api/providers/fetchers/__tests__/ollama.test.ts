@@ -114,6 +114,123 @@ describe("Ollama Fetcher", () => {
 			expect(parsedModel!.supportsImages).toBe(true)
 			expect(parsedModel!.contextWindow).toBeGreaterThan(0)
 		})
+
+		it("should detect vision via details.families when capabilities omits vision", () => {
+			const modelData = {
+				...ollamaModelsData["qwen3-2to16:latest"],
+				details: {
+					...ollamaModelsData["qwen3-2to16:latest"].details,
+					families: ["gemma4", "clip"],
+				},
+				capabilities: ["completion", "tools"], // no "vision"
+			}
+
+			const parsedModel = parseOllamaModel(modelData as any)
+
+			expect(parsedModel).not.toBeNull()
+			expect(parsedModel!.supportsImages).toBe(true)
+		})
+
+		it("should detect vision via model_info keys when capabilities and families lack vision indicators", () => {
+			const modelData = {
+				...ollamaModelsData["qwen3-2to16:latest"],
+				details: {
+					...ollamaModelsData["qwen3-2to16:latest"].details,
+					families: ["gemma4"],
+				},
+				model_info: {
+					...ollamaModelsData["qwen3-2to16:latest"].model_info,
+					"gemma4_vision_encoder.block_count": 27,
+					"gemma4_vision_encoder.embedding_length": 1152,
+				},
+				capabilities: ["completion", "tools"], // no "vision"
+			}
+
+			const parsedModel = parseOllamaModel(modelData as any)
+
+			expect(parsedModel).not.toBeNull()
+			expect(parsedModel!.supportsImages).toBe(true)
+		})
+
+		it("should detect vision via siglip family in details.families", () => {
+			const modelData = {
+				...ollamaModelsData["qwen3-2to16:latest"],
+				details: {
+					...ollamaModelsData["qwen3-2to16:latest"].details,
+					families: ["gemma4", "siglip"],
+				},
+				capabilities: ["completion", "tools"],
+			}
+
+			const parsedModel = parseOllamaModel(modelData as any)
+
+			expect(parsedModel).not.toBeNull()
+			expect(parsedModel!.supportsImages).toBe(true)
+		})
+
+		it("should detect vision via mmproj family in details.families", () => {
+			const modelData = {
+				...ollamaModelsData["qwen3-2to16:latest"],
+				details: {
+					...ollamaModelsData["qwen3-2to16:latest"].details,
+					families: ["llama", "mmproj"],
+				},
+				capabilities: ["completion", "tools"],
+			}
+
+			const parsedModel = parseOllamaModel(modelData as any)
+
+			expect(parsedModel).not.toBeNull()
+			expect(parsedModel!.supportsImages).toBe(true)
+		})
+
+		it("should detect vision via mllama family in details.families", () => {
+			const modelData = {
+				...ollamaModelsData["qwen3-2to16:latest"],
+				details: {
+					...ollamaModelsData["qwen3-2to16:latest"].details,
+					families: ["llama", "mllama"],
+				},
+				capabilities: ["completion", "tools"],
+			}
+
+			const parsedModel = parseOllamaModel(modelData as any)
+
+			expect(parsedModel).not.toBeNull()
+			expect(parsedModel!.supportsImages).toBe(true)
+		})
+
+		it("should not detect vision when no indicators are present", () => {
+			const modelData = {
+				...ollamaModelsData["qwen3-2to16:latest"],
+				details: {
+					...ollamaModelsData["qwen3-2to16:latest"].details,
+					families: ["qwen3"],
+				},
+				capabilities: ["completion", "tools"],
+			}
+
+			const parsedModel = parseOllamaModel(modelData as any)
+
+			expect(parsedModel).not.toBeNull()
+			expect(parsedModel!.supportsImages).toBe(false)
+		})
+
+		it("should handle case-insensitive family matching for vision detection", () => {
+			const modelData = {
+				...ollamaModelsData["qwen3-2to16:latest"],
+				details: {
+					...ollamaModelsData["qwen3-2to16:latest"].details,
+					families: ["gemma4", "CLIP"],
+				},
+				capabilities: ["completion", "tools"],
+			}
+
+			const parsedModel = parseOllamaModel(modelData as any)
+
+			expect(parsedModel).not.toBeNull()
+			expect(parsedModel!.supportsImages).toBe(true)
+		})
 	})
 
 	describe("getOllamaModels", () => {
