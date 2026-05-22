@@ -432,6 +432,15 @@ export const bedrockModels = {
 		outputPrice: 2.5,
 		description: "Kimi K2 Thinking (1T parameter MoE model with 32B active parameters)",
 	},
+	"moonshotai.kimi-k2.5": {
+		maxTokens: 32_000,
+		contextWindow: 262_144,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.6,
+		outputPrice: 2.5,
+		description: "Kimi K2.5 (Moonshot AI)",
+	},
 	"minimax.minimax-m2": {
 		maxTokens: 16_384,
 		contextWindow: 196_608,
@@ -441,6 +450,15 @@ export const bedrockModels = {
 		inputPrice: 0.3,
 		outputPrice: 1.2,
 		description: "MiniMax M2 (230B parameter MoE model with 10B active parameters)",
+	},
+	"minimax.minimax-m2.5": {
+		maxTokens: 16_384,
+		contextWindow: 196_608,
+		supportsImages: false,
+		supportsPromptCache: false,
+		inputPrice: 0.3,
+		outputPrice: 1.2,
+		description: "MiniMax M2.5",
 	},
 	"qwen.qwen3-next-80b-a3b": {
 		maxTokens: 8192,
