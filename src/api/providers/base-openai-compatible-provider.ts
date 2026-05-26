@@ -21,6 +21,7 @@ type BaseOpenAiCompatibleProviderOptions<ModelName extends string> = ApiHandlerO
 	defaultProviderModelId: ModelName
 	providerModels: Record<ModelName, ModelInfo>
 	defaultTemperature?: number
+	defaultHeaders?: Record<string, string>
 }
 
 export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
@@ -43,6 +44,7 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		defaultProviderModelId,
 		providerModels,
 		defaultTemperature,
+		defaultHeaders,
 		...options
 	}: BaseOpenAiCompatibleProviderOptions<ModelName>) {
 		super()
@@ -62,7 +64,7 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		this.client = new OpenAI({
 			baseURL,
 			apiKey: this.options.apiKey,
-			defaultHeaders: DEFAULT_HEADERS,
+			defaultHeaders: { ...DEFAULT_HEADERS, ...defaultHeaders },
 			timeout: getApiRequestTimeout(),
 		})
 	}

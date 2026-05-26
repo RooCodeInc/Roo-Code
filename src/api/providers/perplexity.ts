@@ -1,6 +1,7 @@
 import { type PerplexityModelId, perplexityDefaultModelId, perplexityModels } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
+import { Package } from "../../shared/package"
 
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
 
@@ -18,6 +19,9 @@ export function resolvePerplexityApiKey(explicit?: string): string | undefined {
 }
 
 const REASONING_MODELS = new Set<PerplexityModelId>(["sonar-reasoning", "sonar-reasoning-pro"])
+const PERPLEXITY_DEFAULT_HEADERS = {
+	"X-Pplx-Integration": `roo-code/${Package.version}`,
+}
 
 export class PerplexityHandler extends BaseOpenAiCompatibleProvider<PerplexityModelId> {
 	constructor(options: ApiHandlerOptions) {
@@ -29,6 +33,7 @@ export class PerplexityHandler extends BaseOpenAiCompatibleProvider<PerplexityMo
 			defaultProviderModelId: perplexityDefaultModelId,
 			providerModels: perplexityModels,
 			defaultTemperature: 0,
+			defaultHeaders: PERPLEXITY_DEFAULT_HEADERS,
 		})
 	}
 

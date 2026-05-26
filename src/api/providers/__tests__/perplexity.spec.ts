@@ -5,6 +5,7 @@ import OpenAI from "openai"
 
 import { type PerplexityModelId, perplexityDefaultModelId, perplexityModels } from "@roo-code/types"
 
+import { Package } from "../../../shared/package"
 import { PerplexityHandler, resolvePerplexityApiKey } from "../perplexity"
 
 const mockCreate = vi.fn()
@@ -54,6 +55,20 @@ describe("PerplexityHandler", () => {
 		const perplexityApiKey = "test-perplexity-api-key"
 		new PerplexityHandler({ perplexityApiKey })
 		expect(OpenAI).toHaveBeenCalledWith(expect.objectContaining({ apiKey: perplexityApiKey }))
+	})
+
+	it("should set the Perplexity integration attribution header", () => {
+		new PerplexityHandler({ perplexityApiKey: "test-perplexity-api-key" })
+		const defaultHeaders = vi.mocked(OpenAI).mock.calls.at(-1)?.[0]?.defaultHeaders as
+			| Record<string, string>
+			| undefined
+
+		expect(defaultHeaders).toEqual(
+			expect.objectContaining({
+				"X-Pplx-Integration": `roo-code/${Package.version}`,
+			}),
+		)
+		expect(defaultHeaders?.["X-Pplx-Integration"]).toMatch(/^roo-code\//)
 	})
 
 	it("should fall back to PERPLEXITY_API_KEY env var when no settings key is provided", () => {
