@@ -2019,6 +2019,173 @@ describe("McpHub", () => {
 		})
 	})
 
+	describe("serverInstructions config support", () => {
+		it("should accept serverInstructions in config schema", () => {
+			const result = ServerConfigSchema.safeParse({
+				command: "node",
+				args: ["test.js"],
+				serverInstructions: "Custom instructions for this server",
+			})
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.data.serverInstructions).toBe("Custom instructions for this server")
+			}
+		})
+
+		it("should accept config without serverInstructions (optional field)", () => {
+			const result = ServerConfigSchema.safeParse({
+				command: "node",
+				args: ["test.js"],
+			})
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.data.serverInstructions).toBeUndefined()
+			}
+		})
+
+		it("should accept serverInstructions for SSE config", () => {
+			const result = ServerConfigSchema.safeParse({
+				type: "sse",
+				url: "http://localhost:3000/sse",
+				serverInstructions: "SSE server custom instructions",
+			})
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.data.serverInstructions).toBe("SSE server custom instructions")
+			}
+		})
+
+		it("should accept serverInstructions for streamable-http config", () => {
+			const result = ServerConfigSchema.safeParse({
+				type: "streamable-http",
+				url: "http://localhost:3000/mcp",
+				serverInstructions: "Streamable HTTP server custom instructions",
+			})
+			expect(result.success).toBe(true)
+			if (result.success) {
+				expect(result.data.serverInstructions).toBe("Streamable HTTP server custom instructions")
+			}
+		})
+
+		it("should use config serverInstructions when protocol provides none", async () => {
+			// Mock StdioClientTransport
+			const stdioModule = await import("@modelcontextprotocol/sdk/client/stdio.js")
+			const StdioClientTransport = stdioModule.StdioClientTransport as ReturnType<typeof vi.fn>
+
+			const mockTransport = {
+				start: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				stderr: { on: vi.fn() },
+				onerror: null,
+				onclose: null,
+			}
+
+			StdioClientTransport.mockImplementation(() => mockTransport)
+
+			// Mock Client - returns undefined for getInstructions (no protocol instructions)
+			const clientModule = await import("@modelcontextprotocol/sdk/client/index.js")
+			const Client = clientModule.Client as ReturnType<typeof vi.fn>
+
+			Client.mockImplementation(() => ({
+				connect: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				getInstructions: vi.fn().mockReturnValue(undefined),
+				request: vi.fn().mockResolvedValue({ tools: [], resources: [], resourceTemplates: [] }),
+			}))
+
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						"instructions-test-server": {
+							command: "node",
+							args: ["test.js"],
+							serverInstructions: "Config-defined instructions",
+						},
+					},
+				}),
+			)
+
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+			await new Promise((resolve) => setTimeout(resolve, 100))
+
+			const connection = mcpHub.connections.find((conn) => conn.server.name === "instructions-test-server")
+			expect(connection).toBeDefined()
+			expect(connection?.server.instructions).toBe("Config-defined instructions")
+		})
+
+		it("should combine config serverInstructions with protocol instructions", async () => {
+			// Mock StdioClientTransport
+			const stdioModule = await import("@modelcontextprotocol/sdk/client/stdio.js")
+			const StdioClientTransport = stdioModule.StdioClientTransport as ReturnType<typeof vi.fn>
+
+			const mockTransport = {
+				start: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				stderr: { on: vi.fn() },
+				onerror: null,
+				onclose: null,
+			}
+
+			StdioClientTransport.mockImplementation(() => mockTransport)
+
+			// Mock Client - returns protocol instructions
+			const clientModule = await import("@modelcontextprotocol/sdk/client/index.js")
+			const Client = clientModule.Client as ReturnType<typeof vi.fn>
+
+			Client.mockImplementation(() => ({
+				connect: vi.fn().mockResolvedValue(undefined),
+				close: vi.fn().mockResolvedValue(undefined),
+				getInstructions: vi.fn().mockReturnValue("Protocol instructions from server"),
+				request: vi.fn().mockResolvedValue({ tools: [], resources: [], resourceTemplates: [] }),
+			}))
+
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						"combined-instructions-server": {
+							command: "node",
+							args: ["test.js"],
+							serverInstructions: "Config-defined instructions",
+						},
+					},
+				}),
+			)
+
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+			await new Promise((resolve) => setTimeout(resolve, 100))
+
+			const connection = mcpHub.connections.find((conn) => conn.server.name === "combined-instructions-server")
+			expect(connection).toBeDefined()
+			// Config instructions should come first, followed by protocol instructions
+			expect(connection?.server.instructions).toBe(
+				"Config-defined instructions\n\nProtocol instructions from server",
+			)
+		})
+
+		it("should set serverInstructions on placeholder connections for disabled servers", async () => {
+			vi.mocked(fs.readFile).mockResolvedValue(
+				JSON.stringify({
+					mcpServers: {
+						"disabled-instructions-server": {
+							command: "node",
+							args: ["test.js"],
+							disabled: true,
+							serverInstructions: "Instructions for disabled server",
+						},
+					},
+				}),
+			)
+
+			const mcpHub = new McpHub(mockProvider as ClineProvider)
+			await new Promise((resolve) => setTimeout(resolve, 100))
+
+			const connection = mcpHub.connections.find((conn) => conn.server.name === "disabled-instructions-server")
+			expect(connection).toBeDefined()
+			expect(connection?.type).toBe("disconnected")
+			expect(connection?.server.instructions).toBe("Instructions for disabled server")
+		})
+	})
+
 	describe("Windows command wrapping", () => {
 		let StdioClientTransport: ReturnType<typeof vi.fn>
 		let Client: ReturnType<typeof vi.fn>
