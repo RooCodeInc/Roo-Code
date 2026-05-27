@@ -14,6 +14,7 @@ import { BaseProvider } from "./base-provider"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 import { getApiRequestTimeout } from "./utils/timeout-config"
+import { getGlmModelOptions } from "./utils/model-detection"
 
 type BaseOpenAiCompatibleProviderOptions<ModelName extends string> = ApiHandlerOptions & {
 	providerName: string
@@ -75,6 +76,12 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 	) {
 		const { id: model, info } = this.getModel()
 
+		// Get model-specific options for GLM models (applies Z.ai optimizations)
+		// This allows third-party GLM models via OpenAI-compatible endpoints to benefit
+		// from the same optimizations used by Z.ai
+		console.log(`[${this.providerName}] Using model ID: "${model}"`)
+		const glmOptions = getGlmModelOptions(model)
+
 		// Centralized cap: clamp to 20% of the context window (unless provider-specific exceptions apply)
 		const max_tokens =
 			getModelMaxOutputTokens({
@@ -86,16 +93,30 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 
 		const temperature = this.options.modelTemperature ?? info.defaultTemperature ?? this.defaultTemperature
 
+		// For GLM models, disable parallel_tool_calls by default as they may not support it
+		// Users can still explicitly enable it via metadata if their model supports it
+		const parallelToolCalls = glmOptions.disableParallelToolCalls
+			? (metadata?.parallelToolCalls ?? false)
+			: (metadata?.parallelToolCalls ?? true)
+
+		console.log(`[${this.providerName}] parallel_tool_calls set to: ${parallelToolCalls}`)
+
+		// Convert messages with GLM-specific handling when applicable
+		// mergeToolResultText prevents GLM models from dropping reasoning_content
+		const convertedMessages = convertToOpenAiMessages(messages, {
+			mergeToolResultText: glmOptions.mergeToolResultText,
+		})
+
 		const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model,
 			max_tokens,
 			temperature,
-			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
+			messages: [{ role: "system", content: systemPrompt }, ...convertedMessages],
 			stream: true,
 			stream_options: { include_usage: true },
 			tools: this.convertToolsForOpenAI(metadata?.tools),
 			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+			parallel_tool_calls: parallelToolCalls,
 		}
 
 		// Add thinking parameter if reasoning is enabled and model supports it
