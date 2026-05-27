@@ -46,6 +46,10 @@ export const toolNames = [
 	"skill",
 	"generate_image",
 	"custom_tool",
+	"go_to_definition",
+	"find_references",
+	"workspace_symbols",
+	"document_symbols",
 ] as const
 
 export const toolNamesSchema = z.enum(toolNames)

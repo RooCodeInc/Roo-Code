@@ -538,6 +538,42 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "go_to_definition":
+				if (partialArgs.path !== undefined || partialArgs.line !== undefined) {
+					nativeArgs = {
+						path: partialArgs.path,
+						line: partialArgs.line,
+						character: partialArgs.character,
+					}
+				}
+				break
+
+			case "find_references":
+				if (partialArgs.path !== undefined || partialArgs.line !== undefined) {
+					nativeArgs = {
+						path: partialArgs.path,
+						line: partialArgs.line,
+						character: partialArgs.character,
+					}
+				}
+				break
+
+			case "workspace_symbols":
+				if (partialArgs.query !== undefined) {
+					nativeArgs = {
+						query: partialArgs.query,
+					}
+				}
+				break
+
+			case "document_symbols":
+				if (partialArgs.path !== undefined) {
+					nativeArgs = {
+						path: partialArgs.path,
+					}
+				}
+				break
+
 			case "switch_mode":
 				if (partialArgs.mode_slug !== undefined || partialArgs.reason !== undefined) {
 					nativeArgs = {
@@ -870,6 +906,42 @@ export class NativeToolCallParser {
 							path: args.path,
 							regex: args.regex,
 							file_pattern: args.file_pattern,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "go_to_definition":
+					if (args.path !== undefined && args.line !== undefined && args.character !== undefined) {
+						nativeArgs = {
+							path: args.path,
+							line: args.line,
+							character: args.character,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "find_references":
+					if (args.path !== undefined && args.line !== undefined && args.character !== undefined) {
+						nativeArgs = {
+							path: args.path,
+							line: args.line,
+							character: args.character,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "workspace_symbols":
+					if (args.query !== undefined) {
+						nativeArgs = {
+							query: args.query,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "document_symbols":
+					if (args.path !== undefined) {
+						nativeArgs = {
+							path: args.path,
 						} as NativeArgsFor<TName>
 					}
 					break

@@ -709,6 +709,10 @@ export interface ClineSayTool {
 		| "runSlashCommand"
 		| "updateTodoList"
 		| "skill"
+		| "goToDefinition"
+		| "findReferences"
+		| "workspaceSymbols"
+		| "documentSymbols"
 	path?: string
 	// For readCommandOutput
 	readStart?: number

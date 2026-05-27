@@ -81,6 +81,7 @@ export const toolParamNames = [
 	// read_file legacy format parameter (backward compatibility)
 	"files",
 	"line_ranges",
+	"character", // go_to_definition and find_references parameter
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -116,6 +117,10 @@ export type NativeToolArgs = {
 	update_todo_list: { todos: string }
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
 	write_to_file: { path: string; content: string }
+	go_to_definition: { path: string; line: number; character: number }
+	find_references: { path: string; line: number; character: number }
+	workspace_symbols: { query: string }
+	document_symbols: { path: string }
 	// Add more tools as they are migrated to native protocol
 }
 
@@ -290,12 +295,25 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	skill: "load skill",
 	generate_image: "generate images",
 	custom_tool: "use custom tools",
+	go_to_definition: "go to definition",
+	find_references: "find references",
+	workspace_symbols: "search workspace symbols",
+	document_symbols: "list document symbols",
 } as const
 
 // Define available tool groups.
 export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	read: {
-		tools: ["read_file", "search_files", "list_files", "codebase_search"],
+		tools: [
+			"read_file",
+			"search_files",
+			"list_files",
+			"codebase_search",
+			"go_to_definition",
+			"find_references",
+			"workspace_symbols",
+			"document_symbols",
+		],
 	},
 	edit: {
 		tools: ["apply_diff", "write_to_file", "generate_image"],
