@@ -220,6 +220,7 @@
 	"commandExecution": {
 		"abort": "Abbrechen",
 		"running": "Wird ausgeführt",
+		"executed": "Ausgeführt",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "Beendet mit Status {{exitCode}}",
 		"manageCommands": "Automatisch genehmigte Befehle",
