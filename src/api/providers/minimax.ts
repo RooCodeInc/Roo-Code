@@ -15,6 +15,7 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { calculateApiCostAnthropic } from "../../shared/cost"
 import { convertOpenAIToolsToAnthropic } from "../../core/prompts/tools/native-tools/converters"
+import { getProxyHttpAgent } from "../../utils/proxyFetch"
 
 /**
  * Converts OpenAI tool_choice to Anthropic ToolChoice format
@@ -73,6 +74,7 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		this.client = new Anthropic({
 			baseURL,
 			apiKey: options.minimaxApiKey,
+			httpAgent: getProxyHttpAgent(),
 		})
 	}
 

@@ -25,6 +25,7 @@ import {
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { getProxyHttpAgent } from "../../utils/proxyFetch"
 
 // https://docs.anthropic.com/en/api/claude-on-vertex-ai
 export class AnthropicVertexHandler extends BaseProvider implements SingleCompletionHandler {
@@ -40,10 +41,13 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		const projectId = this.options.vertexProjectId ?? "not-provided"
 		const region = this.options.vertexRegion ?? "us-east5"
 
+		const httpAgent = getProxyHttpAgent()
+
 		if (this.options.vertexJsonCredentials) {
 			this.client = new AnthropicVertex({
 				projectId,
 				region,
+				httpAgent,
 				googleAuth: new GoogleAuth({
 					scopes: ["https://www.googleapis.com/auth/cloud-platform"],
 					credentials: safeJsonParse<JWTInput>(this.options.vertexJsonCredentials, undefined),
@@ -53,13 +57,14 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			this.client = new AnthropicVertex({
 				projectId,
 				region,
+				httpAgent,
 				googleAuth: new GoogleAuth({
 					scopes: ["https://www.googleapis.com/auth/cloud-platform"],
 					keyFile: this.options.vertexKeyFile,
 				}),
 			})
 		} else {
-			this.client = new AnthropicVertex({ projectId, region })
+			this.client = new AnthropicVertex({ projectId, region, httpAgent })
 		}
 	}
 
