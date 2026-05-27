@@ -6,6 +6,25 @@ import { PreviousConfigSnapshot } from "../interfaces/config"
 // Mock ContextProxy
 vi.mock("../../../core/config/ContextProxy")
 
+// Mock CloudService - use vi.hoisted so variables are available when vi.mock runs
+const { mockIsAuthenticated, mockCloudHasInstance } = vi.hoisted(() => ({
+	mockIsAuthenticated: vi.fn().mockReturnValue(false),
+	mockCloudHasInstance: vi.fn().mockReturnValue(false),
+}))
+vi.mock("@roo-code/cloud", () => ({
+	CloudService: {
+		hasInstance: mockCloudHasInstance,
+		get instance() {
+			return {
+				isAuthenticated: mockIsAuthenticated,
+				authService: {
+					getSessionToken: vi.fn().mockReturnValue("test-session-token"),
+				},
+			}
+		},
+	},
+}))
+
 // Mock embeddingModels module
 vi.mock("../../../shared/embeddingModels")
 
@@ -1679,6 +1698,57 @@ describe("CodeIndexConfigManager", () => {
 				if (key === "codeIndexOpenAiKey") return "test-key"
 				return undefined
 			})
+
+			configManager = new CodeIndexConfigManager(mockContextProxy)
+			expect(configManager.isConfigured()).toBe(false)
+		})
+
+		it("should return true when Roo provider is authenticated and Qdrant configured", () => {
+			mockCloudHasInstance.mockReturnValue(true)
+			mockIsAuthenticated.mockReturnValue(true)
+
+			mockContextProxy.getGlobalState.mockReturnValue({
+				codebaseIndexEnabled: true,
+				codebaseIndexEmbedderProvider: "roo",
+				codebaseIndexQdrantUrl: "http://localhost:6333",
+			})
+			mockContextProxy.getSecret.mockReturnValue(undefined)
+
+			configManager = new CodeIndexConfigManager(mockContextProxy)
+			expect(configManager.isConfigured()).toBe(true)
+
+			// Cleanup
+			mockCloudHasInstance.mockReturnValue(false)
+			mockIsAuthenticated.mockReturnValue(false)
+		})
+
+		it("should return false when Roo provider is not authenticated", () => {
+			mockCloudHasInstance.mockReturnValue(true)
+			mockIsAuthenticated.mockReturnValue(false)
+
+			mockContextProxy.getGlobalState.mockReturnValue({
+				codebaseIndexEnabled: true,
+				codebaseIndexEmbedderProvider: "roo",
+				codebaseIndexQdrantUrl: "http://localhost:6333",
+			})
+			mockContextProxy.getSecret.mockReturnValue(undefined)
+
+			configManager = new CodeIndexConfigManager(mockContextProxy)
+			expect(configManager.isConfigured()).toBe(false)
+
+			// Cleanup
+			mockCloudHasInstance.mockReturnValue(false)
+		})
+
+		it("should return false when Roo provider has no CloudService instance", () => {
+			mockCloudHasInstance.mockReturnValue(false)
+
+			mockContextProxy.getGlobalState.mockReturnValue({
+				codebaseIndexEnabled: true,
+				codebaseIndexEmbedderProvider: "roo",
+				codebaseIndexQdrantUrl: "http://localhost:6333",
+			})
+			mockContextProxy.getSecret.mockReturnValue(undefined)
 
 			configManager = new CodeIndexConfigManager(mockContextProxy)
 			expect(configManager.isConfigured()).toBe(false)
