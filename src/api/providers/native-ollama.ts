@@ -206,8 +206,21 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const client = this.ensureClient()
-		const { id: modelId } = await this.fetchModel()
+		const { id: modelId, info: modelInfo } = await this.fetchModel()
 		const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
+
+		// Log request info for debugging
+		const baseUrl = this.options.ollamaBaseUrl || "http://localhost:11434"
+		console.log(`[Ollama] Starting request to model '${modelId}' at ${baseUrl}`)
+
+		// Warn if the model is not in the fetched models list (may indicate missing tool support)
+		if (!this.models[modelId]) {
+			console.warn(
+				`[Ollama] Warning: Model '${modelId}' was not found in the list of tool-capable models. ` +
+					`This may indicate the model does not support native tool calling. ` +
+					`Check if your Ollama version reports capabilities by running: ollama show ${modelId}`,
+			)
+		}
 
 		const ollamaMessages: Message[] = [
 			{ role: "system", content: systemPrompt },
