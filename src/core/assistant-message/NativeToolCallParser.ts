@@ -89,6 +89,23 @@ export class NativeToolCallParser {
 		return undefined
 	}
 
+	private static coerceStringArray(value: unknown): string[] {
+		if (Array.isArray(value)) {
+			return value.filter((item): item is string => typeof item === "string")
+		}
+		if (typeof value === "string") {
+			try {
+				const parsed = JSON.parse(value) as unknown
+				return Array.isArray(parsed)
+					? (parsed as unknown[]).filter((item): item is string => typeof item === "string")
+					: []
+			} catch {
+				return []
+			}
+		}
+		return []
+	}
+
 	/**
 	 * Process a raw tool call chunk from the API stream.
 	 * Handles tracking, buffering, and emits start/delta/end events.
@@ -627,6 +644,14 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "read_lints":
+				if (partialArgs.paths !== undefined) {
+					nativeArgs = {
+						paths: this.coerceStringArray(partialArgs.paths),
+					}
+				}
+				break
+
 			case "new_task":
 				if (partialArgs.mode !== undefined || partialArgs.message !== undefined) {
 					nativeArgs = {
@@ -974,6 +999,12 @@ export class NativeToolCallParser {
 							recursive: this.coerceOptionalBoolean(args.recursive),
 						} as NativeArgsFor<TName>
 					}
+					break
+
+				case "read_lints":
+					nativeArgs = {
+						paths: this.coerceStringArray(args.paths),
+					} as NativeArgsFor<TName>
 					break
 
 				case "new_task":

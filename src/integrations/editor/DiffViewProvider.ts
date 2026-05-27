@@ -213,6 +213,11 @@ export class DiffViewProvider {
 			await updatedDocument.save()
 		}
 
+		const task = this.taskRef.deref()
+		if (task?.recordEditedFile && this.relPath) {
+			task.recordEditedFile(this.relPath)
+		}
+
 		await vscode.window.showTextDocument(vscode.Uri.file(absolutePath), { preview: false, preserveFocus: true })
 		await this.closeAllDiffViews()
 
@@ -717,6 +722,11 @@ export class DiffViewProvider {
 		this.userEdits = undefined
 		this.relPath = relPath
 		this.newContent = content
+
+		const taskForRecord = this.taskRef.deref()
+		if (taskForRecord?.recordEditedFile) {
+			taskForRecord.recordEditedFile(relPath)
+		}
 
 		return {
 			newProblemsMessage,
