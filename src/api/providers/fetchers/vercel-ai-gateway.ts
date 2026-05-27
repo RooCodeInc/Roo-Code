@@ -58,7 +58,7 @@ export async function getVercelAiGatewayModels(options?: ApiHandlerOptions): Pro
 	const baseURL = "https://ai-gateway.vercel.sh/v1"
 
 	try {
-		const response = await axios.get<VercelAiGatewayModelsResponse>(`${baseURL}/models`)
+		const response = await axios.get<VercelAiGatewayModelsResponse>(`${baseURL}/models`, { timeout: 10_000 })
 		const result = vercelAiGatewayModelsResponseSchema.safeParse(response.data)
 		const data = result.success ? result.data.data : response.data.data
 

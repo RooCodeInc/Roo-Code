@@ -972,10 +972,23 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 				await flushModels(targetCandidate.options, true)
 			}
 
+			// Fetch models incrementally: send each provider's models to the webview
+			// as soon as they resolve, rather than waiting for all providers to finish.
+			// This ensures providers with working DNS are available immediately while
+			// blocked providers fail gracefully in the background (see #11747).
 			const results = await Promise.allSettled(
 				modelFetchPromises.map(async ({ key, options }) => {
 					const models = await safeGetModels(options)
-					return { key, models } // The key is `ProviderName` here.
+
+					// Send this provider's models to the webview immediately.
+					routerModels[key] = models
+					provider.postMessageToWebview({
+						type: "routerModels",
+						routerModels: { ...routerModels },
+						values: providerFilter ? { provider: requestedProvider } : undefined,
+					})
+
+					return { key, models }
 				}),
 			)
 
@@ -984,8 +997,6 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 
 				if (result.status === "fulfilled") {
 					routerModels[routerName] = result.value.models
-
-					// Ollama and LM Studio settings pages still need these events. They are not fetched here.
 				} else {
 					// Handle rejection: Post a specific error message for this provider.
 					const errorMessage = result.reason instanceof Error ? result.reason.message : String(result.reason)
@@ -1002,6 +1013,7 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 				}
 			})
 
+			// Send final aggregated message for backward compatibility.
 			provider.postMessageToWebview({
 				type: "routerModels",
 				routerModels,

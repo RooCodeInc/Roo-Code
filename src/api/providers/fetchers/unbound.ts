@@ -14,7 +14,7 @@ export async function getUnboundModels(apiKey?: string | null): Promise<Record<s
 			headers["Authorization"] = `Bearer ${apiKey}`
 		}
 
-		const response = await axios.get("https://api.getunbound.ai/models", { headers })
+		const response = await axios.get("https://api.getunbound.ai/models", { headers, timeout: 10_000 })
 		const rawModels = response.data?.data ?? response.data
 
 		for (const rawModel of rawModels) {
