@@ -52,6 +52,20 @@ export const OpenAICompatible = ({
 		return Object.entries(headers)
 	})
 
+	// Sync local customHeaders state when apiConfiguration changes externally
+	// (e.g., on profile switch). This mirrors the pattern in ApiOptions.tsx.
+	useEffect(() => {
+		const propHeaders = apiConfiguration?.openAiHeaders || {}
+		if (JSON.stringify(customHeaders) !== JSON.stringify(Object.entries(propHeaders))) {
+			setCustomHeaders(Object.entries(propHeaders))
+		}
+	}, [apiConfiguration?.openAiHeaders]) // eslint-disable-line react-hooks/exhaustive-deps
+
+	// Sync azureApiVersionSelected when apiConfiguration changes externally
+	useEffect(() => {
+		setAzureApiVersionSelected(!!apiConfiguration?.azureApiVersion)
+	}, [apiConfiguration?.azureApiVersion])
+
 	const handleAddCustomHeader = useCallback(() => {
 		// Only update the local state to show the new row in the UI.
 		setCustomHeaders((prev) => [...prev, ["", ""]])
@@ -88,15 +102,19 @@ export const OpenAICompatible = ({
 
 	// Helper to convert array of tuples to object
 
-	// Add effect to update the parent component's state when local headers change
+	// Debounced write-back: update the parent config when local headers change.
+	// Guard against no-op writes to prevent stale overwrites on profile switch.
 	useEffect(() => {
 		const timer = setTimeout(() => {
+			const currentConfigHeaders = apiConfiguration?.openAiHeaders || {}
 			const headerObject = convertHeadersToObject(customHeaders)
-			setApiConfigurationField("openAiHeaders", headerObject, false)
+			if (JSON.stringify(currentConfigHeaders) !== JSON.stringify(headerObject)) {
+				setApiConfigurationField("openAiHeaders", headerObject, false)
+			}
 		}, 300)
 
 		return () => clearTimeout(timer)
-	}, [customHeaders, setApiConfigurationField])
+	}, [customHeaders, apiConfiguration?.openAiHeaders, setApiConfigurationField])
 
 	const handleInputChange = useCallback(
 		<K extends keyof ProviderSettings, E>(

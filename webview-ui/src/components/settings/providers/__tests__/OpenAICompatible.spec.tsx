@@ -313,3 +313,88 @@ describe("OpenAICompatible Component - includeMaxTokens checkbox", () => {
 		})
 	})
 })
+
+describe("OpenAICompatible Component - Profile Switch Sync", () => {
+	const mockSetApiConfigurationField = vi.fn()
+	const mockOrganizationAllowList = {
+		allowAll: true,
+		providers: {},
+	}
+
+	beforeEach(() => {
+		vi.clearAllMocks()
+		vi.useFakeTimers()
+	})
+
+	afterEach(() => {
+		vi.useRealTimers()
+	})
+
+	it("should sync custom headers when apiConfiguration changes (profile switch)", () => {
+		const initialConfig: Partial<ProviderSettings> = {
+			openAiHeaders: { "X-Profile": "old-profile" },
+		}
+
+		const { rerender } = render(
+			<OpenAICompatible
+				apiConfiguration={initialConfig as ProviderSettings}
+				setApiConfigurationField={mockSetApiConfigurationField}
+				organizationAllowList={mockOrganizationAllowList}
+			/>,
+		)
+
+		// Simulate profile switch: re-render with new headers
+		const newConfig: Partial<ProviderSettings> = {
+			openAiHeaders: { "X-Profile": "new-profile", Authorization: "Bearer token123" },
+		}
+
+		rerender(
+			<OpenAICompatible
+				apiConfiguration={newConfig as ProviderSettings}
+				setApiConfigurationField={mockSetApiConfigurationField}
+				organizationAllowList={mockOrganizationAllowList}
+			/>,
+		)
+
+		// After the debounced write-back fires, it should not overwrite the new headers
+		// with old ones. Advance timers to trigger the debounced write-back.
+		vi.advanceTimersByTime(350)
+
+		// The write-back should be guarded: since the local state is synced to new headers,
+		// and the new headers match the config, no write should occur (no-op guard)
+		const writeBackCalls = mockSetApiConfigurationField.mock.calls.filter(
+			(call: any[]) => call[0] === "openAiHeaders",
+		)
+		// If there are write-back calls, they should be writing the NEW headers, not the old ones
+		for (const call of writeBackCalls) {
+			const writtenHeaders = call[1] as Record<string, string>
+			expect(writtenHeaders).not.toEqual({ "X-Profile": "old-profile" })
+		}
+	})
+
+	it("should not write back headers when they match the current config", () => {
+		const config: Partial<ProviderSettings> = {
+			openAiHeaders: { "X-Custom": "value" },
+		}
+
+		render(
+			<OpenAICompatible
+				apiConfiguration={config as ProviderSettings}
+				setApiConfigurationField={mockSetApiConfigurationField}
+				organizationAllowList={mockOrganizationAllowList}
+			/>,
+		)
+
+		// Clear initial calls
+		mockSetApiConfigurationField.mockClear()
+
+		// Advance past the debounce timer
+		vi.advanceTimersByTime(350)
+
+		// The write-back should detect that the headers are unchanged and skip the write
+		const headerWriteCalls = mockSetApiConfigurationField.mock.calls.filter(
+			(call: any[]) => call[0] === "openAiHeaders",
+		)
+		expect(headerWriteCalls).toHaveLength(0)
+	})
+})
