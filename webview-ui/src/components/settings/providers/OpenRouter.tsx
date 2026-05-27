@@ -103,6 +103,18 @@ export const OpenRouter = ({
 					)}
 				</div>
 			)}
+			<div>
+				<Checkbox
+					checked={apiConfiguration?.openRouterExcludeLowQuantization ?? false}
+					onChange={(checked: boolean) => {
+						setApiConfigurationField("openRouterExcludeLowQuantization", checked)
+					}}>
+					{t("settings:providers.openRouter.excludeLowQuantization.label")}
+				</Checkbox>
+				<div className="text-sm text-vscode-descriptionForeground mt-1 ml-6">
+					{t("settings:providers.openRouter.excludeLowQuantization.description")}
+				</div>
+			</div>
 			<ModelPicker
 				apiConfiguration={apiConfiguration}
 				setApiConfigurationField={setApiConfigurationField}
