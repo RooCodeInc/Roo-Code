@@ -92,6 +92,30 @@ describe("MultiSearchReplaceDiffStrategy", () => {
 			expect(strategy["validateMarkerSequencing"](diff).success).toBe(true)
 		})
 
+		it("validates line numbers with brackets (model variation)", () => {
+			const diff =
+				"<<<<<<< SEARCH\n" +
+				":start_line:[10]\n" +
+				"-------\n" +
+				"content1\n" +
+				"=======\n" +
+				"new1\n" +
+				">>>>>>> REPLACE"
+			expect(strategy["validateMarkerSequencing"](diff).success).toBe(true)
+		})
+
+		it("validates line numbers with space and brackets (model variation)", () => {
+			const diff =
+				"<<<<<<< SEARCH\n" +
+				":start_line: [10]\n" +
+				"-------\n" +
+				"content1\n" +
+				"=======\n" +
+				"new1\n" +
+				">>>>>>> REPLACE"
+			expect(strategy["validateMarkerSequencing"](diff).success).toBe(true)
+		})
+
 		it("detects separator before search", () => {
 			const diff = "=======\n" + "content\n" + ">>>>>>> REPLACE"
 			const result = strategy["validateMarkerSequencing"](diff)
@@ -823,6 +847,92 @@ function four() {
 function five() {
     return "target";
 }`)
+				}
+			})
+		})
+
+		describe("bracket variations in line numbers", () => {
+			let strategy: MultiSearchReplaceDiffStrategy
+
+			beforeEach(() => {
+				strategy = new MultiSearchReplaceDiffStrategy(1.0, 5)
+			})
+
+			it("should accept start_line with brackets around the number", async () => {
+				const originalContent = 'function hello() {\n    console.log("hello")\n}\n'
+				const diffContent =
+					"test.ts\n" +
+					"<<<<<<< SEARCH\n" +
+					":start_line:[1]\n" +
+					"-------\n" +
+					"function hello() {\n" +
+					"=======\n" +
+					"function helloWorld() {\n" +
+					">>>>>>> REPLACE"
+
+				const result = await strategy.applyDiff(originalContent, diffContent)
+				expect(result.success).toBe(true)
+				if (result.success) {
+					expect(result.content).toBe('function helloWorld() {\n    console.log("hello")\n}\n')
+				}
+			})
+
+			it("should accept start_line with space and brackets around the number", async () => {
+				const originalContent = 'function hello() {\n    console.log("hello")\n}\n'
+				const diffContent =
+					"test.ts\n" +
+					"<<<<<<< SEARCH\n" +
+					":start_line: [1]\n" +
+					"-------\n" +
+					"function hello() {\n" +
+					"=======\n" +
+					"function helloWorld() {\n" +
+					">>>>>>> REPLACE"
+
+				const result = await strategy.applyDiff(originalContent, diffContent)
+				expect(result.success).toBe(true)
+				if (result.success) {
+					expect(result.content).toBe('function helloWorld() {\n    console.log("hello")\n}\n')
+				}
+			})
+
+			it("should accept end_line with brackets around the number", async () => {
+				const originalContent = 'function hello() {\n    console.log("hello")\n}\n'
+				const diffContent =
+					"test.ts\n" +
+					"<<<<<<< SEARCH\n" +
+					":start_line:[1]\n" +
+					":end_line:[1]\n" +
+					"-------\n" +
+					"function hello() {\n" +
+					"=======\n" +
+					"function helloWorld() {\n" +
+					">>>>>>> REPLACE"
+
+				const result = await strategy.applyDiff(originalContent, diffContent)
+				expect(result.success).toBe(true)
+				if (result.success) {
+					expect(result.content).toBe('function helloWorld() {\n    console.log("hello")\n}\n')
+				}
+			})
+
+			it("should accept end_line with space and brackets around the number", async () => {
+				const originalContent = 'function hello() {\n    console.log("hello")\n}\n'
+				const diffContent =
+					"test.ts\n" +
+					"<<<<<<< SEARCH\n" +
+					":start_line: [1]\n" +
+					":end_line: [1]\n" +
+					"-------\n" +
+					"function hello() {\n" +
+					"=======\n" +
+					"function helloWorld() {\n" +
+					">>>>>>> REPLACE"
+
+				const result = await strategy.applyDiff(originalContent, diffContent)
+				expect(result.success).toBe(true)
+				if (result.success) {
+					expect(result.content).toBe('function helloWorld() {\n    console.log("hello")\n}\n')
 				}
 			})
 		})
