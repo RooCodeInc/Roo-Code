@@ -199,6 +199,7 @@ const anthropicSchema = apiModelIdProviderModelSchema.extend({
 	anthropicBaseUrl: z.string().optional(),
 	anthropicUseAuthToken: z.boolean().optional(),
 	anthropicBeta1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window.
+	anthropicHeaders: z.record(z.string(), z.string()).optional(), // Custom headers for Anthropic API (e.g., for API gateways like Portkey).
 })
 
 const openRouterSchema = baseProviderSettingsSchema.extend({
