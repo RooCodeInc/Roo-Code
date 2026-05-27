@@ -92,6 +92,18 @@ export const geminiModels = {
 			},
 		],
 	},
+	"gemini-3.1-flash-lite-preview": {
+		maxTokens: 65_536,
+		contextWindow: 1_048_576,
+		supportsImages: false,
+		supportsPromptCache: true,
+
+		supportsTemperature: true,
+		defaultTemperature: 1,
+		inputPrice: 0.1,
+		outputPrice: 0.4,
+		cacheReadsPrice: 0.025,
+	},
 	"gemini-3-flash-preview": {
 		maxTokens: 65_536,
 		contextWindow: 1_048_576,
