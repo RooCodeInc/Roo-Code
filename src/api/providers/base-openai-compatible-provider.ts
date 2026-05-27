@@ -250,11 +250,9 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 	}
 
 	override getModel() {
-		const id =
-			this.options.apiModelId && this.options.apiModelId in this.providerModels
-				? (this.options.apiModelId as ModelName)
-				: this.defaultProviderModelId
+		const id = this.options.apiModelId ?? this.defaultProviderModelId
+		const info = this.providerModels[id as ModelName] ?? this.providerModels[this.defaultProviderModelId]
 
-		return { id, info: this.providerModels[id] }
+		return { id, info }
 	}
 }
