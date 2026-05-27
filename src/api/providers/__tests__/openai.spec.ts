@@ -635,7 +635,6 @@ describe("OpenAiHandler", () => {
 					temperature: 0,
 					tools: undefined,
 					tool_choice: undefined,
-					parallel_tool_calls: true,
 				},
 				{ path: "/models/chat/completions" },
 			)
@@ -684,7 +683,6 @@ describe("OpenAiHandler", () => {
 					],
 					tools: undefined,
 					tool_choice: undefined,
-					parallel_tool_calls: true,
 				},
 				{ path: "/models/chat/completions" },
 			)
