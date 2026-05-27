@@ -8,6 +8,14 @@ describe("markdown heading helpers", () => {
 		expect(countMarkdownHeadings("")).toBe(0)
 	})
 
+	it("returns 0 for non-string truthy values", () => {
+		// When subtasks return to main task, message.text can be a non-string value
+		expect(countMarkdownHeadings(["# heading"] as unknown as string)).toBe(0)
+		expect(countMarkdownHeadings({ text: "# heading" } as unknown as string)).toBe(0)
+		expect(countMarkdownHeadings(42 as unknown as string)).toBe(0)
+		expect(countMarkdownHeadings(true as unknown as string)).toBe(0)
+	})
+
 	it("counts single and multiple headings", () => {
 		expect(countMarkdownHeadings("# One")).toBe(1)
 		expect(countMarkdownHeadings("# One\nContent")).toBe(1)
