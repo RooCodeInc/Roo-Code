@@ -364,4 +364,140 @@ describe("CommandPatternSelector", () => {
 		expect(getByText("npm install express")).toBeInTheDocument()
 		expect(queryByDisplayValue("npm install react")).not.toBeInTheDocument()
 	})
+
+	it("should preserve edited value after blur", () => {
+		render(
+			<TestWrapper>
+				<CommandPatternSelector {...defaultProps} />
+			</TestWrapper>,
+		)
+
+		const manageCommandsButton = screen.getByText("chat:commandExecution.manageCommands").closest("button")
+		fireEvent.click(manageCommandsButton!)
+
+		const patternsContainer = manageCommandsButton?.nextElementSibling as HTMLElement
+		const { getByText, getByDisplayValue } = within(patternsContainer)
+
+		// Click on a pattern to edit
+		const patternDiv = getByText("npm install express").closest("div")
+		fireEvent.click(patternDiv!)
+
+		// Edit the pattern
+		const input = getByDisplayValue("npm install express") as HTMLInputElement
+		fireEvent.change(input, { target: { value: "npm install react" } })
+
+		// Blur the input (click away)
+		fireEvent.blur(input)
+
+		// The edited value should persist (not revert to original)
+		expect(getByText("npm install react")).toBeInTheDocument()
+	})
+
+	it("should preserve edited value after pressing Enter", () => {
+		render(
+			<TestWrapper>
+				<CommandPatternSelector {...defaultProps} />
+			</TestWrapper>,
+		)
+
+		const manageCommandsButton = screen.getByText("chat:commandExecution.manageCommands").closest("button")
+		fireEvent.click(manageCommandsButton!)
+
+		const patternsContainer = manageCommandsButton?.nextElementSibling as HTMLElement
+		const { getByText, getByDisplayValue } = within(patternsContainer)
+
+		// Click on a pattern to edit
+		const patternDiv = getByText("npm install express").closest("div")
+		fireEvent.click(patternDiv!)
+
+		// Edit the pattern
+		const input = getByDisplayValue("npm install express") as HTMLInputElement
+		fireEvent.change(input, { target: { value: "npm install react" } })
+
+		// Press Enter to confirm
+		fireEvent.keyDown(input, { key: "Enter" })
+
+		// The edited value should persist
+		expect(getByText("npm install react")).toBeInTheDocument()
+	})
+
+	it("should use edited pattern value when allow button is clicked after blur", () => {
+		const mockOnAllowPatternChange = vi.fn()
+		const props = {
+			...defaultProps,
+			onAllowPatternChange: mockOnAllowPatternChange,
+		}
+
+		render(
+			<TestWrapper>
+				<CommandPatternSelector {...props} />
+			</TestWrapper>,
+		)
+
+		const manageCommandsButton = screen.getByText("chat:commandExecution.manageCommands").closest("button")
+		fireEvent.click(manageCommandsButton!)
+
+		const patternsContainer = manageCommandsButton?.nextElementSibling as HTMLElement
+		const { getByText, getByDisplayValue } = within(patternsContainer)
+
+		// Click on a pattern to edit
+		const patternDiv = getByText("npm install express").closest("div")
+		fireEvent.click(patternDiv!)
+
+		// Edit the pattern
+		const input = getByDisplayValue("npm install express") as HTMLInputElement
+		fireEvent.change(input, { target: { value: "npm install react" } })
+
+		// Blur the input first (simulating user clicking away, then coming back to click button)
+		fireEvent.blur(input)
+
+		// Now click the allow button - it should use the persisted edited value
+		const editedPatternDiv = getByText("npm install react").closest(".flex")?.parentElement
+		const allowButton = editedPatternDiv?.querySelector('button[aria-label*="addToAllowed"]')
+		expect(allowButton).toBeInTheDocument()
+		fireEvent.click(allowButton!)
+
+		// The callback should receive the edited value, not the original
+		expect(mockOnAllowPatternChange).toHaveBeenCalledWith("npm install react")
+	})
+
+	it("should use edited pattern value when deny button is clicked after Enter", () => {
+		const mockOnDenyPatternChange = vi.fn()
+		const props = {
+			...defaultProps,
+			onDenyPatternChange: mockOnDenyPatternChange,
+		}
+
+		render(
+			<TestWrapper>
+				<CommandPatternSelector {...props} />
+			</TestWrapper>,
+		)
+
+		const manageCommandsButton = screen.getByText("chat:commandExecution.manageCommands").closest("button")
+		fireEvent.click(manageCommandsButton!)
+
+		const patternsContainer = manageCommandsButton?.nextElementSibling as HTMLElement
+		const { getByText, getByDisplayValue } = within(patternsContainer)
+
+		// Click on a pattern to edit
+		const patternDiv = getByText("npm install express").closest("div")
+		fireEvent.click(patternDiv!)
+
+		// Edit the pattern
+		const input = getByDisplayValue("npm install express") as HTMLInputElement
+		fireEvent.change(input, { target: { value: "npm install react" } })
+
+		// Press Enter to confirm
+		fireEvent.keyDown(input, { key: "Enter" })
+
+		// Now click the deny button - it should use the persisted edited value
+		const editedPatternDiv = getByText("npm install react").closest(".flex")?.parentElement
+		const denyButton = editedPatternDiv?.querySelector('button[aria-label*="addToDenied"]')
+		expect(denyButton).toBeInTheDocument()
+		fireEvent.click(denyButton!)
+
+		// The callback should receive the edited value, not the original
+		expect(mockOnDenyPatternChange).toHaveBeenCalledWith("npm install react")
+	})
 })
