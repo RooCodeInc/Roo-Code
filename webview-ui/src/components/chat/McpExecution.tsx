@@ -14,11 +14,34 @@ import { safeJsonParse } from "@roo/core"
 
 import { cn } from "@src/lib/utils"
 import { Button } from "@src/components/ui"
+import { useExtensionState } from "@src/context/ExtensionStateContext"
 
 import CodeBlock from "../common/CodeBlock"
 import McpToolRow from "../mcp/McpToolRow"
 
 import { Markdown } from "./Markdown"
+
+/**
+ * Truncates workspace paths in a JSON string by replacing the workspace root with "./"
+ * @param jsonString - The JSON string containing paths to truncate
+ * @param cwd - The current workspace directory (optional)
+ * @returns The JSON string with truncated paths
+ */
+function truncateWorkspacePaths(jsonString: string, cwd?: string): string {
+	if (!jsonString || !cwd) return jsonString
+
+	// Normalize the cwd to handle different path separators
+	const normalizedCwd = cwd.replace(/\\/g, "/")
+
+	// Escape special regex characters in the path
+	const escapedCwd = normalizedCwd.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
+	// Create a regex that matches the workspace path (with optional trailing slash)
+	const workspacePathRegex = new RegExp(escapedCwd + "/?", "g")
+
+	// Replace workspace paths with "./"
+	return jsonString.replace(workspacePathRegex, "./")
+}
 
 interface McpExecutionProps {
 	executionId: string
@@ -49,6 +72,7 @@ export const McpExecution = ({
 	alwaysAllowMcp = false,
 }: McpExecutionProps) => {
 	const { t } = useTranslation("mcp")
+	const { cwd } = useExtensionState()
 
 	// State for tracking MCP response status
 	const [status, setStatus] = useState<McpExecutionStatus | null>(null)
@@ -92,6 +116,7 @@ export const McpExecution = ({
 	}, [responseText, isResponseExpanded, tryParseJson, status])
 
 	// Only parse arguments data when complete to avoid parsing partial JSON
+	// Also apply workspace path truncation for cleaner display
 	const argumentsData = useMemo(() => {
 		if (!argumentsText) {
 			return { isJson: false, formatted: "" }
@@ -108,19 +133,22 @@ export const McpExecution = ({
 			// Try to parse, but if it fails, return as-is
 			try {
 				const parsed = JSON.parse(trimmed)
+				const formatted = JSON.stringify(parsed, null, 2)
+				// Apply path truncation to show cleaner paths
+				const truncated = truncateWorkspacePaths(formatted, cwd)
 				return {
 					isJson: true,
-					formatted: JSON.stringify(parsed, null, 2),
+					formatted: truncated,
 				}
 			} catch {
-				// JSON structure looks complete but is invalid, return as-is
-				return { isJson: false, formatted: argumentsText }
+				// JSON structure looks complete but is invalid, return as-is (but still truncate paths)
+				return { isJson: false, formatted: truncateWorkspacePaths(argumentsText, cwd) }
 			}
 		}
 
-		// For non-JSON or incomplete data, just return as-is
-		return { isJson: false, formatted: argumentsText }
-	}, [argumentsText])
+		// For non-JSON or incomplete data, just return as-is (but still truncate paths)
+		return { isJson: false, formatted: truncateWorkspacePaths(argumentsText, cwd) }
+	}, [argumentsText, cwd])
 
 	const formattedResponseText = responseData.formatted
 	const formattedArgumentsText = argumentsData.formatted
