@@ -69,6 +69,7 @@ const BaseConfigSchema = z.object({
 	timeout: z.number().min(1).max(3600).optional().default(60),
 	alwaysAllow: z.array(z.string()).default([]),
 	watchPaths: z.array(z.string()).optional(), // paths to watch for changes and restart server
+	allowedTools: z.array(z.string()).optional(), // whitelist: if specified, only these tools are enabled
 	disabledTools: z.array(z.string()).default([]),
 })
 
@@ -992,6 +993,7 @@ export class McpHub {
 			const actualSource = connection.server.source || "global"
 			let configPath: string
 			let alwaysAllowConfig: string[] = []
+			let allowedToolsList: string[] | undefined = undefined
 			let disabledToolsList: string[] = []
 
 			// Read from the appropriate config file based on the actual source
@@ -1013,6 +1015,7 @@ export class McpHub {
 				}
 				if (serverConfigData) {
 					alwaysAllowConfig = serverConfigData.mcpServers?.[serverName]?.alwaysAllow || []
+					allowedToolsList = serverConfigData.mcpServers?.[serverName]?.allowedTools
 					disabledToolsList = serverConfigData.mcpServers?.[serverName]?.disabledTools || []
 				}
 			} catch (error) {
@@ -1024,11 +1027,17 @@ export class McpHub {
 			const hasWildcard = alwaysAllowConfig.includes("*")
 
 			// Mark tools as always allowed and enabled for prompt based on settings
-			const tools = (response?.tools || []).map((tool) => ({
-				...tool,
-				alwaysAllow: hasWildcard || alwaysAllowConfig.includes(tool.name),
-				enabledForPrompt: !disabledToolsList.includes(tool.name),
-			}))
+			// If allowedTools whitelist is specified, only those tools are enabled.
+			// Then disabledTools blacklist further filters from the allowed set.
+			const tools = (response?.tools || []).map((tool) => {
+				const isWhitelisted = allowedToolsList === undefined || allowedToolsList.includes(tool.name)
+				const isBlacklisted = disabledToolsList.includes(tool.name)
+				return {
+					...tool,
+					alwaysAllow: hasWildcard || alwaysAllowConfig.includes(tool.name),
+					enabledForPrompt: isWhitelisted && !isBlacklisted,
+				}
+			})
 
 			return tools
 		} catch (error) {
