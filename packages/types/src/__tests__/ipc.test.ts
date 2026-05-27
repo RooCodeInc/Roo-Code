@@ -10,6 +10,10 @@ describe("IPC Types", () => {
 			expect(TaskCommandName.DeleteQueuedMessage).toBe("DeleteQueuedMessage")
 		})
 
+		it("should include CancelCommand command", () => {
+			expect(TaskCommandName.CancelCommand).toBe("CancelCommand")
+		})
+
 		it("should have all expected task commands", () => {
 			const expectedCommands = [
 				"StartNewTask",
@@ -18,6 +22,7 @@ describe("IPC Types", () => {
 				"ResumeTask",
 				"SendMessage",
 				"DeleteQueuedMessage",
+				"CancelCommand",
 			]
 			const actualCommands = Object.values(TaskCommandName)
 
@@ -115,6 +120,30 @@ describe("IPC Types", () => {
 
 			const result = taskCommandSchema.safeParse(invalidCommand)
 			expect(result.success).toBe(false)
+		})
+
+		it("should validate CancelCommand command", () => {
+			const command = {
+				commandName: TaskCommandName.CancelCommand,
+			}
+
+			const result = taskCommandSchema.safeParse(command)
+			expect(result.success).toBe(true)
+
+			if (result.success) {
+				expect(result.data.commandName).toBe("CancelCommand")
+			}
+		})
+
+		it("should validate CancelCommand command even with extra data", () => {
+			const command = {
+				commandName: TaskCommandName.CancelCommand,
+				data: "ignored",
+			}
+
+			// Zod strips unknown keys by default, so this should still pass
+			const result = taskCommandSchema.safeParse(command)
+			expect(result.success).toBe(true)
 		})
 	})
 })
