@@ -24,5 +24,28 @@
 		"refreshing_all": "Actualitzant tots els servidors MCP...",
 		"all_refreshed": "Tots els servidors MCP han estat actualitzats.",
 		"project_config_deleted": "Fitxer de configuració MCP del projecte eliminat. Tots els servidors MCP del projecte han estat desconnectats."
+	},
+	"oauth": {
+		"callback": {
+			"title": "Callback OAuth - Roo Code",
+			"success": "Èxit!",
+			"failed": "Error",
+			"auth_failed": "L'autenticació ha fallat. Si us plau, comprova els registres del servidor MCP.",
+			"auth_success": "El servidor MCP s'ha autenticat correctament. Ara pots tancar aquesta pestanya del navegador.",
+			"server_connection_complete": "La connexió al servidor és completa.",
+			"tab_closing_in": "Aquesta pestanya intentarà tancar-se en <span id=\"count\">{{count}}</span>s...",
+			"safe_to_close": "Si la pestanya no s'ha tancat, pots tancar-la manualment sense cap problema.",
+			"invalid_state": "Error: Paràmetre d'estat no vàlid"
+		},
+		"flow": {
+			"authenticating": "El servidor MCP \"{{name}}\" requereix autenticació",
+			"waitingForBrowser": "Completa l'inici de sessió al navegador...",
+			"clickAuthenticate": "El servidor MCP \"{{name}}\" està esperant autenticació.",
+			"dismissedHint": "Notificació descartada — cancel·la i torna a connectar el servidor per autenticar-te.",
+			"authenticateButton": "Autenticar",
+			"cancelled": "L'autenticació OAuth ha estat cancel·lada",
+			"timedOut": "L'autenticació OAuth ha expirat",
+			"connected": "El servidor MCP \"{{name}}\" s'ha connectat correctament després de l'autenticació OAuth."
+		}
 	}
 }

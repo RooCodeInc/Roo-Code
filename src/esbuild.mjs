@@ -143,7 +143,10 @@ async function main() {
 		copyLocales(srcDir, distDir)
 		setupLocaleWatcher(srcDir, distDir)
 	} else {
-		await Promise.all([extensionCtx.rebuild(), workerCtx.rebuild()])
+		// Run sequentially on rebuild to avoid Windows EBUSY races when both
+		// onEnd hooks copy the same asset directories concurrently.
+		await extensionCtx.rebuild()
+		await workerCtx.rebuild()
 		await Promise.all([extensionCtx.dispose(), workerCtx.dispose()])
 	}
 }

@@ -24,5 +24,28 @@
 		"refreshing_all": "すべてのMCPサーバーを更新しています...",
 		"all_refreshed": "すべてのMCPサーバーが更新されました。",
 		"project_config_deleted": "プロジェクトMCP設定ファイルが削除されました。すべてのプロジェクトMCPサーバーが切断されました。"
+	},
+	"oauth": {
+		"callback": {
+			"title": "OAuth コールバック - Roo Code",
+			"success": "成功！",
+			"failed": "失敗",
+			"auth_failed": "認証に失敗しました。MCP サーバーのログを確認してください。",
+			"auth_success": "MCP サーバーの認証に成功しました。このブラウザタブを閉じても構いません。",
+			"server_connection_complete": "サーバー接続が完了しました。",
+			"tab_closing_in": "このタブは <span id=\"count\">{{count}}</span> 秒後に閉じられます...",
+			"safe_to_close": "タブが閉じなかった場合は、手動で閉じてください。",
+			"invalid_state": "エラー: 無効な state パラメータ"
+		},
+		"flow": {
+			"authenticating": "MCPサーバー \"{{name}}\" は認証が必要です",
+			"waitingForBrowser": "ブラウザでサインインを完了してください...",
+			"clickAuthenticate": "MCPサーバー \"{{name}}\" は認証を待っています。",
+			"dismissedHint": "通知が閉じられました — 再認証するにはサーバーをキャンセルして再接続してください。",
+			"authenticateButton": "認証する",
+			"cancelled": "OAuth認証がキャンセルされました",
+			"timedOut": "OAuth認証がタイムアウトしました",
+			"connected": "OAuth認証後、MCPサーバー \"{{name}}\" が正常に接続されました。"
+		}
 	}
 }

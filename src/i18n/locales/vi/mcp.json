@@ -24,5 +24,28 @@
 		"refreshing_all": "Đang làm mới tất cả các máy chủ MCP...",
 		"all_refreshed": "Tất cả các máy chủ MCP đã được làm mới.",
 		"project_config_deleted": "Tệp cấu hình MCP của dự án đã bị xóa. Tất cả các máy chủ MCP của dự án đã bị ngắt kết nối."
+	},
+	"oauth": {
+		"callback": {
+			"title": "OAuth Callback - Roo Code",
+			"success": "Thành công!",
+			"failed": "Thất bại",
+			"auth_failed": "Xác thực thất bại. Vui lòng kiểm tra nhật ký máy chủ MCP.",
+			"auth_success": "Máy chủ MCP đã được xác thực thành công. Bây giờ bạn có thể đóng tab trình duyệt này.",
+			"server_connection_complete": "Kết nối máy chủ đã hoàn tất.",
+			"tab_closing_in": "Tab này sẽ cố gắng đóng sau <span id=\"count\">{{count}}</span> giây...",
+			"safe_to_close": "Nếu tab không đóng, bạn có thể đóng nó một cách thủ công an toàn.",
+			"invalid_state": "Lỗi: Tham số trạng thái không hợp lệ"
+		},
+		"flow": {
+			"authenticating": "Máy chủ MCP \"{{name}}\" yêu cầu xác thực",
+			"waitingForBrowser": "Hoàn tất đăng nhập trong trình duyệt của bạn...",
+			"clickAuthenticate": "Máy chủ MCP \"{{name}}\" đang chờ xác thực.",
+			"dismissedHint": "Thông báo đã bị đóng — hủy và kết nối lại máy chủ để xác thực lại.",
+			"authenticateButton": "Xác thực",
+			"cancelled": "Xác thực OAuth đã bị hủy",
+			"timedOut": "Xác thực OAuth đã hết thời gian chờ",
+			"connected": "Máy chủ MCP \"{{name}}\" đã kết nối thành công sau khi xác thực OAuth."
+		}
 	}
 }

@@ -33,8 +33,12 @@ import { t } from "../../i18n"
 import { ClineProvider } from "../../core/webview/ClineProvider"
 
 import { GlobalFileNames } from "../../shared/globalFileNames"
+import { UnauthorizedError } from "@modelcontextprotocol/sdk/client/auth.js"
 
 import { fileExistsAtPath } from "../../utils/fs"
+import { TOKEN_EXPIRY_BUFFER_MS, OAUTH_FLOW_TIMEOUT_MS } from "./constants"
+import { SecretStorageService } from "./SecretStorageService"
+import { McpOAuthClientProvider } from "./McpOAuthClientProvider"
 import { arePathsEqual, getWorkspacePath } from "../../utils/path"
 import { injectVariables } from "../../utils/config"
 import { safeWriteJson } from "../../utils/safeWriteJson"
@@ -46,6 +50,7 @@ export type ConnectedMcpConnection = {
 	server: McpServer
 	client: Client
 	transport: StdioClientTransport | SSEClientTransport | StreamableHTTPClientTransport
+	authProvider?: McpOAuthClientProvider
 }
 
 export type DisconnectedMcpConnection = {
@@ -162,9 +167,15 @@ export class McpHub {
 	private flagResetTimer?: NodeJS.Timeout
 	private sanitizedNameRegistry: Map<string, string> = new Map()
 	private initializationPromise: Promise<void>
+	private secretStorage?: SecretStorageService
+	private reauthPromises: Map<string, Promise<void>> = new Map()
+	private _oauthWatchers: Map<string, { unsubscribe: () => void; abortHandle: NodeJS.Timeout }> = new Map()
 
-	constructor(provider: ClineProvider) {
+	constructor(provider: ClineProvider, secretStorage?: SecretStorageService) {
 		this.providerRef = new WeakRef(provider)
+		if (secretStorage) {
+			this.secretStorage = secretStorage
+		}
 		this.watchMcpSettingsFile()
 		this.watchProjectMcpFile().catch(console.error)
 		this.setupWorkspaceFoldersWatcher()
@@ -181,13 +192,13 @@ export class McpHub {
 	async waitUntilReady(): Promise<void> {
 		await this.initializationPromise
 	}
+
 	/**
 	 * Registers a client (e.g., ClineProvider) using this hub.
 	 * Increments the reference count.
 	 */
 	public registerClient(): void {
 		this.refCount++
-		// console.log(`McpHub: Client registered. Ref count: ${this.refCount}`)
 	}
 
 	/**
@@ -196,8 +207,6 @@ export class McpHub {
 	 */
 	public async unregisterClient(): Promise<void> {
 		this.refCount--
-
-		// console.log(`McpHub: Client unregistered. Ref count: ${this.refCount}`)
 
 		if (this.refCount <= 0) {
 			console.log("McpHub: Last client unregistered. Disposing hub.")
@@ -696,6 +705,7 @@ export class McpHub {
 			)
 
 			let transport: StdioClientTransport | SSEClientTransport | StreamableHTTPClientTransport
+			let streamableHttpAuthProvider: McpOAuthClientProvider | undefined
 
 			// Inject variables to the config (environment, magic variables,...)
 			const configInjected = (await injectVariables(config, {
@@ -779,18 +789,84 @@ export class McpHub {
 					console.error(`No stderr stream for ${name}`)
 				}
 			} else if (configInjected.type === "streamable-http") {
-				// Streamable HTTP connection
+				if (!this.secretStorage) {
+					throw new Error("SecretStorageService not initialized — call setSecretStorage() before connecting")
+				}
+
+				// Decide whether to perform OAuth discovery (RFC 9728 + RFC 8414)
+				// upfront or skip it to avoid a wasted network round-trip for
+				// non-OAuth servers.
+				//
+				// Three cases:
+				//  1. SecretStorage has OAuth data → known OAuth server → discover
+				//  2. In-memory negative cache says non-OAuth → skip discovery
+				//  3. Unknown server (first connection) → discover once, cache result
+				const hasOAuthData = await this.secretStorage.hasOAuthData(configInjected.url)
+				const knownNonOAuth = McpOAuthClientProvider.isKnownNonOAuth(configInjected.url)
+				const skipDiscovery = !hasOAuthData && knownNonOAuth
+
+				const authProvider = await McpOAuthClientProvider.create(configInjected.url, this.secretStorage, name, {
+					skipDiscovery,
+				})
+
+				// Pre-register the OAuth client so the SDK can skip its own
+				// registration step (broken for path-prefixed issuers — see
+				// utils/oauth.ts for upstream issue links).
+				// Skip when discovery was skipped — there's no metadata to register with.
+				if (!skipDiscovery) {
+					try {
+						await authProvider.registerClientIfNeeded()
+					} catch {
+						// Registration may not be supported — the SDK will attempt its own.
+					}
+				}
+
 				transport = new StreamableHTTPClientTransport(new URL(configInjected.url), {
-					requestInit: {
-						headers: configInjected.headers,
-					},
+					authProvider,
+					requestInit: { headers: configInjected.headers },
 				})
 
 				// Set up Streamable HTTP specific error handling
 				transport.onerror = async (error) => {
 					console.error(`Transport error for "${name}" (streamable-http):`, error)
 					const connection = this.findConnection(name, source)
-					if (connection) {
+					if (connection && connection.type === "connected") {
+						if (error instanceof UnauthorizedError && authProvider) {
+							// If we're already in the OAuth / polling flow, ignore transport
+							// retries that surface another 401 — the poll or _completeOAuthFlow
+							// will reconnect from scratch once tokens arrive.
+							if (connection.server.status === "connecting") {
+								return
+							}
+
+							// Mid-session re-auth triggered by a tool call (401)
+							connection.server.status = "connecting"
+
+							const reauthKey = `${name}:${source}`
+							let reauthPromise = this.reauthPromises.get(reauthKey)
+							if (!reauthPromise) {
+								reauthPromise = this._initiateOAuthFlow(
+									name,
+									source,
+									JSON.parse(connection.server.config),
+									authProvider,
+									transport as StreamableHTTPClientTransport,
+									connection as ConnectedMcpConnection,
+								)
+									.catch((err) => {
+										console.error(`OAuth flow failed for "${name}":`, err)
+									})
+									.finally(() => {
+										this.reauthPromises.delete(reauthKey)
+									})
+								this.reauthPromises.set(reauthKey, reauthPromise)
+							}
+							return
+						}
+
+						connection.server.status = "disconnected"
+						this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
+					} else if (connection) {
 						connection.server.status = "disconnected"
 						this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
 					}
@@ -800,10 +876,19 @@ export class McpHub {
 				transport.onclose = async () => {
 					const connection = this.findConnection(name, source)
 					if (connection) {
+						// If OAuth is in progress, don't overwrite "connecting" with "disconnected".
+						// The transport will close/retry while we await the browser flow or poll;
+						// the reconnect path (deleteConnection + connectToServer) handles cleanup.
+						if (connection.server.status === "connecting") {
+							return
+						}
 						connection.server.status = "disconnected"
 					}
 					await this.notifyWebviewOfServerChanges()
 				}
+
+				// Keep a reference so the UnauthorizedError handler can use it.
+				streamableHttpAuthProvider = authProvider
 			} else if (configInjected.type === "sse") {
 				// SSE connection
 				const sseOptions = {
@@ -871,11 +956,54 @@ export class McpHub {
 				},
 				client,
 				transport,
+				authProvider: streamableHttpAuthProvider,
 			}
 			this.connections.push(connection)
 
 			// Connect (this will automatically start the transport)
-			await client.connect(transport)
+			try {
+				await client.connect(transport)
+			} catch (connectError) {
+				if (connectError instanceof UnauthorizedError && streamableHttpAuthProvider && configInjected.url) {
+					// The server requires OAuth.
+					McpOAuthClientProvider.clearNonOAuthCache(configInjected.url)
+
+					// If discovery was skipped (provider has no metadata), we need to
+					// tear down and reconnect with full discovery now that we know
+					// this is an OAuth server. The reconnect will do discovery since
+					// the negative cache was cleared and no SecretStorage data exists yet.
+					if (!streamableHttpAuthProvider.hasMetadata) {
+						await streamableHttpAuthProvider.close()
+						await this.deleteConnection(name, source)
+						void this.connectToServer(name, config, source)
+						return
+					}
+
+					// Mark this connection as "connecting" and detach the toast +
+					// browser flow from the initialization path so that
+					// waitUntilReady() resolves immediately and the MCP panel can load.
+					connection.server.status = "connecting"
+
+					void this._initiateOAuthFlow(
+						name,
+						source,
+						config,
+						streamableHttpAuthProvider,
+						transport as StreamableHTTPClientTransport,
+						connection,
+					)
+
+					return
+				}
+				// Non-OAuth error — let the outer catch handle it.
+				await streamableHttpAuthProvider?.close()
+				throw connectError
+			}
+
+			// Successful connection — close callback server if it was started.
+			// We keep the authProvider on the connection so it can handle mid-session 401s.
+			await streamableHttpAuthProvider?.close()
+
 			connection.server.status = "connected"
 			connection.server.error = ""
 			connection.server.instructions = client.getInstructions()
@@ -892,6 +1020,293 @@ export class McpHub {
 				this.appendErrorMessage(connection, error instanceof Error ? error.message : `${error}`)
 			}
 			throw error
+		}
+	}
+
+	/**
+	 * Background task: waits for the user to complete the OAuth browser flow,
+	 * exchanges the auth code for tokens, then reconnects from scratch.
+	 *
+	 * After the SDK throws UnauthorizedError the transport is left in a
+	 * "started" state (_abortController is set), so we cannot simply call
+	 * client.connect() on it again — the SDK would throw "already started".
+	 * The clean solution is to delete the broken connection and let
+	 * connectToServer() create fresh client/transport objects. The new
+	 * provider will find the token in SecretStorage and connect without
+	 * triggering another OAuth round-trip.
+	 *
+	 * This runs detached from the initialization path so `waitUntilReady()`
+	 * and the rest of the extension are not blocked by the user's browser session.
+	 */
+	private async _initiateOAuthFlow(
+		name: string,
+		source: "global" | "project",
+		config: z.infer<typeof ServerConfigSchema>,
+		authProvider: McpOAuthClientProvider,
+		transport: StreamableHTTPClientTransport,
+		connection: ConnectedMcpConnection,
+	): Promise<void> {
+		const serverUrl = "url" in config ? (config as any).url : undefined
+		if (!serverUrl || !this.secretStorage) {
+			return
+		}
+
+		// Register the cross-window token watcher BEFORE the initial token read so we
+		// don't miss a write that lands in the gap between the read and the subscription.
+		// After the read we immediately unsubscribe; the watcher inside _runOAuthFlow
+		// will set up its own long-lived subscription for the duration of the flow.
+		// Note: onDidChange fires on both writes AND deletes — the re-read below is
+		// authoritative; we only reconnect if it returns a valid (non-expired) token.
+		let tokenChangedDuringRead = false
+		const unsubscribeCrossWindow = this.secretStorage.onDidChange(serverUrl, () => {
+			tokenChangedDuringRead = true
+		})
+
+		// Check if another window already saved valid tokens.
+		// Re-read after registering the watcher in case a write landed in the gap.
+		const existing = await this.secretStorage.getOAuthData(serverUrl)
+		if (this.isDisposed) {
+			unsubscribeCrossWindow()
+			return
+		}
+		// If the first read missed but the watcher fired during it, re-read — a write
+		// may have landed between subscription and read completion.
+		const tokenToUse =
+			existing ?? (tokenChangedDuringRead ? await this.secretStorage.getOAuthData(serverUrl) : undefined)
+		unsubscribeCrossWindow()
+
+		if (!this.isDisposed && tokenToUse && Date.now() < tokenToUse.expires_at - TOKEN_EXPIRY_BUFFER_MS) {
+			await authProvider.close()
+			await this.deleteConnection(name, source)
+			await this.connectToServer(name, config, source)
+			await this.notifyWebviewOfServerChanges()
+			return
+		}
+
+		// Persistent progress notification gives the user a visible Cancel button
+		// for the duration of the flow (even if they switch away from VS Code).
+		await vscode.window.withProgress(
+			{
+				location: vscode.ProgressLocation.Notification,
+				title: t("mcp:oauth.flow.authenticating", { name }),
+				cancellable: true,
+			},
+			(progress, cancellationToken) =>
+				this._runOAuthFlow(
+					name,
+					source,
+					config,
+					serverUrl,
+					authProvider,
+					transport,
+					connection,
+					progress,
+					cancellationToken,
+				),
+		)
+	}
+
+	private _runOAuthFlow(
+		name: string,
+		source: "global" | "project",
+		config: z.infer<typeof ServerConfigSchema>,
+		serverUrl: string,
+		authProvider: McpOAuthClientProvider,
+		transport: StreamableHTTPClientTransport,
+		connection: ConnectedMcpConnection,
+		progress: vscode.Progress<{ message?: string; increment?: number }>,
+		cancellationToken: vscode.CancellationToken,
+	): Promise<void> {
+		const watcherKey = `${name}:${source}`
+
+		// Cancel any existing watcher for this connection before starting a new one
+		const existing = this._oauthWatchers.get(watcherKey)
+		if (existing) {
+			existing.unsubscribe()
+			clearTimeout(existing.abortHandle)
+			this._oauthWatchers.delete(watcherKey)
+		}
+
+		return new Promise<void>((resolve) => {
+			let disposed = false
+			let cancellationDisposable: vscode.Disposable | undefined
+
+			const cleanup = () => {
+				if (disposed) return
+				disposed = true
+				clearTimeout(timeoutHandle)
+				unsubscribe()
+				cancellationDisposable?.dispose()
+				this._oauthWatchers.delete(watcherKey)
+			}
+
+			// --- Cross-window token watcher ---
+			const onTokensChanged = async () => {
+				if (disposed || this.isDisposed) return
+				// Don't reconnect if the server is already connected (e.g. a token refresh
+				// from another window fired after _completeOAuthFlow already succeeded).
+				const conn = this.findConnection(name, source)
+				if (!conn || conn.server.status === "connected") {
+					cleanup()
+					return
+				}
+				try {
+					const data = await this.secretStorage?.getOAuthData(serverUrl)
+					// Re-check after the async yield — cancellation or completion may have
+					// fired while getOAuthData was in flight.
+					if (disposed || this.isDisposed) return
+					if (data && Date.now() < data.expires_at - TOKEN_EXPIRY_BUFFER_MS) {
+						cleanup()
+						await authProvider.close()
+						await this.deleteConnection(name, source)
+						const validatedConfig = this.validateServerConfig(config, name)
+						await this.connectToServer(name, validatedConfig, source)
+						await this.notifyWebviewOfServerChanges()
+						resolve()
+					}
+				} catch (err) {
+					console.error(`[McpHub] OAuth token watcher failed for "${name}":`, err)
+				}
+			}
+
+			const unsubscribe = this.secretStorage!.onDidChange(serverUrl, () => {
+				void onTokensChanged()
+			})
+
+			// --- Timeout ---
+			const timeoutHandle = setTimeout(() => {
+				if (disposed) return
+				cleanup()
+				void authProvider.close()
+				const conn = this.findConnection(name, source)
+				if (conn && conn.server.status === "connecting") {
+					conn.server.status = "disconnected"
+					this.appendErrorMessage(conn, t("mcp:oauth.flow.timedOut"))
+					void this.notifyWebviewOfServerChanges()
+				}
+				resolve()
+			}, OAUTH_FLOW_TIMEOUT_MS)
+
+			// --- Cancellation (progress bar's Cancel button) ---
+			cancellationDisposable = cancellationToken.onCancellationRequested(() => {
+				if (disposed) return
+				cleanup()
+				void authProvider.close()
+				const conn = this.findConnection(name, source)
+				if (conn && conn.server.status !== "connected") {
+					conn.server.status = "disconnected"
+					this.appendErrorMessage(conn, t("mcp:oauth.flow.cancelled"))
+					void this.notifyWebviewOfServerChanges()
+				}
+				resolve()
+			})
+
+			// Register in _oauthWatchers so deleteConnection() and dispose() can clean up
+			this._oauthWatchers.set(watcherKey, { unsubscribe, abortHandle: timeoutHandle })
+
+			// Non-modal toast — fires once. If dismissed without clicking Authenticate,
+			// the flow stays alive via the persistent progress bar (Cancel to abort).
+			const authenticateLabel = t("mcp:oauth.flow.authenticateButton")
+			void (async () => {
+				const choice = await vscode.window.showInformationMessage(
+					t("mcp:oauth.flow.clickAuthenticate", { name }),
+					authenticateLabel,
+				)
+
+				if (disposed) return
+
+				if (choice !== authenticateLabel) {
+					progress.report({ message: t("mcp:oauth.flow.dismissedHint") })
+					return
+				}
+
+				// Guard: another window may have authed while the toast was open
+				const tokens = await this.secretStorage!.getOAuthData(serverUrl)
+				if (disposed) return
+				if (tokens && Date.now() < tokens.expires_at - TOKEN_EXPIRY_BUFFER_MS) {
+					cleanup()
+					await authProvider.close()
+					await this.deleteConnection(name, source)
+					const validatedFastPathConfig = this.validateServerConfig(config, name)
+					await this.connectToServer(name, validatedFastPathConfig, source)
+					await this.notifyWebviewOfServerChanges()
+					resolve()
+					return
+				}
+
+				// Clean up before exchanging tokens — this sets disposed=true so the
+				// cross-window token watcher doesn't race to reconnect when SecretStorage
+				// fires onDidChange during token exchange inside _completeOAuthFlow.
+				cleanup()
+				try {
+					await this._completeOAuthFlow(authProvider, transport, connection, name, source, cancellationToken)
+				} catch {
+					// _completeOAuthFlow handles its own error state
+				}
+				resolve()
+			})()
+		})
+	}
+
+	private async _completeOAuthFlow(
+		authProvider: McpOAuthClientProvider,
+		transport: StreamableHTTPClientTransport,
+		connection: ConnectedMcpConnection,
+		name: string,
+		source: "global" | "project",
+		cancellationToken: vscode.CancellationToken,
+	): Promise<void> {
+		const config = JSON.parse(connection.server.config)
+
+		// Build a promise that rejects when the progress bar Cancel is pressed,
+		// so we can race it against waitForAuthCode() which blocks indefinitely.
+		const cancelledError = new Error(t("mcp:oauth.flow.cancelled"))
+		let cancelListener: vscode.Disposable | undefined
+		const cancellationPromise = new Promise<never>((_, reject) => {
+			if (cancellationToken.isCancellationRequested) {
+				reject(cancelledError)
+				return
+			}
+			cancelListener = cancellationToken.onCancellationRequested(() => reject(cancelledError))
+		})
+
+		try {
+			// Open the browser now that the user has confirmed the toast.
+			// redirectToAuthorization() was already called by the SDK (which stored
+			// the URL in _pendingAuthorizationUrl), but deliberately did not open it.
+			await authProvider.openBrowser()
+
+			const code = await Promise.race([authProvider.waitForAuthCode(), cancellationPromise])
+
+			// Exchange auth code for tokens using the pre-fetched token_endpoint
+			// directly. The SDK's transport.finishAuth() re-runs discovery internally
+			// and hits the same broken URL for path-prefixed issuers (see
+			// utils/oauth.ts for upstream issue links).
+			await authProvider.exchangeCodeForTokens(code)
+			await authProvider.close()
+
+			// Recover the validated server config stored on the connection so we
+			// can pass it directly to connectToServer without re-reading the file.
+			const validatedConfig = this.validateServerConfig(config, name)
+
+			// Remove the broken connection (closes the old transport/client),
+			// then reconnect. The new McpOAuthClientProvider will find the token
+			// in SecretStorage and connect without another OAuth round-trip.
+			await this.deleteConnection(name, source)
+			await this.connectToServer(name, validatedConfig, source)
+
+			await this.notifyWebviewOfServerChanges()
+			void vscode.window.showInformationMessage(t("mcp:oauth.flow.connected", { name }))
+		} catch (error) {
+			await authProvider.close()
+			const conn = this.findConnection(name, source)
+			if (conn) {
+				conn.server.status = "disconnected"
+				this.appendErrorMessage(conn, error instanceof Error ? error.message : `${error}`)
+			}
+			await this.notifyWebviewOfServerChanges()
+		} finally {
+			cancelListener?.dispose()
 		}
 	}
 
@@ -1072,6 +1487,15 @@ export class McpHub {
 	}
 
 	async deleteConnection(name: string, source?: "global" | "project"): Promise<void> {
+		// Cancel any active OAuth token watchers for this connection
+		const watcherKey = `${name}:${source}`
+		const watcher = this._oauthWatchers.get(watcherKey)
+		if (watcher) {
+			watcher.unsubscribe()
+			clearTimeout(watcher.abortHandle)
+			this._oauthWatchers.delete(watcherKey)
+		}
+
 		// Clean up file watchers for this server
 		this.removeFileWatchersForServer(name)
 
@@ -1085,9 +1509,10 @@ export class McpHub {
 				if (connection.type === "connected") {
 					await connection.transport.close()
 					await connection.client.close()
+					await connection.authProvider?.close()
 				}
 			} catch (error) {
-				console.error(`Failed to close transport for ${name}:`, error)
+				console.error(`Failed to close transport or auth provider for ${name}:`, error)
 			}
 		}
 
@@ -1277,6 +1702,11 @@ export class McpHub {
 				try {
 					// Validate the config
 					const validatedConfig = this.validateServerConfig(parsedConfig, serverName)
+
+					// Clear OAuth tokens for streamable-http servers on restart
+					if (validatedConfig.type === "streamable-http" && this.secretStorage) {
+						await this.secretStorage.deleteOAuthData(validatedConfig.url)
+					}
 
 					// Try to connect again using validated config
 					await this.connectToServer(serverName, validatedConfig, connection.server.source || "global")
@@ -1753,19 +2183,77 @@ export class McpHub {
 			timeout = 60 * 1000
 		}
 
-		return await connection.client.request(
-			{
-				method: "tools/call",
-				params: {
-					name: toolName,
-					arguments: toolArguments,
+		try {
+			return await connection.client.request(
+				{
+					method: "tools/call",
+					params: {
+						name: toolName,
+						arguments: toolArguments,
+					},
 				},
-			},
-			CallToolResultSchema,
-			{
-				timeout,
-			},
-		)
+				CallToolResultSchema,
+				{
+					timeout,
+				},
+			)
+		} catch (error) {
+			if (error instanceof UnauthorizedError && connection.authProvider) {
+				// Mid-session re-auth triggered by a tool call (401)
+				connection.server.status = "connecting"
+
+				const reauthKey = `${serverName}:${source || connection.server.source || "global"}`
+				let reauthPromise = this.reauthPromises.get(reauthKey)
+
+				if (!reauthPromise) {
+					reauthPromise = this._initiateOAuthFlow(
+						serverName,
+						source || connection.server.source || "global",
+						JSON.parse(connection.server.config),
+						connection.authProvider,
+						connection.transport as StreamableHTTPClientTransport,
+						connection,
+					).finally(() => {
+						this.reauthPromises.delete(reauthKey)
+					})
+					this.reauthPromises.set(reauthKey, reauthPromise)
+				}
+
+				await reauthPromise
+
+				// After re-auth completes, the connection has been replaced.
+				// We need to find the new connection and retry the tool call.
+				const newConnection = this.findConnection(serverName, source)
+				if (!newConnection || newConnection.type !== "connected") {
+					throw new Error(`Failed to reconnect to server ${serverName} after OAuth`)
+				}
+
+				try {
+					return await newConnection.client.request(
+						{
+							method: "tools/call",
+							params: {
+								name: toolName,
+								arguments: toolArguments,
+							},
+						},
+						CallToolResultSchema,
+						{
+							timeout,
+						},
+					)
+				} catch (retryError) {
+					if (retryError instanceof UnauthorizedError) {
+						throw new Error(
+							`Authentication succeeded but server "${serverName}" still rejected the request. ` +
+								`This may indicate a token audience mismatch or server-side configuration issue.`,
+						)
+					}
+					throw retryError
+				}
+			}
+			throw error
+		}
 	}
 
 	/**
@@ -1968,6 +2456,15 @@ export class McpHub {
 		}
 
 		this.isProgrammaticUpdate = false
+
+		// Cancel all active OAuth token watchers and in-flight reauth promises
+		for (const { unsubscribe, abortHandle } of this._oauthWatchers.values()) {
+			unsubscribe()
+			clearTimeout(abortHandle)
+		}
+		this._oauthWatchers.clear()
+		this.reauthPromises.clear()
+
 		this.removeAllFileWatchers()
 
 		for (const connection of this.connections) {
