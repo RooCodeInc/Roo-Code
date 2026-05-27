@@ -32,6 +32,7 @@ export interface TaskHeaderProps {
 	aggregatedCost?: number
 	hasSubtasks?: boolean
 	parentTaskId?: string
+	rootOrchestrationCost?: number
 	costBreakdown?: string
 	contextTokens: number
 	buttonsDisabled: boolean
@@ -49,6 +50,7 @@ const TaskHeader = ({
 	aggregatedCost,
 	hasSubtasks,
 	parentTaskId,
+	rootOrchestrationCost,
 	costBreakdown,
 	contextTokens,
 	buttonsDisabled,
@@ -274,6 +276,25 @@ const TaskHeader = ({
 									</StandardTooltip>
 								</>
 							)}
+							{typeof rootOrchestrationCost === "number" && rootOrchestrationCost > 0 && (
+								<>
+									<span>·</span>
+									<StandardTooltip
+										content={
+											<div>
+												{t("chat:costs.orchestrationTotal", {
+													cost: rootOrchestrationCost.toFixed(2),
+												})}
+											</div>
+										}
+										side="top"
+										sideOffset={8}>
+										<span className="text-vscode-descriptionForeground">
+											{t("chat:costs.orchestrationLabel")}: ${rootOrchestrationCost.toFixed(2)}
+										</span>
+									</StandardTooltip>
+								</>
+							)}
 						</div>
 					</div>
 				)}
@@ -401,6 +422,28 @@ const TaskHeader = ({
 															</span>
 														)}
 													</span>
+												</StandardTooltip>
+											</td>
+										</tr>
+									)}
+
+									{typeof rootOrchestrationCost === "number" && rootOrchestrationCost > 0 && (
+										<tr>
+											<th className="font-medium text-left align-top w-1 whitespace-nowrap pr-3 h-[24px]">
+												{t("chat:costs.orchestrationLabel")}
+											</th>
+											<td className="font-light align-top">
+												<StandardTooltip
+													content={
+														<div>
+															{t("chat:costs.orchestrationTotal", {
+																cost: rootOrchestrationCost.toFixed(2),
+															})}
+														</div>
+													}
+													side="top"
+													sideOffset={8}>
+													<span>${rootOrchestrationCost.toFixed(2)}</span>
 												</StandardTooltip>
 											</td>
 										</tr>
