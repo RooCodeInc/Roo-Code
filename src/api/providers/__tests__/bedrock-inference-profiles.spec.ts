@@ -1,6 +1,6 @@
 // npx vitest run src/api/providers/__tests__/bedrock-inference-profiles.spec.ts
 
-import { AWS_INFERENCE_PROFILE_MAPPING } from "@roo-code/types"
+import { AWS_INFERENCE_PROFILE_MAPPING, BEDROCK_CROSS_REGION_INFERENCE_MODEL_IDS } from "@roo-code/types"
 import { AwsBedrockHandler } from "../bedrock"
 import { ApiHandlerOptions } from "../../../shared/api"
 
@@ -52,6 +52,37 @@ describe("Amazon Bedrock Inference Profiles", () => {
 			AWS_INFERENCE_PROFILE_MAPPING.forEach(([regionPattern, inferenceProfile]) => {
 				expect(regionPattern).toMatch(/^[a-z0-9-]+$/)
 				expect(inferenceProfile).toMatch(/^[a-z]+\.$/)
+			})
+		})
+	})
+
+	describe("BEDROCK_CROSS_REGION_INFERENCE_MODEL_IDS constant", () => {
+		it("should contain only Anthropic Claude models", () => {
+			BEDROCK_CROSS_REGION_INFERENCE_MODEL_IDS.forEach((modelId) => {
+				expect(modelId).toMatch(/^anthropic\.claude/)
+			})
+		})
+
+		it("should not contain non-Claude models", () => {
+			const nonClaudePatterns = ["qwen", "amazon", "meta", "deepseek", "openai"]
+			BEDROCK_CROSS_REGION_INFERENCE_MODEL_IDS.forEach((modelId) => {
+				nonClaudePatterns.forEach((pattern) => {
+					expect(modelId.toLowerCase()).not.toContain(pattern)
+				})
+			})
+		})
+
+		it("should include common Claude models that support cross-region inference", () => {
+			const expectedModels = [
+				"anthropic.claude-3-sonnet-20240229-v1:0",
+				"anthropic.claude-3-haiku-20240307-v1:0",
+				"anthropic.claude-3-opus-20240229-v1:0",
+				"anthropic.claude-3-5-sonnet-20241022-v2:0",
+				"anthropic.claude-3-5-haiku-20241022-v1:0",
+			]
+
+			expectedModels.forEach((modelId) => {
+				expect(BEDROCK_CROSS_REGION_INFERENCE_MODEL_IDS).toContain(modelId)
 			})
 		})
 	})
@@ -213,15 +244,16 @@ describe("Amazon Bedrock Inference Profiles", () => {
 			expect(model.id).toBe("anthropic.claude-3-sonnet-20240229-v1:0")
 		})
 
-		it("should work with different model IDs", () => {
-			const testModels = [
+		it("should apply cross-region prefix only to supported Claude models", () => {
+			// Test Claude models that DO support cross-region inference
+			const supportedModels = [
 				"anthropic.claude-3-haiku-20240307-v1:0",
 				"anthropic.claude-3-opus-20240229-v1:0",
-				"amazon.nova-pro-v1:0",
-				"meta.llama3-1-70b-instruct-v1:0",
+				"anthropic.claude-3-sonnet-20240229-v1:0",
+				"anthropic.claude-3-5-sonnet-20241022-v2:0",
 			]
 
-			testModels.forEach((modelId) => {
+			supportedModels.forEach((modelId) => {
 				const handler = createHandler({
 					awsUseCrossRegionInference: true,
 					awsRegion: "eu-west-1",
@@ -230,6 +262,28 @@ describe("Amazon Bedrock Inference Profiles", () => {
 
 				const model = handler.getModel()
 				expect(model.id).toBe(`eu.${modelId}`)
+			})
+		})
+
+		it("should NOT apply cross-region prefix to unsupported models", () => {
+			// Test models that do NOT support cross-region inference
+			const unsupportedModels = [
+				"qwen.qwen3-coder-480b-a35b-v1:0",
+				"amazon.nova-pro-v1:0",
+				"meta.llama3-1-70b-instruct-v1:0",
+				"deepseek.r1-v1:0",
+			]
+
+			unsupportedModels.forEach((modelId) => {
+				const handler = createHandler({
+					awsUseCrossRegionInference: true,
+					awsRegion: "eu-west-1",
+					apiModelId: modelId,
+				})
+
+				const model = handler.getModel()
+				// Should remain unchanged - no prefix applied
+				expect(model.id).toBe(modelId)
 			})
 		})
 
