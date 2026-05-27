@@ -52,7 +52,9 @@ export function normalizeMcpToolName(toolName: string): string {
 
 		// First, try to parse assuming all separators are underscores
 		// Pattern: mcp__server__tool or mcp__server__tool_with_underscores
-		const parts = toolName.split(/__|--/)
+		// Use lookbehind/lookahead to match exactly __ (not part of ___ or longer)
+		// This preserves triple underscores (___) used by MCP aggregators like 1mcp
+		const parts = toolName.split(/(?<!_)__(?!_)|--/)
 
 		if (parts.length >= 3 && parts[0].toLowerCase() === "mcp") {
 			// Reconstruct with proper -- separators
