@@ -18,6 +18,7 @@ import { SearchableSetting } from "./SearchableSetting"
 
 type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	terminalOutputPreviewSize?: TerminalOutputPreviewSize
+	terminalOutputFilterEnabled?: boolean
 	terminalShellIntegrationTimeout?: number
 	terminalShellIntegrationDisabled?: boolean
 	terminalCommandDelay?: number
@@ -28,6 +29,7 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	terminalZdotdir?: boolean
 	setCachedStateField: SetCachedStateField<
 		| "terminalOutputPreviewSize"
+		| "terminalOutputFilterEnabled"
 		| "terminalShellIntegrationTimeout"
 		| "terminalShellIntegrationDisabled"
 		| "terminalCommandDelay"
@@ -41,6 +43,7 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 
 export const TerminalSettings = ({
 	terminalOutputPreviewSize,
+	terminalOutputFilterEnabled,
 	terminalShellIntegrationTimeout,
 	terminalShellIntegrationDisabled,
 	terminalCommandDelay,
@@ -93,6 +96,22 @@ export const TerminalSettings = ({
 						</div>
 					</div>
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
+						<SearchableSetting
+							settingId="terminal-output-filter-enabled"
+							section="terminal"
+							label={t("settings:terminal.outputFilterEnabled.label")}>
+							<VSCodeCheckbox
+								checked={terminalOutputFilterEnabled !== false}
+								onChange={(e: any) =>
+									setCachedStateField("terminalOutputFilterEnabled", e.target.checked)
+								}>
+								<span className="font-medium">{t("settings:terminal.outputFilterEnabled.label")}</span>
+							</VSCodeCheckbox>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								{t("settings:terminal.outputFilterEnabled.description")}
+							</div>
+						</SearchableSetting>
+
 						<SearchableSetting
 							settingId="terminal-output-preview-size"
 							section="terminal"
