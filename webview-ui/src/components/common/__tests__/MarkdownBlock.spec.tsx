@@ -88,6 +88,46 @@ describe("MarkdownBlock", () => {
 		expect(screen.getByText("Step three")).toBeInTheDocument()
 	})
 
+	it("should render currency symbols without text corruption", async () => {
+		const markdown = "The price is R$100 or US$50."
+		const { container } = render(<MarkdownBlock markdown={markdown} />)
+
+		await screen.findByText(/The price is/, { exact: false })
+
+		const paragraph = container.querySelector("p")
+		expect(paragraph?.textContent).toBe("The price is R$100 or US$50.")
+
+		// Should not produce any math/katex elements
+		const mathElements = container.querySelectorAll(".katex")
+		expect(mathElements.length).toBe(0)
+	})
+
+	it("should render double-dollar math expressions", async () => {
+		const markdown = "The formula is $$x^2 + y^2 = z^2$$."
+		const { container } = render(<MarkdownBlock markdown={markdown} />)
+
+		await screen.findByText(/The formula is/, { exact: false })
+
+		// Should render katex math
+		const mathElements = container.querySelectorAll(".katex")
+		expect(mathElements.length).toBeGreaterThan(0)
+	})
+
+	it("should not treat single dollar signs as math delimiters", async () => {
+		const markdown = "Cost: $50 to $100 range."
+		const { container } = render(<MarkdownBlock markdown={markdown} />)
+
+		await screen.findByText(/Cost/, { exact: false })
+
+		const paragraph = container.querySelector("p")
+		expect(paragraph?.textContent).toContain("$50")
+		expect(paragraph?.textContent).toContain("$100")
+
+		// No math elements should be created from single-dollar text
+		const mathElements = container.querySelectorAll(".katex")
+		expect(mathElements.length).toBe(0)
+	})
+
 	it("should render nested lists with proper hierarchy", async () => {
 		const markdown = `Complex list:
 1. First level ordered

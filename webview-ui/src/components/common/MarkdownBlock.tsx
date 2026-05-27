@@ -308,7 +308,7 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 			<ReactMarkdown
 				remarkPlugins={[
 					remarkGfm,
-					remarkMath,
+					[remarkMath, { singleDollarTextMath: false }],
 					() => {
 						return (tree: any) => {
 							visit(tree, "code", (node: any) => {
