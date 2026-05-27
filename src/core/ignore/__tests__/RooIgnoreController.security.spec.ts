@@ -182,21 +182,21 @@ describe("RooIgnoreController Security Tests", () => {
 			const absolutePathToAllowed = path.join(TEST_CWD, "src/app.js")
 			expect(controller.validateAccess(absolutePathToAllowed)).toBe(true)
 
-			// Absolute path outside cwd should be allowed
-			expect(controller.validateAccess("/etc/hosts")).toBe(true)
-			expect(controller.validateAccess("/var/log/system.log")).toBe(true)
+			// Absolute path outside cwd should be denied (fail closed)
+			expect(controller.validateAccess("/etc/hosts")).toBe(false)
+			expect(controller.validateAccess("/var/log/system.log")).toBe(false)
 		})
 
 		/**
-		 * Tests that paths outside cwd are allowed
+		 * Tests that paths outside cwd are denied (fail closed for security)
 		 */
-		it("should allow paths outside the current working directory", () => {
-			// Paths outside cwd should be allowed
-			expect(controller.validateAccess("../outside-project/file.txt")).toBe(true)
-			expect(controller.validateAccess("../../other-project/secrets/keys.json")).toBe(true)
+		it("should deny access to paths outside the current working directory", () => {
+			// Paths outside cwd should be denied
+			expect(controller.validateAccess("../outside-project/file.txt")).toBe(false)
+			expect(controller.validateAccess("../../other-project/secrets/keys.json")).toBe(false)
 
 			// Edge case: path that would be ignored if inside cwd
-			expect(controller.validateAccess("/other/path/secrets/keys.json")).toBe(true)
+			expect(controller.validateAccess("/other/path/secrets/keys.json")).toBe(false)
 		})
 	})
 
