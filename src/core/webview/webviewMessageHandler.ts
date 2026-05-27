@@ -3007,6 +3007,7 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 							copyProgressItemName: progress.itemName,
 						})
 					},
+					message.worktreeUseHardLinks,
 				)
 
 				await provider.postMessageToWebview({ type: "worktreeResult", success, text })

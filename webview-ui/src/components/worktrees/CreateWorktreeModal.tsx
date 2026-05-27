@@ -7,7 +7,7 @@ import { vscode } from "@/utils/vscode"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, Button, Input } from "@/components/ui"
 import { SearchableSelect, type SearchableSelectOption } from "@/components/ui/searchable-select"
-import { CornerDownRight, Folder, FolderSearch, Info } from "lucide-react"
+import { CornerDownRight, Folder, FolderSearch, Info, Link } from "lucide-react"
 
 interface CreateWorktreeModalProps {
 	open: boolean
@@ -33,6 +33,9 @@ export const CreateWorktreeModal = ({
 	const [defaults, setDefaults] = useState<WorktreeDefaultsResponse | null>(null)
 	const [branches, setBranches] = useState<BranchInfo | null>(null)
 	const [includeStatus, setIncludeStatus] = useState<WorktreeIncludeStatus | null>(null)
+
+	// Hard links option
+	const [useHardLinks, setUseHardLinks] = useState(true)
 
 	// UI state
 	const [isCreating, setIsCreating] = useState(false)
@@ -121,8 +124,9 @@ export const CreateWorktreeModal = ({
 			worktreeBranch: branchName,
 			worktreeBaseBranch: baseBranch,
 			worktreeCreateNewBranch: true,
+			worktreeUseHardLinks: useHardLinks,
 		})
-	}, [worktreePath, branchName, baseBranch])
+	}, [worktreePath, branchName, baseBranch, useHardLinks])
 
 	const isValid = branchName.trim() && worktreePath.trim() && baseBranch.trim()
 
@@ -214,6 +218,22 @@ export const CreateWorktreeModal = ({
 							onClick={() => vscode.postMessage({ type: "browseForWorktreePath" })}
 						/>
 					</div>
+
+					{/* Hard links option - only show when .worktreeinclude exists */}
+					{includeStatus?.exists && (
+						<div className="flex items-center gap-2 ml-2" title={t("worktrees:useHardLinksTooltip")}>
+							<Link className="size-4 shrink-0" />
+							<label className="flex items-center gap-2 text-sm text-vscode-foreground cursor-pointer">
+								<input
+									type="checkbox"
+									checked={useHardLinks}
+									onChange={(e) => setUseHardLinks(e.target.checked)}
+									className="accent-vscode-button-background"
+								/>
+								{t("worktrees:useHardLinks")}
+							</label>
+						</div>
+					)}
 
 					{/* Error message */}
 					{error && (
