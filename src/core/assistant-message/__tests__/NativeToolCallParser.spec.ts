@@ -343,4 +343,107 @@ describe("NativeToolCallParser", () => {
 			})
 		})
 	})
+
+	describe("processFinishReason", () => {
+		describe("tool call tracking synchronization", () => {
+			it("should emit tool_call_end only for tool calls that have started", () => {
+				// Simulate a tool call with both ID and name (will start)
+				NativeToolCallParser.processRawChunk({
+					index: 0,
+					id: "call_started_123",
+					name: "read_file",
+				})
+
+				const events = NativeToolCallParser.processFinishReason("tool_calls")
+
+				expect(events).toHaveLength(1)
+				expect(events[0]).toEqual({
+					type: "tool_call_end",
+					id: "call_started_123",
+				})
+			})
+
+			it("should NOT emit tool_call_end for tool calls without a name (never started)", () => {
+				// Simulate a tool call with ID but NO name - this happens when models
+				// send malformed tool calls or split ID/name across chunks incorrectly
+				NativeToolCallParser.processRawChunk({
+					index: 0,
+					id: "call_no_name_456",
+					// No name provided - tool_call_start will not be emitted
+				})
+
+				// Capture console.warn to verify warning is logged
+				const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+				const events = NativeToolCallParser.processFinishReason("tool_calls")
+
+				// Should NOT emit tool_call_end since tool was never started
+				expect(events).toHaveLength(0)
+
+				// Should log a warning about the unstarted tool call
+				expect(warnSpy).toHaveBeenCalledWith(
+					expect.stringContaining("Skipping tool_call_end for unstarted tool call"),
+				)
+
+				warnSpy.mockRestore()
+			})
+
+			it("should handle mixed started and unstarted tool calls correctly", () => {
+				// Tool call with ID and name (will start)
+				NativeToolCallParser.processRawChunk({
+					index: 0,
+					id: "call_with_name",
+					name: "read_file",
+				})
+
+				// Tool call with only ID (will not start)
+				NativeToolCallParser.processRawChunk({
+					index: 1,
+					id: "call_without_name",
+					// No name
+				})
+
+				// Another tool call with ID and name (will start)
+				NativeToolCallParser.processRawChunk({
+					index: 2,
+					id: "call_also_with_name",
+					name: "write_to_file",
+				})
+
+				const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+				const events = NativeToolCallParser.processFinishReason("tool_calls")
+
+				// Should only emit tool_call_end for the two started tool calls
+				expect(events).toHaveLength(2)
+				expect(events.map((e) => e.id)).toContain("call_with_name")
+				expect(events.map((e) => e.id)).toContain("call_also_with_name")
+				expect(events.map((e) => e.id)).not.toContain("call_without_name")
+
+				// Should log warning for the unstarted tool call
+				expect(warnSpy).toHaveBeenCalledTimes(1)
+				expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("call_without_name"))
+
+				warnSpy.mockRestore()
+			})
+
+			it("should return empty array when finish_reason is not tool_calls", () => {
+				NativeToolCallParser.processRawChunk({
+					index: 0,
+					id: "call_123",
+					name: "read_file",
+				})
+
+				const events = NativeToolCallParser.processFinishReason("stop")
+
+				expect(events).toHaveLength(0)
+			})
+
+			it("should return empty array when no tool calls are tracked", () => {
+				const events = NativeToolCallParser.processFinishReason("tool_calls")
+
+				expect(events).toHaveLength(0)
+			})
+		})
+	})
 })
