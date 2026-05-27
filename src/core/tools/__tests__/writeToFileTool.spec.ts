@@ -148,6 +148,11 @@ describe("writeToFileTool", () => {
 				userEdits: null,
 				finalContent: "final content",
 			}),
+			saveDirectly: vi.fn().mockResolvedValue({
+				newProblemsMessage: "",
+				userEdits: null,
+				finalContent: "final content",
+			}),
 			scrollToFirstDiff: vi.fn(),
 			updateDiagnosticSettings: vi.fn(),
 			pushToolWriteResult: vi.fn().mockImplementation(async function (
@@ -439,6 +444,69 @@ describe("writeToFileTool", () => {
 				"user_feedback_diff",
 				expect.stringContaining("editedExistingFile"),
 			)
+		})
+	})
+
+	describe("auto-approve write skips diff view", () => {
+		it("uses saveDirectly when autoApprovalEnabled and alwaysAllowWrite are both true", async () => {
+			mockCline.providerRef = {
+				deref: vi.fn().mockReturnValue({
+					getState: vi.fn().mockResolvedValue({
+						diagnosticsEnabled: true,
+						writeDelayMs: 1000,
+						autoApprovalEnabled: true,
+						alwaysAllowWrite: true,
+					}),
+				}),
+			}
+
+			await executeWriteFileTool({}, { fileExists: false })
+
+			// Should NOT open diff view
+			expect(mockCline.diffViewProvider.open).not.toHaveBeenCalled()
+			// Should use saveDirectly instead of saveChanges
+			expect(mockCline.diffViewProvider.saveDirectly).toHaveBeenCalled()
+			expect(mockCline.diffViewProvider.saveChanges).not.toHaveBeenCalled()
+		})
+
+		it("uses diff view when autoApprovalEnabled is true but alwaysAllowWrite is false", async () => {
+			mockCline.providerRef = {
+				deref: vi.fn().mockReturnValue({
+					getState: vi.fn().mockResolvedValue({
+						diagnosticsEnabled: true,
+						writeDelayMs: 1000,
+						autoApprovalEnabled: true,
+						alwaysAllowWrite: false,
+					}),
+				}),
+			}
+
+			await executeWriteFileTool({}, { fileExists: false })
+
+			// Should open diff view (normal path)
+			expect(mockCline.diffViewProvider.open).toHaveBeenCalled()
+			expect(mockCline.diffViewProvider.saveChanges).toHaveBeenCalled()
+			expect(mockCline.diffViewProvider.saveDirectly).not.toHaveBeenCalled()
+		})
+
+		it("uses diff view when autoApprovalEnabled is false even if alwaysAllowWrite is true", async () => {
+			mockCline.providerRef = {
+				deref: vi.fn().mockReturnValue({
+					getState: vi.fn().mockResolvedValue({
+						diagnosticsEnabled: true,
+						writeDelayMs: 1000,
+						autoApprovalEnabled: false,
+						alwaysAllowWrite: true,
+					}),
+				}),
+			}
+
+			await executeWriteFileTool({}, { fileExists: false })
+
+			// Should open diff view (normal path)
+			expect(mockCline.diffViewProvider.open).toHaveBeenCalled()
+			expect(mockCline.diffViewProvider.saveChanges).toHaveBeenCalled()
+			expect(mockCline.diffViewProvider.saveDirectly).not.toHaveBeenCalled()
 		})
 	})
 

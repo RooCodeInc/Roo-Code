@@ -103,10 +103,9 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			const state = await provider?.getState()
 			const diagnosticsEnabled = state?.diagnosticsEnabled ?? true
 			const writeDelayMs = state?.writeDelayMs ?? DEFAULT_WRITE_DELAY_MS
-			const isPreventFocusDisruptionEnabled = experiments.isEnabled(
-				state?.experiments ?? {},
-				EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION,
-			)
+			const isPreventFocusDisruptionEnabled =
+				experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION) ||
+				(state?.autoApprovalEnabled === true && state?.alwaysAllowWrite === true)
 
 			if (isPreventFocusDisruptionEnabled) {
 				task.diffViewProvider.editType = fileExists ? "modify" : "create"
@@ -204,10 +203,9 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 		const provider = task.providerRef.deref()
 		const state = await provider?.getState()
-		const isPreventFocusDisruptionEnabled = experiments.isEnabled(
-			state?.experiments ?? {},
-			EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION,
-		)
+		const isPreventFocusDisruptionEnabled =
+			experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION) ||
+			(state?.autoApprovalEnabled === true && state?.alwaysAllowWrite === true)
 
 		if (isPreventFocusDisruptionEnabled) {
 			return
