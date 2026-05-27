@@ -99,13 +99,30 @@ export function findLongestPrefixMatch(command: string, prefixes: string[]): str
 
 	const trimmedCommand = command.trim().toLowerCase()
 	let longestMatch: string | null = null
+	let longestMatchLength = 0
 
 	for (const prefix of prefixes) {
 		const lowerPrefix = prefix.toLowerCase()
-		// Handle wildcard "*" - it matches any command
-		if (lowerPrefix === "*" || trimmedCommand.startsWith(lowerPrefix)) {
-			if (!longestMatch || lowerPrefix.length > longestMatch.length) {
+
+		// Handle standalone wildcard "*" - it matches any command
+		if (lowerPrefix === "*") {
+			if (!longestMatch) {
 				longestMatch = lowerPrefix
+				longestMatchLength = 1
+			}
+			continue
+		}
+
+		// Strip trailing asterisk(s) to support trailing-wildcard patterns
+		// e.g. "git*" -> "git", "git *" -> "git " (note the space is preserved)
+		const normalizedPrefix = lowerPrefix.replace(/\*+$/, "")
+
+		if (trimmedCommand.startsWith(normalizedPrefix)) {
+			// Use the original prefix length for comparison so that
+			// "git*" (4 chars) beats a standalone "*" (1 char)
+			if (lowerPrefix.length > longestMatchLength) {
+				longestMatch = lowerPrefix
+				longestMatchLength = lowerPrefix.length
 			}
 		}
 	}
@@ -145,7 +162,10 @@ export function isAutoApprovedSingleCommand(
 		return allowedCommands.some((prefix) => {
 			const lowerPrefix = prefix.toLowerCase()
 			// Handle wildcard "*" - it matches any command
-			return lowerPrefix === "*" || trimmedCommand.startsWith(lowerPrefix)
+			if (lowerPrefix === "*") return true
+			// Strip trailing asterisk(s) to support trailing-wildcard patterns
+			const normalizedPrefix = lowerPrefix.replace(/\*+$/, "")
+			return trimmedCommand.startsWith(normalizedPrefix)
 		})
 	}
 
