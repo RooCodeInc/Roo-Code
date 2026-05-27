@@ -51,6 +51,10 @@
 		"description": "{{modeName}} modu için özel davranış yönergeleri ekleyin.",
 		"loadFromFile": "{{mode}} moduna özgü özel talimatlar, çalışma alanınızdaki <span>.roo/rules-{{slug}}/</span> klasöründen veya global <0>.roo/rules-{{slug}}/</0> klasöründen de yüklenebilir (.roorules-{{slug}} ve .clinerules-{{slug}} kullanımdan kaldırılmıştır ve yakında çalışmayı durduracaktır)."
 	},
+	"disableDefaultRules": {
+		"label": "Varsayılan kuralları devre dışı bırak",
+		"description": "Etkinleştirildiğinde yalnızca moda özel kurallar (.roo/rules-{{slug}}/) yüklenir. Varsayılan kurallar (.roo/rules/, AGENTS.md, .roorules) atlanır."
+	},
 	"exportMode": {
 		"title": "Modu Dışa Aktar",
 		"description": "Bu modu tüm kurallar dahil olarak bir YAML dosyasına dışa aktararak başkalarıyla kolayca paylaşın.",

@@ -290,4 +290,60 @@ describe("CustomModeSchema", () => {
 			expect(result.success).toBe(false)
 		})
 	})
+
+	describe("disableDefaultRules", () => {
+		test("accepts mode with disableDefaultRules set to true", () => {
+			const mode = {
+				slug: "focused-mode",
+				name: "Focused Mode",
+				roleDefinition: "A focused mode",
+				groups: ["read"] as const,
+				disableDefaultRules: true,
+			} satisfies ModeConfig
+
+			expect(() => validateCustomMode(mode)).not.toThrow()
+			const parsed = modeConfigSchema.parse(mode)
+			expect(parsed.disableDefaultRules).toBe(true)
+		})
+
+		test("accepts mode with disableDefaultRules set to false", () => {
+			const mode = {
+				slug: "normal-mode",
+				name: "Normal Mode",
+				roleDefinition: "A normal mode",
+				groups: ["read"] as const,
+				disableDefaultRules: false,
+			} satisfies ModeConfig
+
+			expect(() => validateCustomMode(mode)).not.toThrow()
+			const parsed = modeConfigSchema.parse(mode)
+			expect(parsed.disableDefaultRules).toBe(false)
+		})
+
+		test("accepts mode without disableDefaultRules (optional field)", () => {
+			const mode = {
+				slug: "default-mode",
+				name: "Default Mode",
+				roleDefinition: "A default mode",
+				groups: ["read"] as const,
+			} satisfies ModeConfig
+
+			expect(() => validateCustomMode(mode)).not.toThrow()
+			const parsed = modeConfigSchema.parse(mode)
+			expect(parsed.disableDefaultRules).toBeUndefined()
+		})
+
+		test("rejects non-boolean disableDefaultRules", () => {
+			const mode = {
+				slug: "bad-mode",
+				name: "Bad Mode",
+				roleDefinition: "A bad mode",
+				groups: ["read"],
+				disableDefaultRules: "yes" as any,
+			}
+
+			const result = modeConfigSchema.safeParse(mode)
+			expect(result.success).toBe(false)
+		})
+	})
 })

@@ -51,6 +51,10 @@
 		"description": "Ajoutez des directives comportementales spécifiques au mode {{modeName}}.",
 		"loadFromFile": "Les instructions personnalisées spécifiques au mode {{mode}} peuvent également être chargées depuis le dossier <span>.roo/rules-{{slug}}/</span> dans votre espace de travail ou depuis le global <0>.roo/rules-{{slug}}/</0> (.roorules-{{slug}} et .clinerules-{{slug}} sont obsolètes et cesseront de fonctionner bientôt)."
 	},
+	"disableDefaultRules": {
+		"label": "Désactiver les règles par défaut",
+		"description": "Lorsqu'activé, seules les règles spécifiques au mode (.roo/rules-{{slug}}/) sont chargées. Les règles par défaut (.roo/rules/, AGENTS.md, .roorules) sont ignorées."
+	},
 	"exportMode": {
 		"title": "Exporter le mode",
 		"description": "Exporte ce mode vers un fichier YAML avec toutes les règles incluses pour un partage facile avec d'autres.",

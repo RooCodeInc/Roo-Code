@@ -104,6 +104,7 @@ ${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", 
 	language: language ?? formatLanguage(vscode.env.language),
 	rooIgnoreInstructions,
 	settings,
+	disableDefaultRules: modeConfig.disableDefaultRules,
 })}`
 
 	return basePrompt
