@@ -166,16 +166,35 @@ export class NativeToolCallParser {
 	/**
 	 * Process stream finish reason.
 	 * Emits end events when finish_reason is 'tool_calls'.
+	 *
+	 * IMPORTANT: Only emits tool_call_end for tool calls that have actually started
+	 * (i.e., where tool_call_start was emitted). This prevents finalizeStreamingToolCall
+	 * from receiving IDs that were never registered via startStreamingToolCall, which
+	 * would cause tool results to be silently dropped and trigger infinite retry loops.
 	 */
 	public static processFinishReason(finishReason: string | null | undefined): ToolCallStreamEvent[] {
 		const events: ToolCallStreamEvent[] = []
 
 		if (finishReason === "tool_calls" && this.rawChunkTracker.size > 0) {
 			for (const [, tracked] of this.rawChunkTracker.entries()) {
-				events.push({
-					type: "tool_call_end",
-					id: tracked.id,
-				})
+				// Only emit tool_call_end for tool calls that have actually started.
+				// Tool calls without hasStarted=true never had a tool_call_start emitted
+				// (likely due to missing tool name), so they were never registered in
+				// streamingToolCalls. Emitting tool_call_end for these would cause
+				// finalizeStreamingToolCall to fail, resulting in no tool_result being
+				// sent to the model and triggering infinite retry loops.
+				if (tracked.hasStarted) {
+					events.push({
+						type: "tool_call_end",
+						id: tracked.id,
+					})
+				} else {
+					// Log a warning for tool calls that were tracked but never started.
+					// This helps diagnose issues with models that send malformed tool calls.
+					console.warn(
+						`[NativeToolCallParser] Skipping tool_call_end for unstarted tool call: ${tracked.id} (no name received)`,
+					)
+				}
 			}
 		}
 
