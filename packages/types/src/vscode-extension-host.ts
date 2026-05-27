@@ -89,6 +89,8 @@ export interface ExtensionMessage {
 		| "worktreeDefaults"
 		| "worktreeIncludeStatus"
 		| "branchWorktreeIncludeResult"
+		| "weaveMergeDriverStatus"
+		| "weaveMergeDriverResult"
 		| "folderSelected"
 		| "skills"
 		| "fileContent"
@@ -215,6 +217,14 @@ export interface ExtensionMessage {
 	copyProgressBytesCopied?: number
 	copyProgressTotalBytes?: number
 	copyProgressItemName?: string
+	// Weave merge driver status
+	weaveMergeDriverStatus?: {
+		isInstalled: boolean
+		version?: string
+		isConfiguredInGitConfig: boolean
+		isConfiguredInGitattributes: boolean
+		isFullyConfigured: boolean
+	}
 	// folderSelected
 	path?: string
 }
@@ -514,6 +524,9 @@ export interface WebviewMessage {
 		| "createWorktreeInclude"
 		| "checkoutBranch"
 		| "browseForWorktreePath"
+		| "getWeaveMergeDriverStatus"
+		| "configureWeaveMergeDriver"
+		| "unconfigureWeaveMergeDriver"
 		// Skills messages
 		| "requestSkills"
 		| "createSkill"

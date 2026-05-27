@@ -16,7 +16,13 @@ import type {
 	WorktreeListResponse,
 	WorktreeDefaultsResponse,
 } from "@roo-code/types"
-import { worktreeService, worktreeIncludeService, type CopyProgressCallback } from "@roo-code/core"
+import {
+	worktreeService,
+	worktreeIncludeService,
+	weaveMergeDriverService,
+	type CopyProgressCallback,
+} from "@roo-code/core"
+import type { WeaveMergeDriverStatus } from "@roo-code/core"
 
 import type { ClineProvider } from "../ClineProvider"
 
@@ -276,4 +282,23 @@ export async function handleCreateWorktreeInclude(provider: ClineProvider, conte
 export async function handleCheckoutBranch(provider: ClineProvider, branch: string): Promise<WorktreeResult> {
 	const cwd = provider.cwd
 	return worktreeService.checkoutBranch(cwd, branch)
+}
+
+export async function handleGetWeaveMergeDriverStatus(provider: ClineProvider): Promise<WeaveMergeDriverStatus> {
+	const cwd = provider.cwd
+	return weaveMergeDriverService.getStatus(cwd)
+}
+
+export async function handleConfigureWeaveMergeDriver(provider: ClineProvider): Promise<WorktreeResult> {
+	const cwd = provider.cwd
+	const result = await weaveMergeDriverService.configure(cwd)
+	return {
+		success: result.success,
+		message: result.message,
+	}
+}
+
+export async function handleUnconfigureWeaveMergeDriver(provider: ClineProvider): Promise<WorktreeResult> {
+	const cwd = provider.cwd
+	return weaveMergeDriverService.unconfigure(cwd)
 }
