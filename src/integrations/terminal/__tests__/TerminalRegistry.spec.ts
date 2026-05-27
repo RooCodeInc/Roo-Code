@@ -6,6 +6,18 @@ import { TerminalRegistry } from "../TerminalRegistry"
 
 const PAGER = process.platform === "win32" ? "" : "cat"
 
+// Windows-specific UTF-8 environment variables added to prevent character corruption
+// when the system uses non-UTF-8 encodings like GBK (code page 936)
+// See: https://github.com/RooCodeInc/Roo-Code/issues/10709
+const WIN32_UTF8_ENV =
+	process.platform === "win32"
+		? {
+				PYTHONIOENCODING: "utf-8",
+				PYTHONUTF8: "1",
+				RUBYOPT: "-EUTF-8",
+			}
+		: {}
+
 vi.mock("execa", () => ({
 	execa: vi.fn(),
 }))
@@ -49,6 +61,7 @@ describe("TerminalRegistry", () => {
 					ROO_ACTIVE: "true",
 					VTE_VERSION: "0",
 					PROMPT_EOL_MARK: "",
+					...WIN32_UTF8_ENV,
 				},
 			})
 		})
@@ -71,6 +84,7 @@ describe("TerminalRegistry", () => {
 						PROMPT_COMMAND: "sleep 0.05",
 						VTE_VERSION: "0",
 						PROMPT_EOL_MARK: "",
+						...WIN32_UTF8_ENV,
 					},
 				})
 			} finally {
@@ -94,6 +108,7 @@ describe("TerminalRegistry", () => {
 						VTE_VERSION: "0",
 						PROMPT_EOL_MARK: "",
 						ITERM_SHELL_INTEGRATION_INSTALLED: "Yes",
+						...WIN32_UTF8_ENV,
 					},
 				})
 			} finally {
@@ -116,6 +131,7 @@ describe("TerminalRegistry", () => {
 						VTE_VERSION: "0",
 						PROMPT_EOL_MARK: "",
 						POWERLEVEL9K_TERM_SHELL_INTEGRATION: "true",
+						...WIN32_UTF8_ENV,
 					},
 				})
 			} finally {
