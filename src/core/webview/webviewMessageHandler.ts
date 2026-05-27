@@ -2202,6 +2202,7 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 					codebaseIndexSearchMaxResults: settings.codebaseIndexSearchMaxResults,
 					codebaseIndexSearchMinScore: settings.codebaseIndexSearchMinScore,
 					codebaseIndexOpenRouterSpecificProvider: settings.codebaseIndexOpenRouterSpecificProvider,
+					warpGrepEnabled: settings.warpGrepEnabled,
 				}
 
 				// Save global state first
@@ -2243,6 +2244,9 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 						"codebaseIndexOpenRouterApiKey",
 						settings.codebaseIndexOpenRouterApiKey,
 					)
+				}
+				if (settings.warpGrepApiKey !== undefined) {
+					await provider.contextProxy.storeSecret("warpGrepApiKey", settings.warpGrepApiKey)
 				}
 
 				// Send success response first - settings are saved regardless of validation
@@ -2382,6 +2386,7 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 				"codebaseIndexVercelAiGatewayApiKey",
 			))
 			const hasOpenRouterApiKey = !!(await provider.context.secrets.get("codebaseIndexOpenRouterApiKey"))
+			const hasWarpGrepApiKey = !!(await provider.context.secrets.get("warpGrepApiKey"))
 
 			provider.postMessageToWebview({
 				type: "codeIndexSecretStatus",
@@ -2393,6 +2398,7 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 					hasMistralApiKey,
 					hasVercelAiGatewayApiKey,
 					hasOpenRouterApiKey,
+					hasWarpGrepApiKey,
 				},
 			})
 			break

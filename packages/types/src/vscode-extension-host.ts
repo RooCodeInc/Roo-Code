@@ -614,6 +614,10 @@ export interface WebviewMessage {
 		codebaseIndexMistralApiKey?: string
 		codebaseIndexVercelAiGatewayApiKey?: string
 		codebaseIndexOpenRouterApiKey?: string
+
+		// WarpGrep specific fields
+		warpGrepEnabled?: boolean
+		warpGrepApiKey?: string
 	}
 	updatedSettings?: RooCodeSettings
 	/** Task configuration applied via `createTask()`. */

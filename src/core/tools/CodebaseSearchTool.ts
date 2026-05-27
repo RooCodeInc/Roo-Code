@@ -6,6 +6,7 @@ import { CodeIndexManager } from "../../services/code-index/manager"
 import { getWorkspacePath } from "../../utils/path"
 import { formatResponse } from "../prompts/responses"
 import { VectorStoreSearchResult } from "../../services/code-index/interfaces"
+import { executeWarpGrepSearch } from "../../services/warpgrep"
 import type { ToolUse } from "../../shared/tools"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
@@ -52,7 +53,32 @@ export class CodebaseSearchTool extends BaseTool<"codebase_search"> {
 		task.consecutiveMistakeCount = 0
 
 		try {
-			const context = task.providerRef.deref()?.context
+			const provider = task.providerRef.deref()
+			const contextProxy = provider?.contextProxy
+
+			// Try WarpGrep first if enabled
+			if (contextProxy) {
+				const codebaseIndexConfig = contextProxy.getGlobalState("codebaseIndexConfig")
+				const warpGrepApiKey = contextProxy.getSecret("warpGrepApiKey")
+
+				if (codebaseIndexConfig?.warpGrepEnabled && warpGrepApiKey) {
+					const result = await executeWarpGrepSearch(
+						workspacePath,
+						query,
+						warpGrepApiKey,
+						task.rooIgnoreController,
+					)
+
+					if (result.success) {
+						pushToolResult(`Query: ${query}\n\n${result.content}`)
+						return
+					}
+
+					// Fall through to CodeIndexManager if available
+				}
+			}
+
+			const context = provider?.context
 			if (!context) {
 				throw new Error("Extension context is not available.")
 			}
