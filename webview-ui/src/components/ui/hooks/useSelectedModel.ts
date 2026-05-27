@@ -22,6 +22,7 @@ import {
 	internationalZAiModels,
 	mainlandZAiModels,
 	fireworksModels,
+	perplexityModels,
 	basetenModels,
 	qwenCodeModels,
 	litellmDefaultModelInfo,
@@ -310,6 +311,11 @@ function getSelectedModel({
 		case "fireworks": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const info = fireworksModels[id as keyof typeof fireworksModels]
+			return { id, info }
+		}
+		case "perplexity": {
+			const id = apiConfiguration.apiModelId ?? defaultModelId
+			const info = perplexityModels[id as keyof typeof perplexityModels]
 			return { id, info }
 		}
 		case "poe": {

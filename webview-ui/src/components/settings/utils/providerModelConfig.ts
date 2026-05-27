@@ -16,6 +16,7 @@ import {
 	fireworksDefaultModelId,
 	minimaxDefaultModelId,
 	basetenDefaultModelId,
+	perplexityDefaultModelId,
 } from "@roo-code/types"
 
 import { MODELS_BY_PROVIDER } from "../constants"
@@ -39,6 +40,7 @@ export const PROVIDER_SERVICE_CONFIG: Partial<Record<ProviderName, ProviderServi
 	sambanova: { serviceName: "SambaNova", serviceUrl: "https://sambanova.ai" },
 	zai: { serviceName: "Z.ai", serviceUrl: "https://z.ai" },
 	fireworks: { serviceName: "Fireworks AI", serviceUrl: "https://fireworks.ai" },
+	perplexity: { serviceName: "Perplexity", serviceUrl: "https://www.perplexity.ai/account/api/keys" },
 	minimax: { serviceName: "MiniMax", serviceUrl: "https://minimax.chat" },
 	baseten: { serviceName: "Baseten", serviceUrl: "https://baseten.co" },
 	ollama: { serviceName: "Ollama", serviceUrl: "https://ollama.ai" },
@@ -65,6 +67,7 @@ export const PROVIDER_DEFAULT_MODEL_IDS: Partial<Record<ProviderName, string>> =
 	fireworks: fireworksDefaultModelId,
 	minimax: minimaxDefaultModelId,
 	baseten: basetenDefaultModelId,
+	perplexity: perplexityDefaultModelId,
 }
 
 export const getProviderServiceConfig = (provider: ProviderName): ProviderServiceConfig => {

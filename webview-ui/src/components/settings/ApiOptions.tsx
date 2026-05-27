@@ -90,6 +90,7 @@ import {
 	XAI,
 	ZAi,
 	Fireworks,
+	Perplexity,
 	VercelAiGateway,
 	MiniMax,
 } from "./providers"
@@ -687,6 +688,13 @@ const ApiOptions = ({
 
 					{selectedProvider === "fireworks" && (
 						<Fireworks
+							apiConfiguration={apiConfiguration}
+							setApiConfigurationField={setApiConfigurationField}
+						/>
+					)}
+
+					{selectedProvider === "perplexity" && (
+						<Perplexity
 							apiConfiguration={apiConfiguration}
 							setApiConfigurationField={setApiConfigurationField}
 						/>

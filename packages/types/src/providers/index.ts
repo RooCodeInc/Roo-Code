@@ -13,6 +13,7 @@ export * from "./openai.js"
 export * from "./openai-codex.js"
 export * from "./openai-codex-rate-limits.js"
 export * from "./openrouter.js"
+export * from "./perplexity.js"
 export * from "./poe.js"
 export * from "./qwen-code.js"
 export * from "./requesty.js"
@@ -36,6 +37,7 @@ import { mistralDefaultModelId } from "./mistral.js"
 import { moonshotDefaultModelId } from "./moonshot.js"
 import { openAiCodexDefaultModelId } from "./openai-codex.js"
 import { openRouterDefaultModelId } from "./openrouter.js"
+import { perplexityDefaultModelId } from "./perplexity.js"
 import { poeDefaultModelId } from "./poe.js"
 import { qwenCodeDefaultModelId } from "./qwen-code.js"
 import { requestyDefaultModelId } from "./requesty.js"
@@ -103,6 +105,8 @@ export function getProviderDefaultModelId(
 			return sambaNovaDefaultModelId
 		case "fireworks":
 			return fireworksDefaultModelId
+		case "perplexity":
+			return perplexityDefaultModelId
 		case "qwen-code":
 			return qwenCodeDefaultModelId
 		case "poe":

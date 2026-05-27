@@ -275,6 +275,7 @@ export const SECRET_STATE_KEYS = [
 	"sambaNovaApiKey",
 	"zaiApiKey",
 	"fireworksApiKey",
+	"perplexityApiKey",
 	"vercelAiGatewayApiKey",
 	"basetenApiKey",
 ] as const

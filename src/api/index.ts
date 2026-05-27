@@ -30,6 +30,7 @@ import {
 	SambaNovaHandler,
 	ZAiHandler,
 	FireworksHandler,
+	PerplexityHandler,
 	VercelAiGatewayHandler,
 	MiniMaxHandler,
 	BasetenHandler,
@@ -169,6 +170,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new ZAiHandler(options)
 		case "fireworks":
 			return new FireworksHandler(options)
+		case "perplexity":
+			return new PerplexityHandler(options)
 		case "vercel-ai-gateway":
 			return new VercelAiGatewayHandler(options)
 		case "minimax":
