@@ -66,6 +66,21 @@ Otherwise, if you have not completed the task and do not need additional informa
 		return `Missing value for required parameter '${paramName}'. Please retry with complete response.\n\n${instructions}`
 	},
 
+	applyDiffMissingDiffError: () => {
+		const instructions = getToolInstructionsReminder()
+
+		return `Missing value for required parameter 'diff'. This most commonly happens when the diff content is too large and your response was truncated before the 'diff' parameter could be fully generated.
+
+To recover, try one of these approaches:
+1. **Apply smaller diffs**: Break your changes into multiple smaller apply_diff calls, each targeting a specific section of the file.
+2. **Use edit_file instead**: For simple search-and-replace changes, edit_file may be more efficient and less likely to be truncated.
+3. **Reduce the scope**: Focus on the most critical changes first and apply them incrementally.
+
+Do NOT simply retry apply_diff with the same large diff — it will likely fail again for the same reason.
+
+${instructions}`
+	},
+
 	invalidMcpToolArgumentError: (serverName: string, toolName: string) =>
 		JSON.stringify({
 			status: "error",
