@@ -8,6 +8,15 @@ describe("markdown heading helpers", () => {
 		expect(countMarkdownHeadings("")).toBe(0)
 	})
 
+	it("returns 0 for non-string values", () => {
+		// At runtime, message.text can be a non-string truthy value (e.g. array)
+		// which would cause .replace() to throw. The guard should handle this.
+		expect(countMarkdownHeadings(42 as unknown as string)).toBe(0)
+		expect(countMarkdownHeadings(["# heading"] as unknown as string)).toBe(0)
+		expect(countMarkdownHeadings({} as unknown as string)).toBe(0)
+		expect(countMarkdownHeadings(true as unknown as string)).toBe(0)
+	})
+
 	it("counts single and multiple headings", () => {
 		expect(countMarkdownHeadings("# One")).toBe(1)
 		expect(countMarkdownHeadings("# One\nContent")).toBe(1)
