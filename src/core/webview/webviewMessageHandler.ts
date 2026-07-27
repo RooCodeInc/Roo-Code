@@ -890,6 +890,7 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 						litellm: {},
 						requesty: {},
 						unbound: {},
+						futurmix: {},
 						ollama: {},
 						lmstudio: {},
 						poe: {},
@@ -924,6 +925,13 @@ export const webviewMessageHandler = async (provider: ClineProvider, message: We
 					options: {
 						provider: "unbound",
 						apiKey: apiConfiguration.unboundApiKey,
+					},
+				},
+				{
+					key: "futurmix",
+					options: {
+						provider: "futurmix",
+						apiKey: apiConfiguration.futurmixApiKey,
 					},
 				},
 				{ key: "vercel-ai-gateway", options: { provider: "vercel-ai-gateway" } },

@@ -19,6 +19,7 @@ import { getOpenRouterModels } from "./openrouter"
 import { getVercelAiGatewayModels } from "./vercel-ai-gateway"
 import { getRequestyModels } from "./requesty"
 import { getUnboundModels } from "./unbound"
+import { getFuturMixModels } from "./futurmix"
 import { getLiteLLMModels } from "./litellm"
 import { GetModelsOptions } from "../../../shared/api"
 import { getOllamaModels } from "./ollama"
@@ -70,6 +71,9 @@ async function fetchModelsFromProvider(options: GetModelsOptions): Promise<Model
 			break
 		case "unbound":
 			models = await getUnboundModels(options.apiKey)
+			break
+		case "futurmix":
+			models = await getFuturMixModels(options.apiKey)
 			break
 		case "litellm":
 			// Type safety ensures apiKey and baseUrl are always provided for LiteLLM.

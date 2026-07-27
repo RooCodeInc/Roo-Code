@@ -40,6 +40,7 @@ describe("Model Validation Functions", () => {
 		},
 		requesty: {},
 		unbound: {},
+		futurmix: {},
 		litellm: {},
 		ollama: {},
 		lmstudio: {},

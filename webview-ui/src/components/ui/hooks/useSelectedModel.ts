@@ -164,6 +164,11 @@ function getSelectedModel({
 			const routerInfo = routerModels.unbound?.[id]
 			return { id, info: routerInfo }
 		}
+		case "futurmix": {
+			const id = getValidatedModelId(apiConfiguration.futurmixModelId, routerModels.futurmix, defaultModelId)
+			const routerInfo = routerModels.futurmix?.[id]
+			return { id, info: routerInfo }
+		}
 		case "litellm": {
 			const id = getValidatedModelId(apiConfiguration.litellmModelId, routerModels.litellm, defaultModelId)
 			const routerInfo = routerModels.litellm?.[id]

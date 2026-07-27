@@ -18,6 +18,7 @@ export * from "./qwen-code.js"
 export * from "./requesty.js"
 export * from "./sambanova.js"
 export * from "./unbound.js"
+export * from "./futurmix.js"
 export * from "./vertex.js"
 export * from "./vscode-llm.js"
 export * from "./xai.js"
@@ -41,6 +42,7 @@ import { qwenCodeDefaultModelId } from "./qwen-code.js"
 import { requestyDefaultModelId } from "./requesty.js"
 import { sambaNovaDefaultModelId } from "./sambanova.js"
 import { unboundDefaultModelId } from "./unbound.js"
+import { futurmixDefaultModelId } from "./futurmix.js"
 import { vertexDefaultModelId } from "./vertex.js"
 import { vscodeLlmDefaultModelId } from "./vscode-llm.js"
 import { xaiDefaultModelId } from "./xai.js"
@@ -109,6 +111,8 @@ export function getProviderDefaultModelId(
 			return poeDefaultModelId
 		case "unbound":
 			return unboundDefaultModelId
+		case "futurmix":
+			return futurmixDefaultModelId
 		case "vercel-ai-gateway":
 			return vercelAiGatewayDefaultModelId
 		case "anthropic":

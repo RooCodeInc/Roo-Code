@@ -34,7 +34,15 @@ export const DEFAULT_CONSECUTIVE_MISTAKE_LIMIT = 3
  * Dynamic provider requires external API calls in order to get the model list.
  */
 
-export const dynamicProviders = ["openrouter", "vercel-ai-gateway", "litellm", "requesty", "unbound", "poe"] as const
+export const dynamicProviders = [
+	"openrouter",
+	"vercel-ai-gateway",
+	"litellm",
+	"requesty",
+	"unbound",
+	"futurmix",
+	"poe",
+] as const
 
 export type DynamicProvider = (typeof dynamicProviders)[number]
 
@@ -336,6 +344,12 @@ const unboundSchema = baseProviderSettingsSchema.extend({
 	unboundModelId: z.string().optional(),
 })
 
+const futurmixSchema = baseProviderSettingsSchema.extend({
+	futurmixApiKey: z.string().optional(),
+	futurmixBaseUrl: z.string().optional(),
+	futurmixModelId: z.string().optional(),
+})
+
 const fakeAiSchema = baseProviderSettingsSchema.extend({
 	fakeAi: z.unknown().optional(),
 })
@@ -405,6 +419,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	minimaxSchema.merge(z.object({ apiProvider: z.literal("minimax") })),
 	requestySchema.merge(z.object({ apiProvider: z.literal("requesty") })),
 	unboundSchema.merge(z.object({ apiProvider: z.literal("unbound") })),
+	futurmixSchema.merge(z.object({ apiProvider: z.literal("futurmix") })),
 	fakeAiSchema.merge(z.object({ apiProvider: z.literal("fake-ai") })),
 	xaiSchema.merge(z.object({ apiProvider: z.literal("xai") })),
 	basetenSchema.merge(z.object({ apiProvider: z.literal("baseten") })),
@@ -438,6 +453,7 @@ export const providerSettingsSchema = z.object({
 	...minimaxSchema.shape,
 	...requestySchema.shape,
 	...unboundSchema.shape,
+	...futurmixSchema.shape,
 	...fakeAiSchema.shape,
 	...xaiSchema.shape,
 	...basetenSchema.shape,
@@ -475,6 +491,7 @@ export const modelIdKeys = [
 	"lmStudioDraftModelId",
 	"requestyModelId",
 	"unboundModelId",
+	"futurmixModelId",
 	"litellmModelId",
 	"vercelAiGatewayModelId",
 ] as const satisfies readonly (keyof ProviderSettings)[]
@@ -514,6 +531,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	"qwen-code": "apiModelId",
 	requesty: "requestyModelId",
 	unbound: "unboundModelId",
+	futurmix: "futurmixModelId",
 	xai: "apiModelId",
 	baseten: "apiModelId",
 	litellm: "litellmModelId",
@@ -631,6 +649,7 @@ export const MODELS_BY_PROVIDER: Record<
 	openrouter: { id: "openrouter", label: "OpenRouter", models: [] },
 	requesty: { id: "requesty", label: "Requesty", models: [] },
 	unbound: { id: "unbound", label: "Unbound", models: [] },
+	futurmix: { id: "futurmix", label: "FuturMix", models: [] },
 	"vercel-ai-gateway": { id: "vercel-ai-gateway", label: "Vercel AI Gateway", models: [] },
 
 	// Local providers; models discovered from localhost endpoints.
