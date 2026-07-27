@@ -79,6 +79,8 @@ export class ProfileValidator {
 				return profile.requestyModelId
 			case "unbound":
 				return profile.unboundModelId
+			case "futurmix":
+				return profile.futurmixModelId
 			case "fake-ai":
 			default:
 				return undefined

@@ -32,6 +32,7 @@ type ModelIdKey = keyof Pick<
 	| "requestyModelId"
 	| "unboundModelId"
 	| "openAiModelId"
+	| "futurmixModelId"
 	| "litellmModelId"
 	| "vercelAiGatewayModelId"
 	| "apiModelId"

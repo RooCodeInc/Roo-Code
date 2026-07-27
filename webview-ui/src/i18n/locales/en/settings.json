@@ -412,6 +412,7 @@
 		"noCustomHeaders": "No custom headers defined. Click the + button to add one.",
 		"unboundApiKey": "Unbound API Key",
 		"getUnboundApiKey": "Get Unbound API Key",
+		"getFuturMixApiKey": "Get FuturMix API Key",
 		"requestyApiKey": "Requesty API Key",
 		"refreshModels": {
 			"label": "Refresh Models",

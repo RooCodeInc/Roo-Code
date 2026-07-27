@@ -23,6 +23,7 @@ import {
 	VsCodeLmHandler,
 	RequestyHandler,
 	UnboundHandler,
+	FuturMixHandler,
 	FakeAIHandler,
 	XAIHandler,
 	LiteLLMHandler,
@@ -157,6 +158,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new RequestyHandler(options)
 		case "unbound":
 			return new UnboundHandler(options)
+		case "futurmix":
+			return new FuturMixHandler(options)
 		case "fake-ai":
 			return new FakeAIHandler(options)
 		case "xai":
