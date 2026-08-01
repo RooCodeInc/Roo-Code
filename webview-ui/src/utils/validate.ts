@@ -38,6 +38,11 @@ export function validateApiConfiguration(
 
 function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): string | undefined {
 	switch (apiConfiguration.apiProvider) {
+		case "abliteration":
+			if (!apiConfiguration.abliterationApiKey) {
+				return i18next.t("settings:validation.apiKey")
+			}
+			break
 		case "openrouter":
 			if (!apiConfiguration.openRouterApiKey) {
 				return i18next.t("settings:validation.apiKey")

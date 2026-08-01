@@ -1,5 +1,6 @@
 import type { ProviderName, ModelInfo, ProviderSettings } from "@roo-code/types"
 import {
+	abliterationDefaultModelId,
 	anthropicDefaultModelId,
 	bedrockDefaultModelId,
 	deepSeekDefaultModelId,
@@ -26,6 +27,7 @@ export interface ProviderServiceConfig {
 }
 
 export const PROVIDER_SERVICE_CONFIG: Partial<Record<ProviderName, ProviderServiceConfig>> = {
+	abliteration: { serviceName: "abliteration.ai", serviceUrl: "https://abliteration.ai" },
 	anthropic: { serviceName: "Anthropic", serviceUrl: "https://console.anthropic.com" },
 	bedrock: { serviceName: "Amazon Bedrock", serviceUrl: "https://aws.amazon.com/bedrock" },
 	deepseek: { serviceName: "DeepSeek", serviceUrl: "https://platform.deepseek.com" },
@@ -50,6 +52,7 @@ export const PROVIDER_SERVICE_CONFIG: Partial<Record<ProviderName, ProviderServi
 }
 
 export const PROVIDER_DEFAULT_MODEL_IDS: Partial<Record<ProviderName, string>> = {
+	abliteration: abliterationDefaultModelId,
 	anthropic: anthropicDefaultModelId,
 	bedrock: bedrockDefaultModelId,
 	deepseek: deepSeekDefaultModelId,

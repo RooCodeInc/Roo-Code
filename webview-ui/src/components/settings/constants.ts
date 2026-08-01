@@ -1,6 +1,7 @@
 import {
 	type ProviderName,
 	type ModelInfo,
+	abliterationModels,
 	anthropicModels,
 	bedrockModels,
 	deepSeekModels,
@@ -20,6 +21,7 @@ import {
 } from "@roo-code/types"
 
 export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, ModelInfo>>> = {
+	abliteration: abliterationModels,
 	anthropic: anthropicModels,
 	bedrock: bedrockModels,
 	deepseek: deepSeekModels,
@@ -39,6 +41,7 @@ export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, Mod
 }
 
 export const PROVIDERS = [
+	{ value: "abliteration", label: "abliteration.ai", proxy: false },
 	{ value: "openrouter", label: "OpenRouter", proxy: false },
 	{ value: "anthropic", label: "Anthropic", proxy: false },
 	{ value: "gemini", label: "Google Gemini", proxy: false },

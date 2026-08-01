@@ -168,6 +168,7 @@ describe("ProfileValidator", () => {
 
 		// Test specific providers that use apiModelId
 		const apiModelProviders = [
+			"abliteration",
 			"anthropic",
 			"openai-native",
 			"bedrock",

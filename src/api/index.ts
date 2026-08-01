@@ -7,6 +7,7 @@ import { ApiStream } from "./transform/stream"
 
 import {
 	AnthropicHandler,
+	AbliterationHandler,
 	AwsBedrockHandler,
 	OpenRouterHandler,
 	PoeHandler,
@@ -121,6 +122,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 	}
 
 	switch (apiProvider) {
+		case "abliteration":
+			return new AbliterationHandler(options)
 		case "anthropic":
 			return new AnthropicHandler(options)
 		case "openrouter":

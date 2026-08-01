@@ -1,3 +1,4 @@
+export * from "./abliteration.js"
 export * from "./anthropic.js"
 export * from "./baseten.js"
 export * from "./bedrock.js"
@@ -25,6 +26,7 @@ export * from "./vercel-ai-gateway.js"
 export * from "./zai.js"
 export * from "./minimax.js"
 
+import { abliterationDefaultModelId } from "./abliteration.js"
 import { anthropicDefaultModelId } from "./anthropic.js"
 import { basetenDefaultModelId } from "./baseten.js"
 import { bedrockDefaultModelId } from "./bedrock.js"
@@ -61,6 +63,8 @@ export function getProviderDefaultModelId(
 	options: { isChina?: boolean } = { isChina: false },
 ): string {
 	switch (provider) {
+		case "abliteration":
+			return abliterationDefaultModelId
 		case "openrouter":
 			return openRouterDefaultModelId
 		case "requesty":

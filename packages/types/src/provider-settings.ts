@@ -3,6 +3,7 @@ import { z } from "zod"
 import { modelInfoSchema, reasoningEffortSettingSchema, verbosityLevelsSchema, serviceTierSchema } from "./model.js"
 import { codebaseIndexProviderSchema } from "./codebase-index.js"
 import {
+	abliterationModels,
 	anthropicModels,
 	basetenModels,
 	bedrockModels,
@@ -102,6 +103,7 @@ export const providerNames = [
 	...internalProviders,
 	...customProviders,
 	...fauxProviders,
+	"abliteration",
 	"anthropic",
 	"bedrock",
 	"baseten",
@@ -199,6 +201,10 @@ const anthropicSchema = apiModelIdProviderModelSchema.extend({
 	anthropicBaseUrl: z.string().optional(),
 	anthropicUseAuthToken: z.boolean().optional(),
 	anthropicBeta1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window.
+})
+
+const abliterationSchema = apiModelIdProviderModelSchema.extend({
+	abliterationApiKey: z.string().optional(),
 })
 
 const openRouterSchema = baseProviderSettingsSchema.extend({
@@ -386,6 +392,7 @@ const defaultSchema = z.object({
 })
 
 export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProvider", [
+	abliterationSchema.merge(z.object({ apiProvider: z.literal("abliteration") })),
 	anthropicSchema.merge(z.object({ apiProvider: z.literal("anthropic") })),
 	openRouterSchema.merge(z.object({ apiProvider: z.literal("openrouter") })),
 	bedrockSchema.merge(z.object({ apiProvider: z.literal("bedrock") })),
@@ -419,6 +426,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 
 export const providerSettingsSchema = z.object({
 	apiProvider: providerNamesWithRetiredSchema.optional(),
+	...abliterationSchema.shape,
 	...anthropicSchema.shape,
 	...openRouterSchema.shape,
 	...bedrockSchema.shape,
@@ -496,6 +504,7 @@ export const isTypicalProvider = (key: unknown): key is TypicalProvider =>
 	isProviderName(key) && !isInternalProvider(key) && !isCustomProvider(key) && !isFauxProvider(key)
 
 export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
+	abliteration: "apiModelId",
 	anthropic: "apiModelId",
 	openrouter: "openRouterModelId",
 	bedrock: "apiModelId",
@@ -555,6 +564,11 @@ export const MODELS_BY_PROVIDER: Record<
 	Exclude<ProviderName, "fake-ai" | "gemini-cli" | "openai">,
 	{ id: ProviderName; label: string; models: string[] }
 > = {
+	abliteration: {
+		id: "abliteration",
+		label: "abliteration.ai",
+		models: Object.keys(abliterationModels),
+	},
 	anthropic: {
 		id: "anthropic",
 		label: "Anthropic",

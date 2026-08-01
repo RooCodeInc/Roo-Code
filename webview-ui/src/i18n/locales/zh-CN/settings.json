@@ -377,6 +377,8 @@
 		"poeBaseUrl": "Poe 基础 URL",
 		"fireworksApiKey": "Fireworks API 密钥",
 		"getFireworksApiKey": "获取 Fireworks API 密钥",
+		"abliterationApiKey": "abliteration.ai API Key",
+		"getAbliterationApiKey": "Get abliteration.ai API Key",
 		"deepSeekApiKey": "DeepSeek API 密钥",
 		"getDeepSeekApiKey": "获取 DeepSeek API 密钥",
 		"moonshotApiKey": "Moonshot API 密钥",

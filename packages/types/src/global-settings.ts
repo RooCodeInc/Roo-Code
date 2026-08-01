@@ -249,6 +249,7 @@ export type RooCodeSettings = GlobalSettings & ProviderSettings
 export const SECRET_STATE_KEYS = [
 	"apiKey",
 	"openRouterApiKey",
+	"abliterationApiKey",
 	"awsAccessKey",
 	"awsApiKey",
 	"awsSecretKey",

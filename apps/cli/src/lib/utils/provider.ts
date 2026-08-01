@@ -3,6 +3,7 @@ import { RooCodeSettings } from "@roo-code/types"
 import type { SupportedProvider } from "@/types/index.js"
 
 const envVarMap: Record<SupportedProvider, string> = {
+	abliteration: "ABLIT_KEY",
 	anthropic: "ANTHROPIC_API_KEY",
 	"openai-native": "OPENAI_API_KEY",
 	gemini: "GOOGLE_API_KEY",
@@ -27,6 +28,10 @@ export function getProviderSettings(
 	const config: RooCodeSettings = { apiProvider: provider }
 
 	switch (provider) {
+		case "abliteration":
+			if (apiKey) config.abliterationApiKey = apiKey
+			if (model) config.apiModelId = model
+			break
 		case "anthropic":
 			if (apiKey) config.apiKey = apiKey
 			if (model) config.apiModelId = model
